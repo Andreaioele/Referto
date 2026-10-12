@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Referto</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 </head>
 <body>
@@ -48,6 +49,10 @@
           <button class="tab" type="button" data-tab="dataset">
             <span class="tab-icon" aria-hidden="true">DATA</span>
             <span><strong>Dataset</strong><small>Elabora un JSONL</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="performance">
+            <span class="tab-icon" aria-hidden="true">A/B</span>
+            <span><strong>Performance</strong><small>Confronta i due percorsi</small></span>
           </button>
           <button class="tab" type="button" data-tab="traces">
             <span class="tab-icon" aria-hidden="true">LOG</span>
@@ -132,6 +137,41 @@
             <button class="primary" type="submit">Avvia elaborazione</button>
           </form>
           <div id="result-dataset" class="result" hidden></div>
+        </section>
+
+        <section id="panel-performance" class="panel performance-panel" data-panel="performance" hidden>
+          <div class="panel-heading trace-heading">
+            <div>
+              <p class="section-label">BENCHMARK LOCALE</p>
+              <h2>Standard e decision model a confronto</h2>
+              <p>Lo stesso referto viene elaborato in entrambi i modi. L’ordine si alterna per ridurre l’effetto del riscaldamento del modello.</p>
+            </div>
+            <button id="refresh-benchmarks" class="secondary" type="button">Aggiorna</button>
+          </div>
+          <form id="benchmark-form" class="benchmark-form">
+            <div class="benchmark-inputs">
+              <label>
+                <span class="field-label">Testo del referto</span>
+                <textarea name="text" rows="7" placeholder="Incolla un referto da usare in entrambe le prove…"></textarea>
+              </label>
+              <label class="benchmark-file">
+                <span class="field-label">Oppure usa un PDF testuale</span>
+                <input type="file" name="pdf" accept="application/pdf,.pdf">
+              </label>
+            </div>
+            <div class="benchmark-controls">
+              <label for="benchmark-repeats"><span>Ripetizioni per modalità</span><small>2 è un buon compromesso tra stabilità e tempo.</small></label>
+              <input id="benchmark-repeats" name="repeats" type="number" min="1" max="5" value="2" required>
+              <button class="primary" type="submit">Avvia confronto A/B</button>
+            </div>
+          </form>
+          <div class="benchmark-note">I risultati contengono solo metriche e l’impronta del testo, non il contenuto del referto né le risposte. “Controlli OK” indica conformità ai vincoli automatici, non accuratezza clinica certificata.</div>
+          <div id="benchmark-status" class="benchmark-status" hidden></div>
+          <div id="benchmark-dashboard" class="benchmark-dashboard" hidden aria-live="polite"></div>
+          <div class="benchmark-history-block">
+            <h3>Confronti salvati</h3>
+            <div id="benchmark-history" class="benchmark-history"><p class="empty-state">Nessun confronto caricato.</p></div>
+          </div>
         </section>
 
         <section id="panel-traces" class="panel traces-panel" data-panel="traces" hidden>

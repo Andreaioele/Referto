@@ -5,6 +5,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+.playwright-cli/
 
 # Configurazione locale e segreti
 .env
@@ -15,6 +16,8 @@ __pycache__/
 traces/
 risultati/
 uploads/
+benchmarks/
+graphify-out/
 *_spiegato.txt
 
 # Modelli locali (non devono finire nel repository)

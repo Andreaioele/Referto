@@ -25,6 +25,9 @@ chiaramente attribuite alla fonte.
 - Interfaccia per PDF, immagini, testo e dataset.
 - Trascrizione di fotografie e scansioni con il modello multimodale.
 - Controllo automatico di fedeltà e sicurezza della risposta.
+- Routing locale con Laya: le bozze semplici e già conformi possono evitare una
+  seconda generazione, mentre i casi incerti mantengono l’audit completo.
+- Benchmark A/B persistenti e dashboard per confrontare tempi, chiamate e token.
 - Risposte in prosa, senza Markdown o elenchi generati dal modello.
 - Cronologia persistente con data, ora, durata, prompt, risposte e passaggi.
 - Trace salvate anche per le esecuzioni fallite.
@@ -40,6 +43,12 @@ Il modello predefinito configurato nel progetto è:
 
 ```text
 medgemma:4b-it-q4_K_M
+```
+
+Il decision model predefinito è:
+
+```text
+laya:322m-multilingual-mlx-fp16
 ```
 
 ## 1. Installare Ollama
@@ -124,7 +133,26 @@ Documentazione ufficiale:
 - [Guida rapida di Ollama](https://docs.ollama.com/quickstart)
 - [MedGemma su Hugging Face](https://huggingface.co/google/medgemma-4b-it)
 
-## 3. Installare Referto
+## 3. Installare il decision model Laya
+
+Questa funzionalità richiede Ollama 0.40.0 o successivo. Verifica la versione e
+scarica il modello multilingue:
+
+```bash
+ollama --version
+ollama pull laya:322m-multilingual-mlx-fp16
+ollama show laya:322m-multilingual-mlx-fp16
+```
+
+Laya non scrive la spiegazione: assegna probabilità a percorsi tipizzati tramite
+l’endpoint locale `/v1/systemone`. Referto gli consente soltanto di evitare
+l’audit generativo quando la bozza ha già superato i controlli deterministici e
+la decisione supera soglie conservative. In caso di errore, incertezza o testo
+lungo viene sempre mantenuto il percorso completo con MedGemma.
+
+Documentazione: [Laya su Ollama](https://ollama.com/library/laya:322m-multilingual-mlx-fp16).
+
+## 4. Installare Referto
 
 Clona il repository:
 
@@ -148,7 +176,7 @@ Su Windows PowerShell, l’attivazione dell’ambiente è:
 .venv\Scripts\Activate.ps1
 ```
 
-## 4. Avviare l’app
+## 5. Avviare l’app
 
 Assicurati che Ollama sia in esecuzione, quindi:
 
@@ -170,6 +198,7 @@ L’app ascolta soltanto sull’interfaccia locale e non viene pubblicata in ret
 ```bash
 python3 web_app.py \
   --model nome-del-modello-in-ollama \
+  --decision-model laya:322m-multilingual-mlx-fp16 \
   --ollama-url http://127.0.0.1:11434 \
   --port 8080
 ```
@@ -177,15 +206,38 @@ python3 web_app.py \
 Il valore passato a `--model` deve corrispondere esattamente a uno dei nomi
 mostrati da `ollama list`.
 
+Per disattivare il routing e forzare sempre l’audit MedGemma:
+
+```bash
+python3 web_app.py --senza-decision-model
+```
+
 ## Utilizzo
 
-L’interfaccia contiene cinque sezioni:
+L’interfaccia contiene sei sezioni:
 
 1. **Documento PDF** — estrae il testo o legge visivamente le scansioni.
 2. **Immagine** — trascrive una fotografia o scansione del referto e la spiega.
 3. **Testo** — analizza un referto incollato manualmente.
 4. **Dataset** — elabora più referti da un file JSONL.
-5. **Cronologia** — mostra le trace delle esecuzioni con date, orari e passaggi.
+5. **Performance** — esegue un confronto accoppiato con e senza decision model.
+6. **Cronologia** — mostra le trace delle esecuzioni con date, orari e passaggi.
+
+### Confrontare le performance
+
+Apri **Performance**, incolla un referto oppure carica un PDF testuale e scegli
+il numero di ripetizioni. Per ogni ripetizione l’app esegue entrambe le modalità
+sullo stesso input, alternandone l’ordine. La dashboard mostra:
+
+- durata end-to-end mediana;
+- chiamate a MedGemma e audit evitati;
+- token generati;
+- risultato di ogni singola prova.
+
+Una singola prova è indicativa: per un confronto più stabile usa almeno 3–5
+ripetizioni e referti rappresentativi. Le probabilità di Laya e il campo
+`confidence` non sono una misura di accuratezza clinica; le soglie vanno validate
+su un insieme di referti separato prima di usare l’ottimizzazione in produzione.
 
 Le immagini devono contenere un documento scritto. L’app non interpreta
 direttamente radiografie, TAC, risonanze, ecografie o altre immagini cliniche.
@@ -195,6 +247,9 @@ direttamente radiografie, TAC, risonanze, ecografie o altre immagini cliniche.
 Ogni esecuzione viene registrata nella cartella locale `traces/`. Le trace
 possono contenere il testo integrale del referto, prompt e risposte del modello.
 I risultati dei dataset vengono salvati in `risultati/`.
+Le sole metriche dei confronti vengono salvate in `benchmarks/`: il testo del
+referto e le risposte non vengono inclusi, ma viene conservata un’impronta SHA-256
+per identificare input uguali.
 
 Queste cartelle sono escluse da Git tramite `.gitignore`. Non aggiungerle
 manualmente al repository perché potrebbero contenere dati sanitari personali.
@@ -216,8 +271,11 @@ Per scegliere il file di uscita o il modello:
 ```bash
 python3 spiega_referto.py referto.pdf \
   --output spiegazione.txt \
-  --model medgemma:4b-it-q4_K_M
+  --model medgemma:4b-it-q4_K_M \
+  --decision-model laya:322m-multilingual-mlx-fp16
 ```
+
+Usa `--senza-decision-model` per eseguire il percorso standard completo.
 
 ## Test
 
@@ -232,6 +290,9 @@ python3 -m unittest -v test_app.py
 ```text
 web_app.py          server Flask e API web
 spiega_referto.py   estrazione, prompt, controlli e interazione con Ollama
+decision_model.py   routing tipizzato e fallback conservativo con Laya
+benchmarking.py     misurazione A/B e archivio locale delle metriche
+performance_metrics.py raccolta delle metriche per chiamata
 trace_store.py      archivio persistente delle trace
 templates/          pagina HTML
 static/             CSS e JavaScript

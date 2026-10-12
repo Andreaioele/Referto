@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import decision_model
 import web_app
 from spiega_referto import (
     dataset_record_to_text,
@@ -110,13 +111,55 @@ Si consiglia di assumere enzimi digestivi."""
         self.assertEqual(len(extract_document_recommendations(report)), 2)
 
 
+class DecisionModelTests(unittest.TestCase):
+    def test_fast_route_can_skip_audit(self):
+        payload = {
+            "answers": {
+                "route": {
+                    "choice": "fast",
+                    "probabilities": {"fast": 0.94, "standard": 0.04, "guarded": 0.02},
+                    "confidence": 0.8,
+                },
+                "release": {
+                    "choice": "safe_to_publish",
+                    "probabilities": {"needs_review": 0.03, "safe_to_publish": 0.97},
+                },
+            },
+            "usage": {"input_tokens": 100, "output_tokens": 0},
+        }
+
+        class FakeResponse:
+            def __enter__(self):
+                return io.BytesIO(json.dumps(payload).encode())
+
+            def __exit__(self, *_args):
+                return False
+
+        with patch("decision_model.urllib.request.urlopen", return_value=FakeResponse()):
+            result = decision_model.decide_audit(
+                "Referto sufficientemente lungo.", "SINTESI\nNessun reperto rilevante.", "http://localhost"
+            )
+        self.assertTrue(result.should_skip_audit)
+        self.assertEqual(result.route, "fast")
+
+    def test_failure_falls_back_to_full_audit(self):
+        with patch("decision_model.urllib.request.urlopen", side_effect=TimeoutError("timeout")):
+            result = decision_model.decide_audit("referto", "bozza", "http://localhost")
+        self.assertFalse(result.should_skip_audit)
+        self.assertEqual(result.route, "standard")
+        self.assertIn("TimeoutError", result.fallback_reason)
+
+
 class WebTests(unittest.TestCase):
     def setUp(self):
         self.trace_directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.trace_directory.cleanup)
+        self.benchmark_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.benchmark_directory.cleanup)
         web_app.app.config.update(
             TESTING=True,
             TRACE_DIR=Path(self.trace_directory.name),
+            BENCHMARK_DIR=Path(self.benchmark_directory.name),
         )
         self.client = web_app.app.test_client()
 
@@ -126,6 +169,7 @@ class WebTests(unittest.TestCase):
         self.assertIn(b"<title>Referto</title>", response.data)
         self.assertNotIn(b"Referto Chiaro", response.data)
         self.assertIn("Cronologia".encode(), response.data)
+        self.assertIn("Performance".encode(), response.data)
 
     @patch("web_app._explain_text", return_value="SPIEGAZIONE TEST")
     def test_text_endpoint(self, _mock):
@@ -167,6 +211,30 @@ class WebTests(unittest.TestCase):
                 data = response.get_json()
                 self.assertEqual(data["processed"], 1)
                 self.assertEqual(data["successes"], 1)
+
+    @patch("web_app.run_paired_benchmark")
+    def test_benchmark_endpoint(self, run_mock):
+        run_mock.return_value = {
+            "id": "benchmark-test",
+            "aggregates": {"baseline": {}, "decision": {}},
+            "comparison": {"speedup_percent": 25.0},
+        }
+        response = self.client.post(
+            "/api/benchmark",
+            data={
+                "text": "Questo e un referto abbastanza lungo per eseguire un confronto automatico.",
+                "repeats": "2",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.get_json()
+        self.assertEqual(response_data["benchmark"]["id"], "benchmark-test")
+        self.assertEqual(run_mock.call_args.kwargs["repeats"], 2)
+        trace = self.client.get(
+            f"/api/traces/{response_data['trace_id']}"
+        ).get_json()["trace"]
+        self.assertEqual(trace["status"], "ok")
+        self.assertEqual(trace["source_type"], "benchmark")
 
 
 if __name__ == "__main__":

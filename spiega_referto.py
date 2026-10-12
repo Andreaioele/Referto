@@ -11,8 +11,11 @@ import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from decision_model import DEFAULT_DECISION_MODEL, decide_audit
+from performance_metrics import record_model_call
 from trace_store import TraceRecorder, trace_scope, traced_step
 
 try:
@@ -526,6 +529,7 @@ def ollama_chat(
             ],
             "stream": False,
             "options": trace_details["options"],
+            "keep_alive": "30m",
         }
         request = urllib.request.Request(
             f"{base_url.rstrip('/')}/api/chat",
@@ -533,6 +537,7 @@ def ollama_chat(
             headers={"Content-Type": "application/json"},
             method="POST",
         )
+        started = perf_counter()
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 result = json.load(response)
@@ -563,6 +568,21 @@ def ollama_chat(
             )
             if result.get(key) is not None
         }
+        wall_duration_ms = round((perf_counter() - started) * 1000, 2)
+        details["metrics"]["wall_duration_ms"] = wall_duration_ms
+        record_model_call(
+            {
+                "kind": "generative",
+                "model": model,
+                "stage": stage,
+                "endpoint": "/api/chat",
+                "wall_duration_ms": wall_duration_ms,
+                "total_duration": result.get("total_duration"),
+                "load_duration": result.get("load_duration"),
+                "prompt_eval_count": result.get("prompt_eval_count"),
+                "eval_count": result.get("eval_count"),
+            }
+        )
         return content
 
 
@@ -825,6 +845,10 @@ def explain_report(
     model: str,
     timeout: int,
     max_chunk_chars: int,
+    use_decision_model: bool = False,
+    decision_model: str = DEFAULT_DECISION_MODEL,
+    decision_fast_threshold: float = 0.93,
+    decision_audit_threshold: float = 0.40,
 ) -> str:
     with traced_step(
         "Preparazione del testo del referto",
@@ -842,6 +866,33 @@ def explain_report(
             num_predict=1000,
             stage="Generazione della prima spiegazione",
         )
+        if use_decision_model:
+            with traced_step(
+                "Controllo deterministico prima del routing",
+                {"response_before_normalization": draft},
+            ) as routing_details:
+                prepared = normalize_explanation_format(
+                    sanitize_explanation(draft, chunks[0])
+                )
+                issues = validate_explanation(prepared)
+                routing_details["response_after_normalization"] = prepared
+                routing_details["issues"] = issues
+            if not issues:
+                decision = decide_audit(
+                    chunks[0],
+                    prepared,
+                    base_url,
+                    model=decision_model,
+                    timeout=min(timeout, 120),
+                    fast_threshold=decision_fast_threshold,
+                    audit_threshold=decision_audit_threshold,
+                )
+                if decision.should_skip_audit:
+                    with traced_step(
+                        "Audit generativo evitato dal decision model",
+                        decision.as_dict(),
+                    ):
+                        return prepared
         return review_and_validate(
             chunks[0],
             draft,
@@ -923,6 +974,16 @@ def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
         default=9000,
         help="dimensione massima di ogni parte del referto (default: 9000)",
     )
+    parser.add_argument(
+        "--decision-model",
+        default=DEFAULT_DECISION_MODEL,
+        help=f"decision model Ollama (default: {DEFAULT_DECISION_MODEL})",
+    )
+    parser.add_argument(
+        "--senza-decision-model",
+        action="store_true",
+        help="usa sempre la revisione generativa completa",
+    )
     return parser.parse_args(argv)
 
 
@@ -967,6 +1028,8 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
                 args.model,
                 args.timeout,
                 args.max_chars,
+                use_decision_model=not args.senza_decision_model,
+                decision_model=args.decision_model,
             )
         except UserFacingError as exc:
             trace.fail(str(exc))
