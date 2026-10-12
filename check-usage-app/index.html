@@ -3,107 +3,268 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Team Usage</title>
+<title>Pit Wall Usage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #f6f7f9; --card: #fff; --fg: #1a1d23; --muted: #6b7280; --line: #e5e7eb;
-    --accent: #ed1c24; --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --bar: #fde2e3;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0f1115; --card: #181b21; --fg: #e8eaed; --muted: #9aa0a6; --line: #2a2e36; --bar: #3a1d20; }
+    --bg: #0a0b0d; --surface: #14171c; --surface-2: #1b1f26; --line: #2a2f38;
+    --ink: #f2f3f5; --ink-2: #b4bac4; --muted: #7c8592;
+    /* Palette categorica validata (dark, surface #14171c): ordine fisso */
+    --c1: #ff2a1f; --c2: #00a8b5; --c3: #bd8200; --c4: #8b6cf0; --c5: #1fae74;
+    /* Stato: riservati a gauge e badge */
+    --good: #22c55e; --warn: #f5b301; --crit: #ff2a1f;
+    --kerb: repeating-linear-gradient(90deg, #ff2a1f 0 24px, #f2f3f5 24px 48px);
+    --checker: repeating-conic-gradient(#f2f3f5 0 25%, #0a0b0d 0 50%) 0 0 / 16px 16px;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
-  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
-  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-  h1 { font-size: 22px; margin: 0; }
-  h2 { font-size: 16px; margin: 32px 0 12px; }
-  button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer; }
-  button:disabled { opacity: .6; cursor: wait; }
-  .muted { color: var(--muted); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-  .kpi .value { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
-  .progress { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; margin: 8px 0; }
-  .progress > div { height: 100%; background: var(--ok); }
-  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
-  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-  th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
-  th { position: sticky; top: 0; background: var(--card); font-size: 12px; color: var(--muted); font-weight: 600; }
-  th:first-child, td:first-child { text-align: left; }
-  td.txt { text-align: left; }
-  tr:last-child td { border-bottom: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--ink); font: 15px/1.5 "Titillium Web", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 85% -10%, #ff2a1f22, transparent 60%),
+      radial-gradient(900px 400px at -10% 10%, #00a8b51a, transparent 60%),
+      repeating-linear-gradient(45deg, #ffffff04 0 2px, transparent 2px 6px),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  .kerb { height: 6px; background: var(--kerb); }
+  main { max-width: 1280px; margin: 0 auto; padding: 24px 16px 80px; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  /* Header */
+  header { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; margin-bottom: 24px; }
+  .brand { display: flex; gap: 14px; align-items: center; }
+  .flag { width: 48px; height: 48px; border-radius: 6px; background: var(--checker); transform: skewX(-12deg); box-shadow: 0 0 0 2px var(--line); flex: none; }
+  h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); font-weight: 900; font-style: italic; letter-spacing: .02em; text-transform: uppercase; line-height: 1; }
+  h1 em { color: var(--c1); font-style: inherit; }
+  .sub { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+  .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .lights { display: flex; gap: 6px; padding: 6px 8px; background: #000; border-radius: 8px; border: 1px solid var(--line); }
+  .lights i { width: 16px; height: 16px; border-radius: 50%; background: #2a0a09; transition: background .12s, box-shadow .12s; }
+  .lights i.on { background: var(--c1); box-shadow: 0 0 12px var(--c1); }
+  .lights.go i { background: var(--good); box-shadow: 0 0 12px var(--good); }
+  button#btn {
+    font: 900 italic 18px "Titillium Web", sans-serif; text-transform: uppercase; letter-spacing: .08em;
+    color: #fff; background: linear-gradient(180deg, #ff4136, #c81409); border: 0; cursor: pointer;
+    padding: 14px 30px; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    box-shadow: 0 8px 30px #ff2a1f55; transition: transform .1s, filter .2s;
+  }
+  button#btn:hover { filter: brightness(1.15); }
+  button#btn:active { transform: translateY(1px) scale(.98); }
+  button#btn:disabled { filter: grayscale(.6); cursor: wait; }
+  .auto { color: var(--ink-2); font-size: 13px; display: flex; gap: 6px; align-items: center; user-select: none; }
+  .auto input { accent-color: var(--c1); }
+
+  /* Sezioni */
+  h2 {
+    display: flex; align-items: center; gap: 10px; margin: 40px 0 14px;
+    font-size: 15px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: .14em; color: var(--ink);
+  }
+  h2::before { content: ""; width: 26px; height: 12px; background: var(--c1); transform: skewX(-20deg); }
+  h2 small { color: var(--muted); font-weight: 600; letter-spacing: .06em; }
+  .panel {
+    position: relative; background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px; overflow: hidden;
+  }
+  .panel::after { content: ""; position: absolute; inset: 0 0 auto auto; width: 60px; height: 3px; background: var(--c1); }
+  .panel h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-2); font-weight: 700; }
+  .panel .hint { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .grid { display: grid; gap: 14px; }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .g6 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+  .chart { position: relative; height: 280px; }
+  .chart.sm { height: 240px; }
+
+  /* Gauge */
+  .gauge { text-align: center; }
+  .gauge svg { width: 100%; max-width: 260px; display: block; margin: 0 auto; overflow: visible; }
+  .gauge .needle { transition: transform 1.4s cubic-bezier(.2, 1.4, .4, 1); transform-origin: 100px 100px; }
+  .gauge .big { font: 700 28px "JetBrains Mono", monospace; margin-top: -24px; }
+  .gauge .cap { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+
+  /* Fuel */
+  .fuel { height: 26px; border-radius: 6px; background: #000; border: 1px solid var(--line); overflow: hidden; margin: 14px 0 8px; }
+  .fuel > div { height: 100%; width: 0; transition: width 1.4s ease-out; background: repeating-linear-gradient(-45deg, var(--good) 0 10px, #1a9e4b 10px 20px); }
+  .stat { font: 700 34px "JetBrains Mono", monospace; line-height: 1.1; }
+  .stat small { font-size: 14px; color: var(--muted); }
+
+  /* KPI */
+  .kpi { padding: 14px 16px; }
+  .kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; }
+  .kpi .value { font: 700 26px "JetBrains Mono", monospace; margin: 2px 0; }
+  .kpi .foot { color: var(--ink-2); font-size: 12px; }
+  .kpi::after { background: var(--k, var(--c1)); width: 100%; height: 2px; }
+
+  /* Legende */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); margin-bottom: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* Classifica */
+  .podium { display: grid; gap: 8px; }
+  .row-pos { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; background: #0006; border-radius: 10px; border-left: 4px solid var(--c1); }
+  .row-pos .pos { font: 900 italic 24px "Titillium Web"; color: var(--c1); }
+  .row-pos .name { font-weight: 700; }
+  .row-pos .meta { color: var(--muted); font-size: 12px; }
+
+  /* Tabelle */
+  .scroll { overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); max-height: 560px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  td { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  th { position: sticky; top: 0; z-index: 1; background: #0d0f12; font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .08em; }
+  th:first-child, td:first-child, td.txt { text-align: left; }
+  tbody tr:hover td { background: #ff2a1f12; }
   .barcell { position: relative; }
-  .barcell span { position: absolute; inset: 3px auto 3px 0; background: var(--bar); z-index: 0; border-radius: 3px; }
-  .barcell b { position: relative; font-weight: 500; }
-  .err { color: var(--bad); }
-  .tag { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; background: var(--line); }
-  .tag.bad { background: var(--bad); color: #fff; }
-  pre { margin: 0; padding: 16px; overflow: auto; max-height: 600px; font-size: 12px; }
-  details summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
-  #empty { text-align: center; padding: 64px 16px; }
+  .barcell span { position: absolute; inset: 4px auto 4px 0; background: linear-gradient(90deg, #ff2a1f55, #ff2a1f22); border-radius: 0 4px 4px 0; }
+  .barcell b { position: relative; font-weight: 400; }
+  .tag { display: inline-flex; gap: 4px; align-items: center; padding: 1px 8px; border-radius: 99px; font-size: 11px; background: #22c55e22; color: #7ee2a2; font-family: "Titillium Web"; }
+  .tag.bad { background: #ff2a1f33; color: #ff8a84; }
+  .na { color: var(--muted); }
+
+  details.panel { padding: 0; }
+  details summary { cursor: pointer; padding: 14px 18px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: 13px; }
+  pre { margin: 0; padding: 18px; overflow: auto; max-height: 600px; font: 12px/1.5 "JetBrains Mono", monospace; color: var(--ink-2); border-top: 1px solid var(--line); }
+
+  #error { border-color: var(--crit); color: #ff8a84; margin-bottom: 16px; }
+  #empty { text-align: center; padding: 72px 16px; }
+  #empty .flag { width: 72px; height: 72px; margin: 0 auto 18px; }
+  #empty p { color: var(--ink-2); font-size: 18px; margin: 0; }
+
+  .fade-in { animation: fadeUp .6s ease-out both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 640px) {
+    header { grid-template-columns: 1fr; }
+    .controls { align-items: stretch; }
+    .lights { align-self: flex-start; }
+  }
 </style>
 </head>
 <body>
+<div class="kerb"></div>
 <main>
   <header>
-    <div>
-      <h1>AMD Radeon API · Team Usage</h1>
-      <div class="muted" id="stamp">Nessun dato caricato</div>
+    <div class="brand">
+      <div class="flag"></div>
+      <div>
+        <h1>Pit Wall <em>·</em> Team Usage</h1>
+        <div class="sub" id="stamp">AMD Radeon API · telemetria in attesa</div>
+      </div>
     </div>
-    <button id="btn">Check usage</button>
+    <div class="controls">
+      <div class="lights" id="lights"><i></i><i></i><i></i><i></i><i></i></div>
+      <button id="btn">Check usage</button>
+      <label class="auto"><input type="checkbox" id="auto"> Auto-refresh ogni 60 s</label>
+    </div>
   </header>
 
-  <div id="error" class="card err" hidden></div>
-  <div id="empty" class="card muted">Premi <b>Check usage</b> per leggere i consumi aggiornati.</div>
+  <div id="error" class="panel" hidden></div>
+  <div id="empty" class="panel">
+    <div class="flag"></div>
+    <p>Semafori pronti. Premi <b>CHECK USAGE</b> per scaricare la telemetria.</p>
+  </div>
   <div id="out" hidden></div>
 </main>
 
 <script>
 const $ = (s) => document.querySelector(s);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const C = ["--c1", "--c2", "--c3", "--c4", "--c5"].map(css);
 const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const nf = new Intl.NumberFormat("it-IT");
+const charts = [];
+let countdownTimer = null, autoTimer = null, lastData = null;
 
 function fmt(key, v) {
-  if (v === null || v === undefined || v === "") return '<span class="muted">—</span>';
+  if (v === null || v === undefined || v === "") return '<span class="na">—</span>';
   if (typeof v === "boolean") return v ? "sì" : "no";
   if (typeof v === "number") {
     if (/cost|usd/.test(key)) return "$" + v.toFixed(v !== 0 && Math.abs(v) < 0.01 ? 6 : 4);
     if (/rate/.test(key)) return (v * 100).toFixed(1) + "%";
+    if (/epoch/.test(key)) return String(v);
     return nf.format(v);
   }
   return esc(v);
 }
+const usd = (v) => "$" + (v ?? 0).toFixed(Math.abs(v) < 0.01 && v !== 0 ? 6 : 4);
 const label = (k) => k.replace(/_/g, " ");
-const localTime = (s) => {
-  if (!s) return "—";
-  const d = new Date(/Z|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(" ", "T") + "Z");
-  return isNaN(d) ? s : d.toLocaleString("it-IT");
-};
+const toDate = (s) => s ? new Date(/Z|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(" ", "T") + "Z") : null;
+const localTime = (s) => { const d = toDate(s); return !d || isNaN(d) ? (s || "—") : d.toLocaleString("it-IT"); };
+const hhmmss = (d) => d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-function kpi(lbl, val, sub = "") {
-  return `<div class="card kpi"><div class="label">${esc(lbl)}</div><div class="value">${val}</div>${sub ? `<div class="muted">${sub}</div>` : ""}</div>`;
+/* ---------- Chart.js: tema racing ---------- */
+Chart.defaults.color = css("--ink-2");
+Chart.defaults.font.family = "'Titillium Web', system-ui, sans-serif";
+Chart.defaults.borderColor = "#ffffff10";
+Chart.defaults.plugins.legend.display = false;
+Object.assign(Chart.defaults.plugins.tooltip, {
+  backgroundColor: "#000000e6", borderColor: "#ff2a1f", borderWidth: 1, padding: 10,
+  titleFont: { family: "'JetBrains Mono'", weight: "700" }, bodyFont: { family: "'JetBrains Mono'" },
+});
+Chart.defaults.animation.duration = 1200;
+Chart.defaults.animation.easing = "easeOutQuart";
+
+function mkChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  charts.push(new Chart(el, config));
 }
+const legend = (items) => `<div class="legend">${items.map(([c, t]) => `<span><i style="background:${c}"></i>${esc(t)}</span>`).join("")}</div>`;
+const axisY = (cb) => ({ beginAtZero: true, grid: { color: "#ffffff0d" }, border: { display: false }, ticks: { callback: cb } });
+const axisX = { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 16 } };
 
-// Tabella metriche × periodi: una riga per ogni campo numerico presente in almeno un periodo.
+/* ---------- Gauge (tachimetro SVG) ---------- */
+function polar(cx, cy, r, deg) { const a = (deg - 90) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+function arc(r, a0, a1) {
+  const [x0, y0] = polar(100, 100, r, a0), [x1, y1] = polar(100, 100, r, a1);
+  return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)},${y1.toFixed(2)}`;
+}
+// pct 0..100 → angolo -120..120. zones: [[da%, a%, colore]]
+function gauge(id, pct, zones, big, cap) {
+  const A = (p) => -120 + 2.4 * Math.max(0, Math.min(100, p));
+  const ticks = Array.from({ length: 11 }, (_, i) => {
+    const a = A(i * 10), [x0, y0] = polar(100, 100, 66, a), [x1, y1] = polar(100, 100, i % 5 ? 72 : 76, a);
+    return `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#ffffff55" stroke-width="${i % 5 ? 1 : 2}"/>`;
+  }).join("");
+  return `<div class="gauge">
+    <svg viewBox="0 0 200 150" role="img" aria-label="${esc(cap)}: ${esc(big)}">
+      <path d="${arc(84, -120, 120)}" stroke="#000" stroke-width="16" fill="none" stroke-linecap="round"/>
+      ${zones.map(([a, b, c]) => `<path d="${arc(84, A(a), A(b))}" stroke="${c}" stroke-width="10" fill="none" opacity=".9"/>`).join("")}
+      ${ticks}
+      <g class="needle" id="${id}" style="transform: rotate(-120deg)">
+        <line x1="100" y1="100" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <line x1="100" y1="100" x2="100" y2="116" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <circle cx="100" cy="100" r="8" fill="#ff2a1f" stroke="#000" stroke-width="3"/>
+    </svg>
+    <div class="big">${big}</div><div class="cap">${esc(cap)}</div>
+  </div>`;
+}
+const spinNeedle = (id, pct) => requestAnimationFrame(() => requestAnimationFrame(() => {
+  const n = document.getElementById(id);
+  if (n) n.style.transform = `rotate(${-120 + 2.4 * Math.max(0, Math.min(100, pct))}deg)`;
+}));
+
+/* ---------- Tabelle generiche ---------- */
 function periodsTable(d) {
   const periods = ["today", "last_24_hours", "last_30_days", "all_time"].filter((p) => d[p]);
   const keys = [...new Set(periods.flatMap((p) => Object.keys(d[p])))];
-  const rows = keys.map((k) => `<tr><td>${label(k)}</td>${periods.map((p) =>
+  const rows = keys.map((k) => `<tr><td class="txt">${label(k)}</td>${periods.map((p) =>
     `<td>${/_at$/.test(k) ? esc(localTime(d[p][k])) : fmt(k, d[p][k])}</td>`).join("")}</tr>`).join("");
   return `<div class="scroll"><table><thead><tr><th>Metrica</th>${periods.map((p) => `<th>${label(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-
-// Tabella generica da array di oggetti: colonne = unione di tutte le chiavi.
 function arrayTable(arr, barKey) {
-  if (!arr || !arr.length) return '<div class="card muted">Nessun dato</div>';
+  if (!arr || !arr.length) return '<div class="panel na">Nessun dato</div>';
   const cols = [...new Set(arr.flatMap((r) => Object.keys(r)))];
   const max = barKey ? Math.max(...arr.map((r) => r[barKey] || 0)) || 1 : 1;
   const cell = (r, c) => {
     const v = r[c];
     if (/_at$/.test(c)) return `<td class="txt">${esc(localTime(v))}</td>`;
-    if (c === "has_error") return `<td><span class="tag ${v ? "bad" : ""}">${v ? "errore" : "ok"}</span></td>`;
+    if (c === "has_error") return `<td><span class="tag ${v ? "bad" : ""}">${v ? "✕ errore" : "✓ ok"}</span></td>`;
     if (c === barKey) return `<td class="barcell"><span style="width:${(100 * (v || 0) / max).toFixed(1)}%"></span><b>${fmt(c, v)}</b></td>`;
     return `<td class="${typeof v === "number" ? "" : "txt"}">${fmt(c, v)}</td>`;
   };
@@ -111,77 +272,328 @@ function arrayTable(arr, barKey) {
     <tbody>${arr.map((r) => `<tr>${cols.map((c) => cell(r, c)).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
+/* ---------- Render ---------- */
 function render(d) {
-  const used = d.daily_cost_used_usd ?? 0, limit = d.daily_cost_limit_usd ?? 0;
-  const pct = limit ? Math.min(100, (used / limit) * 100) : 0;
-  const color = pct > 85 ? "var(--bad)" : pct > 60 ? "var(--warn)" : "var(--ok)";
-  const resetMs = d.daily_reset_epoch ? d.daily_reset_epoch * 1000 - Date.now() : null;
-  const resetIn = resetMs > 0 ? `${Math.floor(resetMs / 3.6e6)}h ${Math.floor((resetMs % 3.6e6) / 6e4)}m` : "—";
+  charts.splice(0).forEach((c) => c.destroy());
   const t = d.today || {};
+  const used = d.daily_cost_used_usd ?? 0, limit = d.daily_cost_limit_usd ?? 0;
+  const budgetPct = limit ? (used / limit) * 100 : 0;
+  const remaining = d.daily_cost_remaining_usd ?? Math.max(0, limit - used);
+  const fuelPct = limit ? (remaining / limit) * 100 : 0;
 
-  // Campi top-level scalari non già mostrati nei KPI: mostrati tutti per completezza.
+  // Richieste recenti in ordine cronologico
+  const laps = [...(d.recent || [])].map((r) => ({ ...r, _d: toDate(r.created_at) }))
+    .filter((r) => r._d && !isNaN(r._d)).sort((a, b) => a._d - b._d);
+
+  // Picco richieste/minuto osservato nelle recenti
+  const perMin = new Map();
+  laps.forEach((r) => { const k = r._d.toISOString().slice(0, 16); perMin.set(k, (perMin.get(k) || 0) + 1); });
+  const peakRpm = Math.max(0, ...perMin.values());
+  const rpmLimit = d.rpm_limit || 0;
+  const rpmPct = rpmLimit ? (peakRpm / rpmLimit) * 100 : 0;
+
+  const avgTok = t.requests ? t.total_tokens / t.requests : 0;
+  const avgCost = t.requests ? t.cost / t.requests : 0;
+  const errRate = t.requests ? t.errors / t.requests : 0;
   const scalars = Object.entries(d).filter(([, v]) => v === null || typeof v !== "object");
 
+  const status = (p) => p > 85 ? "var(--crit)" : p > 60 ? "var(--warn)" : "var(--good)";
+  const zones = [[0, 60, css("--good")], [60, 85, css("--warn")], [85, 100, css("--crit")]];
+
   $("#out").innerHTML = `
-    <h2>Budget giornaliero</h2>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <b>${fmt("cost", used)} usati su ${fmt("usd", limit)}</b>
-        <span class="muted">${pct.toFixed(2)}% · rimangono ${fmt("usd", d.daily_cost_remaining_usd)}</span>
+    <h2>Cruscotto <small>budget · ritmo · pit stop</small></h2>
+    <div class="grid g4 fade-in">
+      <div class="panel">
+        <h3>Budget giornaliero</h3>
+        ${gauge("n-budget", budgetPct, zones, budgetPct.toFixed(2) + "%", `${usd(used)} su ${usd(limit)}`)}
       </div>
-      <div class="progress"><div style="width:${pct}%;background:${color}"></div></div>
-      <div class="muted">Reset tra ${resetIn} — ${esc(localTime(d.daily_reset_at))} (timezone API: ${esc(d.daily_reset_timezone)})</div>
+      <div class="panel">
+        <h3>Giri al minuto</h3>
+        ${gauge("n-rpm", rpmPct, zones, `${peakRpm}<small style="font-size:14px;color:var(--muted)">/${rpmLimit}</small>`, "picco req/min vs limite RPM")}
+      </div>
+      <div class="panel">
+        <h3>Carburante residuo</h3>
+        <div class="stat mono">${usd(remaining)}</div>
+        <div class="fuel"><div id="fuel" style="background:${fuelPct < 15 ? "repeating-linear-gradient(-45deg,#ff2a1f 0 10px,#b3150c 10px 20px)" : ""}"></div></div>
+        <div class="hint">${fuelPct.toFixed(1)}% del budget giornaliero disponibile</div>
+        <div class="hint">≈ ${avgCost ? nf.format(Math.floor(remaining / avgCost)) : "∞"} richieste al costo medio di oggi</div>
+      </div>
+      <div class="panel">
+        <h3>Pit stop · reset budget</h3>
+        <div class="stat mono" id="countdown">--:--:--</div>
+        <div class="hint" style="margin-top:12px">${esc(localTime(d.daily_reset_at))}</div>
+        <div class="hint">Timezone API: ${esc(d.daily_reset_timezone || "—")}</div>
+      </div>
     </div>
 
-    <h2>Oggi in sintesi</h2>
-    <div class="grid">
-      ${kpi("Richieste", fmt("n", t.requests), `${fmt("n", t.errors)} errori`)}
-      ${kpi("Token totali", fmt("n", t.total_tokens), `${fmt("n", t.prompt_tokens)} in · ${fmt("n", t.completion_tokens)} out`)}
-      ${kpi("Reasoning token", fmt("n", t.reasoning_tokens))}
-      ${kpi("Cache hit", fmt("rate", t.kv_cache_hit_rate), `${fmt("n", t.cached_tokens)} token in cache`)}
-      ${kpi("Costo oggi", fmt("cost", t.cost), `in ${fmt("cost", t.input_cost)} · out ${fmt("cost", t.output_cost)}`)}
-      ${kpi("Limite RPM", fmt("n", d.rpm_limit), "richieste/minuto")}
+    <h2>Gara di oggi</h2>
+    <div class="grid g6 fade-in">
+      ${[
+        ["Richieste", nf.format(t.requests ?? 0), `${nf.format(t.errors ?? 0)} errori · ${(errRate * 100).toFixed(1)}%`, C[0]],
+        ["Token totali", nf.format(t.total_tokens ?? 0), `${nf.format(t.prompt_tokens ?? 0)} in · ${nf.format(t.completion_tokens ?? 0)} out`, C[1]],
+        ["Costo oggi", usd(t.cost ?? 0), `medio ${usd(avgCost)} / req`, C[2]],
+        ["Cache hit", fmt("rate", t.kv_cache_hit_rate ?? 0), `${nf.format(t.cached_tokens ?? 0)} token in cache`, C[3]],
+        ["Reasoning", nf.format(t.reasoning_tokens ?? 0), "token di ragionamento", C[4]],
+        ["Token / req", nf.format(Math.round(avgTok)), `ultima: ${esc(localTime(t.last_request_at))}`, C[0]],
+      ].map(([l, v, f, c]) => `<div class="panel kpi" style="--k:${c}"><div class="label">${l}</div><div class="value">${v}</div><div class="foot">${f}</div></div>`).join("")}
     </div>
 
-    <h2>Account e periodo</h2>
-    <div class="scroll"><table><tbody>
-      ${scalars.map(([k, v]) => `<tr><td>${label(k)}</td><td class="txt">${/_at$/.test(k) ? esc(localTime(v)) + ` <span class="muted">(${esc(v)})</span>` : fmt(k, v)}</td></tr>`).join("")}
+    <h2>Telemetria <small>${laps.length} richieste recenti</small></h2>
+    <div class="grid g2 fade-in">
+      <div class="panel">
+        <h3>Token per richiesta</h3>
+        <p class="hint">Composizione di ogni richiesta, in ordine di tempo</p>
+        ${legend([[C[0], "Prompt non in cache"], [C[1], "Prompt in cache"], [C[2], "Completion"]])}
+        <div class="chart"><canvas id="ch-tokens"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Costo cumulativo</h3>
+        <p class="hint">Quanto budget hanno consumato le richieste recenti</p>
+        <div class="chart"><canvas id="ch-cumcost"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Richieste al minuto</h3>
+        <p class="hint">Attività per minuto, la linea tratteggiata è il limite RPM (${rpmLimit})</p>
+        <div class="chart"><canvas id="ch-rpm"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Costo per richiesta</h3>
+        <p class="hint">Ogni punto è una richiesta: token totali vs costo</p>
+        <div class="chart"><canvas id="ch-scatter"></canvas></div>
+      </div>
+    </div>
+
+    <h2>Strategia <small>dove vanno token e soldi</small></h2>
+    <div class="grid g3 fade-in">
+      <div class="panel">
+        <h3>Mix token di oggi</h3>
+        ${legend([[C[0], "Prompt non in cache"], [C[1], "Prompt in cache"], [C[2], "Completion"], [C[3], "Reasoning"]])}
+        <div class="chart sm"><canvas id="ch-mix"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Ripartizione costo di oggi</h3>
+        ${legend([[C[0], "Input"], [C[1], "Input in cache"], [C[2], "Output"], [C[3], "Cache write"], [C[4], "Per richiesta"]])}
+        <div class="chart sm"><canvas id="ch-cost"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Finish reason</h3>
+        <p class="hint">Come si sono concluse le richieste recenti</p>
+        <div class="chart sm"><canvas id="ch-finish"></canvas></div>
+      </div>
+    </div>
+
+    <h2>Classifica modelli</h2>
+    <div class="panel fade-in">
+      <div class="podium">
+        ${[...(d.by_model || [])].sort((a, b) => (b.cost || 0) - (a.cost || 0)).map((m, i) => `
+          <div class="row-pos" style="border-left-color:${C[i % C.length]}">
+            <div class="pos">P${i + 1}</div>
+            <div><div class="name">${esc(m.model)}</div>
+              <div class="meta">${nf.format(m.requests ?? 0)} richieste · ${nf.format(m.total_tokens ?? 0)} token · cache ${fmt("rate", m.kv_cache_hit_rate ?? 0)} · ${nf.format(m.errors ?? 0)} errori</div></div>
+            <div class="stat mono" style="font-size:20px">${usd(m.cost ?? 0)}</div>
+          </div>`).join("") || '<div class="na">Nessun modello</div>'}
+      </div>
+    </div>
+
+    <h2>Box e periodo</h2>
+    <div class="scroll fade-in"><table><tbody>
+      ${scalars.map(([k, v]) => `<tr><td class="txt">${label(k)}</td><td class="txt">${/_at$/.test(k) ? esc(localTime(v)) + ` <span class="na">(${esc(v)})</span>` : fmt(k, v)}</td></tr>`).join("")}
     </tbody></table></div>
 
     <h2>Confronto per periodo</h2>
     ${periodsTable(d)}
 
-    <h2>Per modello</h2>
+    <h2>Dettaglio per modello</h2>
     ${arrayTable(d.by_model, "cost")}
 
     <h2>Per sorgente</h2>
     ${arrayTable(d.by_source, "requests")}
 
-    <h2>Richieste recenti <span class="muted">(${(d.recent || []).length})</span></h2>
+    <h2>Tempi sul giro <small>tutte le richieste recenti</small></h2>
     ${arrayTable(d.recent, "total_tokens")}
 
     <h2>JSON grezzo</h2>
-    <details class="card" style="padding:0"><summary>Mostra risposta completa</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>
+    <details class="panel"><summary>Mostra risposta completa</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>
   `;
+
+  spinNeedle("n-budget", budgetPct);
+  spinNeedle("n-rpm", rpmPct);
+  requestAnimationFrame(() => { const f = $("#fuel"); if (f) f.style.width = fuelPct + "%"; });
+  startCountdown(d.daily_reset_epoch ? d.daily_reset_epoch * 1000 : toDate(d.daily_reset_at)?.getTime());
+
+  const lapLabels = laps.map((r) => hhmmss(r._d));
+  const fmtTok = (v) => nf.format(v);
+
+  mkChart("ch-tokens", {
+    type: "bar",
+    data: {
+      labels: lapLabels,
+      datasets: [
+        { label: "Prompt non in cache", data: laps.map((r) => Math.max(0, (r.prompt_tokens || 0) - (r.cached_tokens || 0))), backgroundColor: C[0] },
+        { label: "Prompt in cache", data: laps.map((r) => r.cached_tokens || 0), backgroundColor: C[1] },
+        { label: "Completion", data: laps.map((r) => r.completion_tokens || 0), backgroundColor: C[2] },
+      ].map((ds) => ({ ...ds, borderColor: css("--surface"), borderWidth: { top: 1 }, borderRadius: 2, maxBarThickness: 22 })),
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: { x: { ...axisX, stacked: true }, y: { ...axisY(fmtTok), stacked: true } },
+      plugins: { tooltip: { callbacks: { footer: (items) => "Totale: " + nf.format(items.reduce((s, i) => s + i.parsed.y, 0)) } } },
+    },
+  });
+
+  let cum = 0;
+  mkChart("ch-cumcost", {
+    type: "line",
+    data: {
+      labels: lapLabels,
+      datasets: [{
+        label: "Costo cumulativo", data: laps.map((r) => (cum += r.cost || 0)),
+        borderColor: C[0], borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, tension: .25, fill: true,
+        backgroundColor: (ctx) => {
+          const { chart } = ctx, a = chart.chartArea;
+          if (!a) return "transparent";
+          const g = chart.ctx.createLinearGradient(0, a.top, 0, a.bottom);
+          g.addColorStop(0, "#ff2a1f66"); g.addColorStop(1, "#ff2a1f00");
+          return g;
+        },
+      }],
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: { x: axisX, y: axisY((v) => "$" + v.toFixed(4)) },
+      plugins: { tooltip: { callbacks: { label: (i) => " " + usd(i.parsed.y) } } },
+    },
+  });
+
+  // Asse continuo di minuti dal primo all'ultimo, così i buchi si vedono
+  const minutes = [];
+  if (laps.length) {
+    const start = new Date(laps[0]._d), end = laps[laps.length - 1]._d;
+    start.setUTCSeconds(0, 0);
+    for (let m = start.getTime(); m <= end.getTime() && minutes.length < 720; m += 60000) minutes.push(new Date(m));
+  }
+  mkChart("ch-rpm", {
+    data: {
+      labels: minutes.map((m) => m.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })),
+      datasets: [
+        { type: "bar", label: "Richieste", data: minutes.map((m) => perMin.get(m.toISOString().slice(0, 16)) || 0),
+          backgroundColor: minutes.map((m) => (perMin.get(m.toISOString().slice(0, 16)) || 0) / (rpmLimit || 1) > .85 ? css("--crit") : C[1]),
+          borderRadius: 2, maxBarThickness: 18 },
+        { type: "line", label: "Limite RPM", data: minutes.map(() => rpmLimit), borderColor: "#ffffffaa", borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0 },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: { x: axisX, y: { ...axisY((v) => v), suggestedMax: rpmLimit } },
+    },
+  });
+
+  mkChart("ch-scatter", {
+    type: "scatter",
+    data: {
+      datasets: [{
+        label: "Richiesta",
+        data: laps.map((r) => ({ x: r.total_tokens || 0, y: r.cost || 0, r })),
+        backgroundColor: laps.map((r) => r.has_error ? css("--crit") : C[3] + "cc"),
+        borderColor: css("--surface"), borderWidth: 2, pointRadius: 6, pointHoverRadius: 9,
+      }],
+    },
+    options: {
+      maintainAspectRatio: false,
+      scales: {
+        x: { ...axisY(fmtTok), title: { display: true, text: "token totali" } },
+        y: { ...axisY((v) => "$" + v.toFixed(5)), title: { display: true, text: "costo" } },
+      },
+      plugins: { tooltip: { callbacks: {
+        title: (i) => hhmmss(i[0].raw.r._d),
+        label: (i) => [` ${nf.format(i.raw.x)} token · ${usd(i.raw.y)}`, ` ${i.raw.r.finish_reason || "—"} · ${i.raw.r.used_model || ""}`],
+      } } },
+    },
+  });
+
+  const doughnut = (id, labels, data, colors, money) => mkChart(id, {
+    type: "doughnut",
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: css("--surface"), borderWidth: 2, hoverOffset: 8 }] },
+    options: {
+      maintainAspectRatio: false, cutout: "68%",
+      plugins: { tooltip: { callbacks: { label: (i) => {
+        const tot = i.dataset.data.reduce((a, b) => a + b, 0) || 1;
+        return ` ${money ? usd(i.parsed) : nf.format(i.parsed)} · ${(100 * i.parsed / tot).toFixed(1)}%`;
+      } } } },
+    },
+  });
+  doughnut("ch-mix", ["Prompt non in cache", "Prompt in cache", "Completion", "Reasoning"],
+    [Math.max(0, (t.prompt_tokens || 0) - (t.cached_tokens || 0)), t.cached_tokens || 0,
+     Math.max(0, (t.completion_tokens || 0) - (t.reasoning_tokens || 0)), t.reasoning_tokens || 0], C.slice(0, 4));
+  doughnut("ch-cost", ["Input", "Input in cache", "Output", "Cache write", "Per richiesta"],
+    [t.input_cost || 0, t.cached_input_cost || 0, t.output_cost || 0, t.cache_write_input_cost || 0, t.request_cost || 0], C, true);
+
+  const finish = {};
+  laps.forEach((r) => { const k = r.finish_reason || "n/d"; finish[k] = (finish[k] || 0) + 1; });
+  const fk = Object.keys(finish).sort((a, b) => finish[b] - finish[a]);
+  mkChart("ch-finish", {
+    type: "bar",
+    data: { labels: fk, datasets: [{ label: "Richieste", data: fk.map((k) => finish[k]), backgroundColor: C[4], borderRadius: 4, maxBarThickness: 28 }] },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      scales: { x: axisY((v) => v), y: { grid: { display: false } } },
+    },
+  });
 }
 
-$("#btn").addEventListener("click", async () => {
+function startCountdown(target) {
+  clearInterval(countdownTimer);
+  const tick = () => {
+    const el = $("#countdown");
+    if (!el || !target) return;
+    const ms = Math.max(0, target - Date.now());
+    const h = Math.floor(ms / 3.6e6), m = Math.floor(ms % 3.6e6 / 6e4), s = Math.floor(ms % 6e4 / 1000);
+    el.textContent = [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
+  };
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+/* ---------- Semaforo + fetch ---------- */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function startLights() {
+  const L = $("#lights"); L.classList.remove("go");
+  const bulbs = [...L.children]; bulbs.forEach((b) => b.classList.remove("on"));
+  for (const b of bulbs) { b.classList.add("on"); await sleep(140); }
+}
+function lightsOut(ok) {
+  const L = $("#lights");
+  [...L.children].forEach((b) => b.classList.remove("on"));
+  if (ok) { L.classList.add("go"); setTimeout(() => L.classList.remove("go"), 1500); }
+}
+
+async function load() {
   const btn = $("#btn");
-  btn.disabled = true; btn.textContent = "Caricamento…";
+  btn.disabled = true; btn.textContent = "In pista…";
   $("#error").hidden = true;
+  const lights = startLights();
   try {
-    const r = await fetch("/api/usage", { cache: "no-store" });
+    const [r] = await Promise.all([fetch("/api/usage", { cache: "no-store" }), lights]);
     const d = await r.json();
     if (!r.ok) throw new Error(d.error + (d.detail ? ` — ${d.detail}` : ""));
-    render(d);
+    lastData = d;
     $("#empty").hidden = true; $("#out").hidden = false;
-    $("#stamp").textContent = "Aggiornato alle " + new Date().toLocaleTimeString("it-IT");
+    render(d);
+    $("#stamp").textContent = "Telemetria aggiornata alle " + new Date().toLocaleTimeString("it-IT");
+    lightsOut(true);
   } catch (e) {
-    $("#error").textContent = "Errore: " + e.message;
+    lightsOut(false);
+    $("#error").textContent = "🚩 Bandiera rossa: " + e.message;
     $("#error").hidden = false;
   } finally {
     btn.disabled = false; btn.textContent = "Check usage";
   }
+}
+
+$("#btn").addEventListener("click", load);
+$("#auto").addEventListener("change", (e) => {
+  clearInterval(autoTimer);
+  if (e.target.checked) { load(); autoTimer = setInterval(load, 60000); }
 });
 </script>
 </body>

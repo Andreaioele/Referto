@@ -44,9 +44,16 @@ Il server legge `.env` dalla sua cartella. Su macOS con il Python di python.org,
 | `PORT` | `8080` (solo senza Docker; con Docker cambia la porta in `docker-compose.yml`) |
 | `AMD_USAGE_URL` | `https://developer.amd.com.cn/radeon/api/v1/usage?include_recent=true` |
 
-## Cosa mostra
+## Cosa mostra (tema "Pit Wall")
 
-Budget giornaliero con barra e countdown al reset · KPI di oggi · tutti i campi account/periodo ·
-confronto metriche oggi / 24h / 30gg / totale · tabelle per modello e per sorgente ·
-tutte le richieste recenti · JSON grezzo in fondo. Le tabelle sono generate dalle chiavi del JSON,
-quindi eventuali nuovi campi dell'API compaiono senza toccare il codice.
+- **Cruscotto**: tachimetro del budget giornaliero, tachimetro del picco richieste/minuto vs limite RPM,
+  serbatoio del budget residuo, countdown live al reset.
+- **Gara di oggi**: KPI di richieste, token, costo, cache hit, reasoning, token per richiesta.
+- **Telemetria**: token per richiesta (stacked), costo cumulativo, richieste al minuto con linea del
+  limite RPM, scatter token vs costo.
+- **Strategia**: mix dei token, ripartizione del costo, finish reason.
+- **Classifica modelli**, campi account/periodo, confronto oggi / 24h / 30gg / totale, tabelle per
+  modello e sorgente, tutte le richieste recenti, JSON grezzo.
+
+Opzione di auto-refresh ogni 60 s. Grafici con Chart.js da CDN (serve internet, che comunque serve
+per l'API). Le tabelle sono generate dalle chiavi del JSON, quindi nuovi campi compaiono da soli.
