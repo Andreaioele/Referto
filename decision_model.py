@@ -114,6 +114,9 @@ def _embed_texts(
     """Esegue l'embedding vettoriale via Ollama /api/embed (con fallback su /api/embeddings)."""
     if not texts:
         return []
+    base_url = base_url.rstrip("/")
+    if base_url.endswith("/v1"):
+        base_url = base_url[:-3].rstrip("/")
     # Prova l'endpoint batch nativo /api/embed
     payload = {
         "model": model,

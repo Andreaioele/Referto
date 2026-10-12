@@ -45,6 +45,7 @@ from spiega_referto import (
     dataset_record_to_text,
     explain_report,
     load_jsonl_reports,
+    normalize_ollama_url,
     validate_explanation,
 )
 from trace_store import TraceRecorder, trace_scope, traced_step
@@ -358,6 +359,7 @@ def run_cluster_agent_task(
     quiet: bool = False,
 ) -> Dict[str, Any]:
     """Funzione principale eseguita su cluster."""
+    base_url = normalize_ollama_url(base_url)
     started_iso = datetime.now().astimezone().isoformat(timespec="milliseconds")
     start_time = perf_counter()
 
@@ -595,7 +597,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--ollama-url",
         type=str,
-        default=os.environ.get("OLLAMA_BASE_URL", os.environ.get("OLLAMA_HOST", DEFAULT_OLLAMA_URL)),
+        default=normalize_ollama_url(os.environ.get("OLLAMA_BASE_URL", os.environ.get("OLLAMA_HOST", DEFAULT_OLLAMA_URL))),
         help=f"URL del server Ollama (default: {DEFAULT_OLLAMA_URL})",
     )
     parser.add_argument(

@@ -36,6 +36,20 @@ except ImportError:  # pragma: no cover - messaggio pensato per l'utente finale
 
 DEFAULT_MODEL = "medgemma:4b-it-q4_K_M"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
+
+
+def normalize_ollama_url(url: Optional[str]) -> str:
+    """Normalizza l'URL di Ollama rimuovendo eventuali suffissi /v1 e assicurando lo schema http://."""
+    if not url:
+        return DEFAULT_OLLAMA_URL
+    u = str(url).strip().rstrip("/")
+    if u.endswith("/v1"):
+        u = u[:-3].rstrip("/")
+    if not (u.startswith("http://") or u.startswith("https://")):
+        u = f"http://{u}"
+    return u or DEFAULT_OLLAMA_URL
+
+
 MIN_EXTRACTED_CHARS = 80
 IMAGE_WITHOUT_REPORT = "IMMAGINE_SENZA_REFERTO_TESTUALE"
 SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
@@ -511,6 +525,7 @@ def ollama_chat(
     image_paths: Optional[Sequence[Path]] = None,
     stage: str = "Chiamata al modello",
 ) -> str:
+    base_url = normalize_ollama_url(base_url)
     trace_details: Dict[str, Any] = {
         "model": model,
         "system_prompt": SYSTEM_PROMPT,
