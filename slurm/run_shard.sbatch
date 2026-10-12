@@ -25,6 +25,9 @@ export OLLAMA_MODELS
 export OLLAMA_NUM_PARALLEL="$WORKERS"
 export OLLAMA_MAX_LOADED_MODELS=1
 export OLLAMA_KEEP_ALIVE=-1
+# I modelli grandi letti dal filesystem di gruppo possono superare i 5 minuti
+# di caricamento predefiniti di Ollama ("timed out waiting for llama-server").
+export OLLAMA_LOAD_TIMEOUT="${OLLAMA_LOAD_TIMEOUT:-30m}"
 OLLAMA_URL="http://$OLLAMA_HOST"
 
 echo "======================================================================"
