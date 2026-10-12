@@ -649,6 +649,19 @@ class ClusterAgentTaskTests(unittest.TestCase):
             self.assertEqual(len(lines), 2)
             self.assertEqual({l["doc_key"] for l in lines}, {"test-doc-1", "test-doc-2"})
 
+            # Verifica file CSV generato
+            csv_file = output_file.with_suffix(".csv")
+            self.assertTrue(csv_file.is_file())
+            import csv
+            with csv_file.open("r", encoding="utf-8") as f:
+                reader = list(csv.DictReader(f))
+                self.assertEqual(len(reader), 2)
+                row = reader[0]
+                # Verifica presenza delle 4 aree richieste: performance, trace, input, output
+                for col in ("duration_ms", "tokens_per_second", "trace_id", "trace_path", "report_text", "explanation"):
+                    self.assertIn(col, row)
+                    self.assertTrue(len(str(row[col])) > 0)
+
             # Esecuzione con resume=True e tutti i 3 referti: deve elaborare solo il terzo!
             with patch("cluster_agent_task.explain_report", side_effect=mock_explain):
                 summary_resume = cluster_agent_task.run_cluster_agent_task(

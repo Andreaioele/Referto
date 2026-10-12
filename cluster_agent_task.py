@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import csv
 import json
 import os
 import platform
@@ -214,22 +215,113 @@ class ProgressTracker:
                 print(f"  └─> Errore: {error_msg}", file=sys.stderr, flush=True)
 
 
+CSV_FIELDNAMES = [
+    # Identificativi & Dataset
+    "index",
+    "doc_key",
+    "dataset",
+    "source_dataset",
+    "language",
+    "medical_specialty",
+    "sample_name",
+    "status",
+    "error",
+    # Performance
+    "duration_ms",
+    "duration_s",
+    "tokens_per_second",
+    "prompt_tokens",
+    "generated_tokens",
+    "medgemma_calls",
+    "decision_calls",
+    "audit_called",
+    "audit_skipped",
+    "decision_route",
+    "decision_score",
+    "validation_issues",
+    # Trace
+    "trace_id",
+    "trace_path",
+    # Input
+    "report_chars",
+    "report_text",
+    # Output
+    "explanation_chars",
+    "explanation",
+]
+
+
+def result_to_csv_row(res: Dict[str, Any]) -> Dict[str, Any]:
+    """Mappa il dizionario dei risultati in un record piatto per il file CSV."""
+    validation_issues = res.get("validation_issues") or []
+    if isinstance(validation_issues, list):
+        validation_str = "; ".join(str(v) for v in validation_issues)
+    else:
+        validation_str = str(validation_issues)
+
+    return {
+        "index": res.get("index", ""),
+        "doc_key": res.get("doc_key", ""),
+        "dataset": res.get("dataset") or "",
+        "source_dataset": res.get("source_dataset") or "",
+        "language": res.get("language") or "",
+        "medical_specialty": res.get("medical_specialty") or "",
+        "sample_name": res.get("sample_name") or "",
+        "status": res.get("status", ""),
+        "error": res.get("error") or "",
+        "duration_ms": res.get("duration_ms", 0),
+        "duration_s": round(float(res.get("duration_ms", 0)) / 1000, 3),
+        "tokens_per_second": res.get("tokens_per_second", 0),
+        "prompt_tokens": res.get("prompt_tokens", 0),
+        "generated_tokens": res.get("generated_tokens", 0),
+        "medgemma_calls": res.get("medgemma_calls", 0),
+        "decision_calls": res.get("decision_calls", 0),
+        "audit_called": res.get("audit_called", False),
+        "audit_skipped": res.get("audit_skipped", False),
+        "decision_route": res.get("decision_route", ""),
+        "decision_score": res.get("decision_score") if res.get("decision_score") is not None else "",
+        "validation_issues": validation_str,
+        "trace_id": res.get("trace_id", ""),
+        "trace_path": res.get("trace_path", ""),
+        "report_chars": res.get("report_chars", len(res.get("report_text", ""))),
+        "report_text": res.get("report_text", ""),
+        "explanation_chars": res.get("explanation_chars", len(res.get("explanation", ""))),
+        "explanation": res.get("explanation", ""),
+    }
+
+
 def load_processed_keys(output_path: Path) -> Set[str]:
-    """Legge i doc_key già elaborati per supportare il resume automatico."""
+    """Legge i doc_key già elaborati per supportare il resume automatico da CSV o JSONL."""
     if not output_path.exists():
         return set()
-    processed = set()
-    with output_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            try:
-                data = json.loads(line)
-                key = str(data.get("doc_key") or data.get("id") or "")
-                if key:
-                    processed.add(key)
-            except Exception:
-                continue
+    processed: Set[str] = set()
+
+    if output_path.suffix.lower() == ".csv":
+        try:
+            with output_path.open("r", encoding="utf-8", errors="replace") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    key = str(row.get("doc_key") or row.get("id") or "").strip()
+                    if key:
+                        processed.add(key)
+        except Exception:
+            pass
+        return processed
+
+    try:
+        with output_path.open("r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    data = json.loads(line)
+                    key = str(data.get("doc_key") or data.get("id") or "").strip()
+                    if key:
+                        processed.add(key)
+                except Exception:
+                    continue
+    except Exception:
+        pass
     return processed
 
 
@@ -333,8 +425,11 @@ def process_single_report(
         "decision_score": round(score, 4) if isinstance(score, float) else score,
         "validation_issues": validation_issues,
         "trace_id": report_trace.trace_id,
-        "explanation": explanation,
+        "trace_path": str(report_trace.path),
+        "report_chars": len(report),
         "report_text": report,
+        "explanation_chars": len(explanation) if explanation else 0,
+        "explanation": explanation,
     }
 
 
@@ -369,6 +464,17 @@ def run_cluster_agent_task(
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     traces_dir.mkdir(parents=True, exist_ok=True)
 
+    # Determinazione percorsi file di output (CSV principale, JSONL secondario)
+    if output_path.suffix.lower() == ".jsonl":
+        jsonl_path = output_path
+        csv_path = output_path.with_suffix(".csv")
+    else:
+        csv_path = output_path if output_path.suffix.lower() == ".csv" else output_path.with_suffix(".csv")
+        jsonl_path = output_path.with_suffix(".jsonl")
+
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+
     # Master Job Trace
     master_trace = TraceRecorder(
         root=traces_dir,
@@ -391,8 +497,8 @@ def run_cluster_agent_task(
     if limit is not None and limit > 0:
         selected_records = selected_records[:limit]
 
-    # Resume: salta già elaborati
-    processed_keys = load_processed_keys(output_path) if resume else set()
+    # Resume: salta già elaborati (legge da CSV se esiste, altrimenti JSONL)
+    processed_keys = load_processed_keys(csv_path if csv_path.exists() else jsonl_path) if resume else set()
     records_to_process = [
         (rec, rep)
         for rec, rep in selected_records
@@ -414,7 +520,8 @@ def run_cluster_agent_task(
             "workers": workers,
             "timeout": timeout,
             "max_chunk_chars": max_chunk_chars,
-            "output_path": str(output_path),
+            "output_csv": str(csv_path),
+            "output_jsonl": str(jsonl_path),
         },
     )
 
@@ -429,16 +536,25 @@ def run_cluster_agent_task(
         print(f" Concorrenza      : {workers} worker thread", file=sys.stderr)
         print(f" Modello MedGemma : {model}", file=sys.stderr)
         print(f" Decision Model   : {decision_model if use_decision_model else 'DISABILITATO'}", file=sys.stderr)
-        print(f" Output JSONL     : {output_path}", file=sys.stderr)
+        print(f" Output CSV       : {csv_path}", file=sys.stderr)
+        print(f" Output JSONL     : {jsonl_path}", file=sys.stderr)
         print("=" * 70, file=sys.stderr)
 
     tracker = ProgressTracker(total=len(records_to_process), quiet=quiet)
     results: List[Dict[str, Any]] = []
     file_lock = threading.Lock()
 
-    # Apertura file di output in append mode
-    mode = "a" if resume and output_path.exists() else "w"
-    with output_path.open(mode, encoding="utf-8") as out_f:
+    # Apertura file di output in append mode se resume
+    csv_mode = "a" if resume and csv_path.exists() and csv_path.stat().st_size > 0 else "w"
+    jsonl_mode = "a" if resume and jsonl_path.exists() and jsonl_path.stat().st_size > 0 else "w"
+
+    with csv_path.open(csv_mode, encoding="utf-8", newline="") as csv_f, \
+         jsonl_path.open(jsonl_mode, encoding="utf-8") as jsonl_f:
+
+        csv_writer = csv.DictWriter(csv_f, fieldnames=CSV_FIELDNAMES, quoting=csv.QUOTE_MINIMAL)
+        if csv_mode == "w":
+            csv_writer.writeheader()
+            csv_f.flush()
 
         def worker_task(index: int, item: Tuple[Dict[str, Any], str]) -> Dict[str, Any]:
             rec, rep = item
@@ -456,10 +572,12 @@ def run_cluster_agent_task(
                 max_chunk_chars=max_chunk_chars,
                 traces_dir=traces_dir,
             )
-            # Scrittura atomica e flush immediato
+            # Scrittura atomica e flush immediato su CSV e JSONL
             with file_lock:
-                out_f.write(json.dumps(result, ensure_ascii=False) + "\n")
-                out_f.flush()
+                csv_writer.writerow(result_to_csv_row(result))
+                csv_f.flush()
+                jsonl_f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                jsonl_f.flush()
 
             tracker.update(
                 doc_key=result["doc_key"],
@@ -537,6 +655,8 @@ def run_cluster_agent_task(
             "audit_executed_count": len(results) - audit_skipped,
             "mean_medgemma_calls": round(statistics.mean(r["medgemma_calls"] for r in results), 2) if results else 0.0,
         },
+        "output_csv": str(csv_path),
+        "output_jsonl": str(jsonl_path),
         "output_file": str(output_path),
         "summary_file": str(summary_path),
         "trace_id": master_trace.trace_id,
@@ -556,7 +676,8 @@ def run_cluster_agent_task(
         print(f" Audit evitati     : {audit_skipped}/{len(results)} ({summary['performance_metrics']['audit_skipped_rate'] * 100:4.1f}%)", file=sys.stderr)
         print(f" Token generati    : {summary['performance_metrics']['total_generated_tokens']:,} ({summary['performance_metrics']['throughput_tokens_per_sec']:4.1f} tok/s)", file=sys.stderr)
         print(f" Master Trace ID   : {master_trace.trace_id}", file=sys.stderr)
-        print(f" Risultati JSONL   : {output_path}", file=sys.stderr)
+        print(f" Risultati CSV     : {csv_path}", file=sys.stderr)
+        print(f" Risultati JSONL   : {jsonl_path}", file=sys.stderr)
         print(f" Summary JSON      : {summary_path}", file=sys.stderr)
         print("=" * 70, file=sys.stderr)
 
@@ -634,7 +755,7 @@ def parse_args() -> argparse.Namespace:
         "--output",
         type=str,
         default=None,
-        help="Percorso del file JSONL di output (default: risultati/job-<timestamp>-<dataset>.jsonl)",
+        help="Percorso del file CSV di output (default: risultati/cluster-job-<timestamp>-<dataset>.csv)",
     )
     parser.add_argument(
         "--output-dir",
@@ -682,14 +803,14 @@ def main() -> int:
         print(f"Errore: {exc}", file=sys.stderr)
         return 2
 
-    # Determinazione nomi file di output
+    # Determinazione nomi file di output (CSV principale)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     stem = dataset_path.stem
     if args.output:
         output_path = Path(args.output).expanduser().resolve()
         summary_path = output_path.with_name(f"{output_path.stem}_summary.json")
     else:
-        output_path = args.output_dir / f"cluster-job-{timestamp}-{stem}.jsonl"
+        output_path = args.output_dir / f"cluster-job-{timestamp}-{stem}.csv"
         summary_path = args.output_dir / f"cluster-job-{timestamp}-{stem}_summary.json"
 
     try:
