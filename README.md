@@ -133,24 +133,39 @@ Documentazione ufficiale:
 - [Guida rapida di Ollama](https://docs.ollama.com/quickstart)
 - [MedGemma su Hugging Face](https://huggingface.co/google/medgemma-4b-it)
 
-## 3. Installare il decision model Laya
+## 3. Installare il decision model (Laya o BGE-M3)
 
-Questa funzionalità richiede Ollama 0.40.0 o successivo. Verifica la versione e
-scarica il modello multilingue:
+Referto supporta due motori di decision model per ridurre la latenza evitando la seconda generazione di revisione (audit MedGemma) quando la bozza iniziale è già fedele e conforme:
+
+### Opzione A: Routing con Laya (classificazione tipizzata)
+
+Richiede Ollama 0.40.0 o successivo con l'endpoint `/v1/systemone`:
 
 ```bash
-ollama --version
 ollama pull laya:322m-multilingual-mlx-fp16
-ollama show laya:322m-multilingual-mlx-fp16
 ```
 
-Laya non scrive la spiegazione: assegna probabilità a percorsi tipizzati tramite
-l’endpoint locale `/v1/systemone`. Referto gli consente soltanto di evitare
-l’audit generativo quando la bozza ha già superato i controlli deterministici e
-la decisione supera soglie conservative. In caso di errore, incertezza o testo
-lungo viene sempre mantenuto il percorso completo con MedGemma.
+Laya valuta la bozza e attribuisce probabilità ai percorsi (`fast` vs `standard`/`guarded`). Lo stato viene mantenuto compatto entro i 944 token per prevenire overflow.
 
-Documentazione: [Laya su Ollama](https://ollama.com/library/laya:322m-multilingual-mlx-fp16).
+### Opzione B: Grounding semantico con BGE-M3 (verifica vettoriale)
+
+Utilizza l'endpoint batch di embedding `/api/embed` con il modello multilingue stato dell'arte BGE-M3:
+
+```bash
+ollama pull bge-m3:latest
+```
+
+BGE-M3 calcola matematicamente l'ancoraggio semantico di ogni affermazione clinica della bozza rispetto alle frasi del referto. Se tutte le asserzioni superano la soglia di fedeltà, l'audit viene saltato in ~25 ms con zero rischi di allucinazione non supportata.
+
+Per avviare l'app con uno dei due modelli:
+
+```bash
+# Con Laya
+python3 web_app.py --decision-model laya:322m-multilingual-mlx-fp16
+
+# Con BGE-M3 (grounding semantico)
+python3 web_app.py --decision-model bge-m3:latest
+```
 
 ## 4. Installare Referto
 
@@ -225,17 +240,24 @@ L’interfaccia contiene sei sezioni:
 
 ### Confrontare le performance
 
-Apri **Performance**, incolla un referto oppure carica un PDF testuale e scegli
-il numero di ripetizioni. Per ogni ripetizione l’app esegue entrambe le modalità
-sullo stesso input, alternandone l’ordine. La dashboard mostra:
+Apri **Performance** e scegli se confrontare un singolo referto oppure un intero
+dataset JSONL. Nel primo caso puoi incollare il testo o caricare un PDF. Nel
+secondo caso seleziona il file JSONL: l’app conta localmente le righe, mostra il
+numero totale di elaborazioni e usa tutti i referti del file.
+
+Per ogni ripetizione l’app esegue entrambe le modalità sullo stesso input,
+alternandone l’ordine. Il test del dataset viene eseguito in background e la UI
+mostra l’avanzamento senza bloccarsi. La dashboard mostra:
 
 - durata end-to-end mediana;
 - chiamate a MedGemma e audit evitati;
 - token generati;
-- risultato di ogni singola prova.
+- risultato di ogni singola prova oppure, per un dataset, il confronto di ogni
+  referto con il riepilogo complessivo.
 
 Una singola prova è indicativa: per un confronto più stabile usa almeno 3–5
-ripetizioni e referti rappresentativi. Le probabilità di Laya e il campo
+ripetizioni su un singolo referto. Su un dataset completo conviene iniziare con
+1 ripetizione, perché ogni referto produce due elaborazioni. Le probabilità di Laya e il campo
 `confidence` non sono una misura di accuratezza clinica; le soglie vanno validate
 su un insieme di referti separato prima di usare l’ottimizzazione in produzione.
 

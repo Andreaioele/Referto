@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from decision_model import DEFAULT_DECISION_MODEL
 from performance_metrics import capture_model_calls
@@ -78,6 +78,20 @@ def _run_once(
 
 def _aggregate(rows: List[Dict[str, Any]], mode: str) -> Dict[str, Any]:
     selected = [row for row in rows if row["mode"] == mode]
+    if not selected:
+        return {
+            "runs": 0,
+            "median_duration_ms": 0.0,
+            "mean_duration_ms": 0.0,
+            "min_duration_ms": 0.0,
+            "max_duration_ms": 0.0,
+            "success_rate": 0.0,
+            "mean_medgemma_calls": 0.0,
+            "mean_prompt_tokens": 0.0,
+            "mean_generated_tokens": 0.0,
+            "audit_rate": 0.0,
+            "audit_skip_rate": 0.0,
+        }
     durations = [row["duration_ms"] for row in selected]
     return {
         "runs": len(selected),
@@ -94,6 +108,31 @@ def _aggregate(rows: List[Dict[str, Any]], mode: str) -> Dict[str, Any]:
     }
 
 
+def _comparison(
+    baseline: Dict[str, Any], decision: Dict[str, Any]
+) -> Dict[str, Any]:
+    baseline_ms = baseline.get("median_duration_ms", 0.0)
+    decision_ms = decision.get("median_duration_ms", 0.0)
+    if baseline_ms and decision_ms:
+        speedup = ((baseline_ms - decision_ms) / baseline_ms * 100)
+    else:
+        speedup = 0.0
+    return {
+        "speedup_percent": round(speedup, 2),
+        "median_saved_ms": round(baseline_ms - decision_ms, 2) if baseline_ms and decision_ms else 0.0,
+        "mean_medgemma_calls_saved": round(
+            baseline.get("mean_medgemma_calls", 0.0) - decision.get("mean_medgemma_calls", 0.0), 2
+        ) if baseline.get("runs") and decision.get("runs") else 0.0,
+    }
+
+
+def _save_benchmark(result: Dict[str, Any], output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / f"{result['id']}.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
 def run_paired_benchmark(
     report: str,
     source_name: str,
@@ -104,12 +143,18 @@ def run_paired_benchmark(
     max_chars: int,
     repeats: int = 2,
     decision_model: str = DEFAULT_DECISION_MODEL,
+    test_mode: str = "ab",
 ) -> Dict[str, Any]:
     repeats = max(1, min(int(repeats), 5))
     started_at = _now()
     rows: List[Dict[str, Any]] = []
     for repeat in range(1, repeats + 1):
-        modes = ["baseline", "decision"] if repeat % 2 else ["decision", "baseline"]
+        if test_mode == "decision":
+            modes = ["decision"]
+        elif test_mode == "baseline":
+            modes = ["baseline"]
+        else:
+            modes = ["baseline", "decision"] if repeat % 2 else ["decision", "baseline"]
         for order, mode in enumerate(modes, start=1):
             rows.append(
                 _run_once(
@@ -120,13 +165,10 @@ def run_paired_benchmark(
 
     baseline = _aggregate(rows, "baseline")
     decision = _aggregate(rows, "decision")
-    baseline_ms = baseline["median_duration_ms"]
-    decision_ms = decision["median_duration_ms"]
-    speedup = ((baseline_ms - decision_ms) / baseline_ms * 100) if baseline_ms else 0.0
-    call_reduction = baseline["mean_medgemma_calls"] - decision["mean_medgemma_calls"]
     benchmark_id = f"benchmark-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
     result = {
         "id": benchmark_id,
+        "kind": "single",
         "started_at": started_at,
         "completed_at": _now(),
         "source_name": source_name,
@@ -140,20 +182,153 @@ def run_paired_benchmark(
             "decision_model": decision_model,
             "repeats": repeats,
             "max_chunk_chars": max_chars,
-            "paired_order": "alternato",
+            "paired_order": "alternato" if test_mode == "ab" else test_mode,
+            "test_mode": test_mode,
+            "total_executions": len(rows),
         },
         "aggregates": {"baseline": baseline, "decision": decision},
-        "comparison": {
-            "speedup_percent": round(speedup, 2),
-            "median_saved_ms": round(baseline_ms - decision_ms, 2),
-            "mean_medgemma_calls_saved": round(call_reduction, 2),
-        },
+        "comparison": _comparison(baseline, decision),
         "runs": rows,
     }
-    output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / f"{benchmark_id}.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    _save_benchmark(result, output_dir)
+    return result
+
+
+def run_dataset_benchmark(
+    records: List[Tuple[Dict[str, Any], str]],
+    source_name: str,
+    output_dir: Path,
+    base_url: str,
+    model: str,
+    timeout: int,
+    max_chars: int,
+    repeats: int = 1,
+    decision_model: str = DEFAULT_DECISION_MODEL,
+    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    test_mode: str = "ab",
+    sample_info: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Esegue il benchmark sui referti campionati."""
+    if not records:
+        raise ValueError("Il dataset non contiene referti utilizzabili.")
+    repeats = max(1, min(int(repeats), 3))
+    started_at = _now()
+    all_rows: List[Dict[str, Any]] = []
+    items: List[Dict[str, Any]] = []
+    mode_multiplier = 2 if test_mode == "ab" else 1
+    total_executions = len(records) * repeats * mode_multiplier
+    completed_executions = 0
+
+    for report_index, (record, report) in enumerate(records, start=1):
+        item_rows: List[Dict[str, Any]] = []
+        record_id = hashlib.sha256(
+            str(record.get("doc_key") or report_index).encode("utf-8")
+        ).hexdigest()[:10]
+        for repeat in range(1, repeats + 1):
+            if test_mode == "decision":
+                modes = ["decision"]
+            elif test_mode == "baseline":
+                modes = ["baseline"]
+            else:
+                modes = ["baseline", "decision"] if repeat % 2 else ["decision", "baseline"]
+            for order, mode in enumerate(modes, start=1):
+                row = _run_once(
+                    report, mode, repeat, order, base_url, model,
+                    decision_model, timeout, max_chars,
+                )
+                row["report_index"] = report_index
+                item_rows.append(row)
+                all_rows.append(row)
+                completed_executions += 1
+                if progress_callback:
+                    progress_callback(
+                        {
+                            "completed_executions": completed_executions,
+                            "total_executions": total_executions,
+                            "report_index": report_index,
+                            "records_total": len(records),
+                            "mode": mode,
+                            "repeat": repeat,
+                        }
+                    )
+
+        item_baseline = _aggregate(item_rows, "baseline")
+        item_decision = _aggregate(item_rows, "decision")
+        items.append(
+            {
+                "index": report_index,
+                "record_id": record_id,
+                "report": {
+                    "sha256": hashlib.sha256(report.encode("utf-8")).hexdigest(),
+                    "characters": len(report),
+                    "words": len(report.split()),
+                },
+                "aggregates": {
+                    "baseline": item_baseline,
+                    "decision": item_decision,
+                },
+                "comparison": _comparison(item_baseline, item_decision),
+                "runs": item_rows,
+            }
+        )
+
+    baseline = _aggregate(all_rows, "baseline")
+    decision = _aggregate(all_rows, "decision")
+    comparison = _comparison(baseline, decision)
+    comparison.update(
+        {
+            "reports_faster": sum(
+                item["comparison"]["speedup_percent"] > 0 for item in items
+            ) if test_mode == "ab" else 0,
+            "reports_slower_or_equal": sum(
+                item["comparison"]["speedup_percent"] <= 0 for item in items
+            ) if test_mode == "ab" else 0,
+            "reports_with_audit_skipped": sum(
+                any(run["mode"] == "decision" and run["audit_skipped"] for run in item["runs"])
+                for item in items
+            ),
+            "reports_all_runs_successful": sum(
+                all(run["success"] for run in item["runs"]) for item in items
+            ),
+        }
     )
+    combined_hash = hashlib.sha256()
+    for _, report in records:
+        combined_hash.update(report.encode("utf-8"))
+        combined_hash.update(b"\0")
+
+    benchmark_id = f"benchmark-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+    dataset_meta = {
+        "sha256": combined_hash.hexdigest(),
+        "records": len(records),
+        "characters": sum(len(report) for _, report in records),
+        "words": sum(len(report.split()) for _, report in records),
+    }
+    if sample_info:
+        dataset_meta.update(sample_info)
+
+    result = {
+        "id": benchmark_id,
+        "kind": "dataset",
+        "started_at": started_at,
+        "completed_at": _now(),
+        "source_name": source_name,
+        "dataset": dataset_meta,
+        "configuration": {
+            "model": model,
+            "decision_model": decision_model,
+            "repeats": repeats,
+            "max_chunk_chars": max_chars,
+            "paired_order": "alternato" if test_mode == "ab" else test_mode,
+            "test_mode": test_mode,
+            "total_executions": total_executions,
+        },
+        "aggregates": {"baseline": baseline, "decision": decision},
+        "comparison": comparison,
+        "items": items,
+        "runs": all_rows,
+    }
+    _save_benchmark(result, output_dir)
     return result
 
 
@@ -171,6 +346,11 @@ def list_benchmarks(output_dir: Path, limit: int = 50) -> List[Dict[str, Any]]:
                     "source_name": data["source_name"],
                     "speedup_percent": data["comparison"]["speedup_percent"],
                     "repeats": data["configuration"]["repeats"],
+                    "kind": data.get("kind", "single"),
+                    "records": data.get("dataset", {}).get("records", 1),
+                    "test_mode": data.get("configuration", {}).get("test_mode", "ab"),
+                    "decision_median_ms": data.get("aggregates", {}).get("decision", {}).get("median_duration_ms", 0.0),
+                    "baseline_median_ms": data.get("aggregates", {}).get("baseline", {}).get("median_duration_ms", 0.0),
                 }
             )
         except (OSError, KeyError, json.JSONDecodeError):

@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>Referto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=2">
 </head>
 <body>
   <main class="shell">
@@ -121,21 +121,81 @@
           <div class="panel-heading">
             <p class="section-label">DATASET</p>
             <h2>Elabora più referti</h2>
-            <p>Compatibile con RadGraph-IT e con i comuni campi testuali JSONL.</p>
+            <p>Seleziona un archivio locale pronto all'uso o carica un file JSONL personalizzato.</p>
           </div>
-          <form class="analysis-form" data-endpoint="/api/analyze/dataset" data-result="result-dataset" data-dataset="true">
-            <label class="dropzone compact">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <strong>Scegli il dataset</strong>
-              <span class="file-name">Una riga JSON per ogni referto</span>
-              <input type="file" name="dataset" accept="application/json,.jsonl" required>
-            </label>
+          <form id="dataset-form" class="dataset-form">
+            <div class="predefined-dataset-section">
+              <span class="field-label">Dataset locali pronti all'uso</span>
+              <div class="dataset-cards-grid" id="dataset-cards-grid">
+                <label class="dataset-card active">
+                  <input type="radio" name="dataset_selector" value="mtsamples_radiology.jsonl" checked>
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Radiologia</span>
+                    <strong>MTSamples · Radiologia</strong>
+                    <small>273 referti di ecografie, raggi X, TC e RM</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="dataset_selector" value="radgraph_it_50.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-it">Italiano</span>
+                    <strong>RadGraph-IT</strong>
+                    <small>50 referti radiologici in italiano</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="dataset_selector" value="mtsamples_cardio_pulmonary.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Cardio / Polmoni</span>
+                    <strong>MTSamples · Cardio & Polmoni</strong>
+                    <small>371 referti specialistici</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="dataset_selector" value="mtsamples_all.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Archivio</span>
+                    <strong>MTSamples · Tutto l'archivio</strong>
+                    <small>4.966 referti da 40 branche mediche</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="dataset_selector" value="all_datasets_merged.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-merged">Tutti Uniti</span>
+                    <strong>Tutti i Dataset Uniti</strong>
+                    <small>5.016 referti (RadGraph-IT + MTSamples)</small>
+                  </div>
+                </label>
+                <label class="dataset-card dataset-card-custom">
+                  <input type="radio" name="dataset_selector" value="custom">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-custom">Personalizzato</span>
+                    <strong>Carica un file tuo</strong>
+                    <small>Seleziona un file JSONL dal computer</small>
+                  </div>
+                </label>
+              </div>
+              <input type="hidden" name="dataset_name" id="selected-dataset-name" value="mtsamples_radiology.jsonl">
+            </div>
+
+            <div id="dataset-upload-container" class="dataset-upload-container" hidden>
+              <label class="dropzone compact">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <strong>Scegli il file dal computer</strong>
+                <span class="file-name">Una riga JSON per ogni referto</span>
+                <input id="dataset-file-input" type="file" name="dataset" accept="application/json,.jsonl">
+              </label>
+            </div>
+
             <div class="dataset-options">
-              <label for="dataset-limit"><span>Numero massimo di referti</span><small>Inizia con pochi elementi: ogni referto richiede più passaggi.</small></label>
+              <label for="dataset-limit"><span>Numero massimo di referti</span><small>Inizia con pochi elementi: ogni referto richiede l'elaborazione del modello.</small></label>
               <input id="dataset-limit" name="limit" type="number" min="1" max="200" value="5" required>
             </div>
             <button class="primary" type="submit">Avvia elaborazione</button>
           </form>
+          <div id="dataset-status" class="benchmark-status" hidden></div>
+          <div id="dataset-dashboard" class="benchmark-dashboard" hidden aria-live="polite"></div>
           <div id="result-dataset" class="result" hidden></div>
         </section>
 
@@ -149,7 +209,12 @@
             <button id="refresh-benchmarks" class="secondary" type="button">Aggiorna</button>
           </div>
           <form id="benchmark-form" class="benchmark-form">
-            <div class="benchmark-inputs">
+            <fieldset class="benchmark-source-switch">
+              <legend>Cosa vuoi confrontare?</legend>
+              <label><input type="radio" name="benchmark_source" value="single" checked><span>Un singolo referto</span></label>
+              <label><input type="radio" name="benchmark_source" value="dataset"><span>Intero dataset JSONL</span></label>
+            </fieldset>
+            <div id="benchmark-single-inputs" class="benchmark-inputs">
               <label>
                 <span class="field-label">Testo del referto</span>
                 <textarea name="text" rows="7" placeholder="Incolla un referto da usare in entrambe le prove…"></textarea>
@@ -159,13 +224,98 @@
                 <input type="file" name="pdf" accept="application/pdf,.pdf">
               </label>
             </div>
+            <div id="benchmark-dataset-inputs" class="benchmark-dataset-inputs" hidden>
+              <span class="field-label">Seleziona il dataset per il confronto A/B</span>
+              <div class="dataset-cards-grid" id="benchmark-dataset-cards-grid">
+                <label class="dataset-card active">
+                  <input type="radio" name="benchmark_dataset_selector" value="radgraph_it_50.jsonl" checked>
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-it">Italiano</span>
+                    <strong>RadGraph-IT (50)</strong>
+                    <small>50 referti radiologici</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="benchmark_dataset_selector" value="mtsamples_radiology.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Radiologia</span>
+                    <strong>MTSamples · Radiologia (273)</strong>
+                    <small>273 referti di imaging</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="benchmark_dataset_selector" value="mtsamples_cardio_pulmonary.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Cardio</span>
+                    <strong>MTSamples · Cardio (371)</strong>
+                    <small>371 referti respiratori/cardiaci</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="benchmark_dataset_selector" value="mtsamples_all.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge">Archivio</span>
+                    <strong>MTSamples · Completo (4.966)</strong>
+                    <small>4.966 referti clinici</small>
+                  </div>
+                </label>
+                <label class="dataset-card">
+                  <input type="radio" name="benchmark_dataset_selector" value="all_datasets_merged.jsonl">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-merged">Tutti Uniti</span>
+                    <strong>Tutti i Dataset Uniti (5.016)</strong>
+                    <small>5.016 referti clinici (IT + EN)</small>
+                  </div>
+                </label>
+                <label class="dataset-card dataset-card-custom">
+                  <input type="radio" name="benchmark_dataset_selector" value="custom">
+                  <div class="dataset-card-content">
+                    <span class="dataset-badge badge-custom">File</span>
+                    <strong>File dal computer</strong>
+                    <small>Carica un file JSONL</small>
+                  </div>
+                </label>
+              </div>
+              <input type="hidden" name="dataset_name" id="benchmark-selected-dataset-name" value="radgraph_it_50.jsonl">
+
+              <div id="benchmark-custom-file-container" hidden>
+                <label class="benchmark-dataset-file">
+                  <span class="field-label">Dataset JSONL personalizzato</span>
+                  <strong>Scegli il file con i referti</strong>
+                  <span class="file-name">Ogni riga deve contenere un referto testuale</span>
+                  <input id="benchmark-dataset-file" type="file" name="dataset" accept="application/json,.jsonl">
+                </label>
+              </div>
+              <div class="benchmark-sample-config">
+                <label for="benchmark-sample-size">
+                  <span class="field-label">Campione casuale di referti (N)</span>
+                  <small>Estrae N referti a caso dal dataset per un test rapido e statisticamente rappresentativo.</small>
+                </label>
+                <div class="benchmark-sample-inputs">
+                  <input id="benchmark-sample-size" name="sample_size" type="number" min="1" max="5000" value="5" placeholder="Es. 5">
+                  <div class="benchmark-sample-pills" role="group" aria-label="Campione predefinito">
+                    <button type="button" class="sample-pill active" data-sample="5">5 referti</button>
+                    <button type="button" class="sample-pill" data-sample="10">10 referti</button>
+                    <button type="button" class="sample-pill" data-sample="20">20 referti</button>
+                    <button type="button" class="sample-pill" data-sample="all">Tutto il dataset</button>
+                  </div>
+                </div>
+              </div>
+              <div id="benchmark-estimate" class="benchmark-estimate">Seleziona un dataset per calcolare il numero di elaborazioni.</div>
+            </div>
+            <fieldset class="benchmark-mode-switch">
+              <legend>Modalità del test</legend>
+              <label><input type="radio" name="test_mode" value="decision" checked><span>Con Decision Model BGE</span></label>
+              <label><input type="radio" name="test_mode" value="baseline"><span>Senza Decision Model (Standard)</span></label>
+              <label><input type="radio" name="test_mode" value="ab"><span>Confronto A/B (Entrambi)</span></label>
+            </fieldset>
             <div class="benchmark-controls">
-              <label for="benchmark-repeats"><span>Ripetizioni per modalità</span><small>2 è un buon compromesso tra stabilità e tempo.</small></label>
-              <input id="benchmark-repeats" name="repeats" type="number" min="1" max="5" value="2" required>
-              <button class="primary" type="submit">Avvia confronto A/B</button>
+              <label for="benchmark-repeats"><span>Ripetizioni per modalità</span><small id="benchmark-repeats-help">2 è un buon compromesso tra stabilità e tempo.</small></label>
+              <input id="benchmark-repeats" name="repeats" type="number" min="1" max="5" value="1" required>
+              <button id="benchmark-submit-btn" class="primary" type="submit">Avvia test con Decision Model BGE</button>
             </div>
           </form>
-          <div class="benchmark-note">I risultati contengono solo metriche e l’impronta del testo, non il contenuto del referto né le risposte. “Controlli OK” indica conformità ai vincoli automatici, non accuratezza clinica certificata.</div>
+          <div class="benchmark-note">I risultati del test contengono metriche aggregate e impronte crittografiche, non i referti originali né le risposte cliniche. “Controlli OK” indica conformità ai vincoli automatici, non accuratezza clinica certificata.</div>
           <div id="benchmark-status" class="benchmark-status" hidden></div>
           <div id="benchmark-dashboard" class="benchmark-dashboard" hidden aria-live="polite"></div>
           <div class="benchmark-history-block">
@@ -198,6 +348,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=2" defer></script>
 </body>
 </html>

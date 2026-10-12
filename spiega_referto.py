@@ -14,7 +14,12 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from decision_model import DEFAULT_DECISION_MODEL, decide_audit
+from decision_model import (
+    DEFAULT_AUDIT_THRESHOLD,
+    DEFAULT_DECISION_MODEL,
+    DEFAULT_FAST_THRESHOLD,
+    decide_audit,
+)
 from performance_metrics import record_model_call
 from trace_store import TraceRecorder, trace_scope, traced_step
 
@@ -847,8 +852,8 @@ def explain_report(
     max_chunk_chars: int,
     use_decision_model: bool = False,
     decision_model: str = DEFAULT_DECISION_MODEL,
-    decision_fast_threshold: float = 0.93,
-    decision_audit_threshold: float = 0.40,
+    decision_fast_threshold: float = DEFAULT_FAST_THRESHOLD,
+    decision_audit_threshold: float = DEFAULT_AUDIT_THRESHOLD,
 ) -> str:
     with traced_step(
         "Preparazione del testo del referto",

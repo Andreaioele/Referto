@@ -5,11 +5,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
+import statistics
 import tempfile
 import threading
+import uuid
 from datetime import datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Dict, Optional, Tuple
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
@@ -17,8 +21,14 @@ from PIL import Image, UnidentifiedImageError
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.utils import secure_filename
 
-from benchmarking import list_benchmarks, load_benchmark, run_paired_benchmark
+from benchmarking import (
+    list_benchmarks,
+    load_benchmark,
+    run_dataset_benchmark,
+    run_paired_benchmark,
+)
 from decision_model import DEFAULT_DECISION_MODEL
+from performance_metrics import capture_model_calls
 from trace_store import (
     TraceRecorder,
     list_trace_summaries,
@@ -38,6 +48,7 @@ from spiega_referto import (
     load_jsonl_reports,
     render_pdf_pages,
     transcribe_report_images,
+    validate_explanation,
 )
 
 
@@ -45,8 +56,45 @@ BASE_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = BASE_DIR / "risultati"
 TRACES_DIR = BASE_DIR / "traces"
 BENCHMARKS_DIR = BASE_DIR / "benchmarks"
+DATASETS_DIR = BASE_DIR / "datasets"
+PREDEFINED_DATASETS: Dict[str, Dict[str, Any]] = {
+    "mtsamples_radiology.jsonl": {
+        "title": "MTSamples · Radiologia",
+        "description": "273 referti di ecografie, raggi X, TC e RM",
+        "badge": "Radiologia",
+        "records": 273,
+    },
+    "radgraph_it_50.jsonl": {
+        "title": "RadGraph-IT",
+        "description": "50 referti radiologici in lingua italiana",
+        "badge": "Italiano",
+        "records": 50,
+    },
+    "mtsamples_cardio_pulmonary.jsonl": {
+        "title": "MTSamples · Cardio & Polmonare",
+        "description": "371 referti cardiovascolari e respiratori",
+        "badge": "Cardio / Polmoni",
+        "records": 371,
+    },
+    "mtsamples_all.jsonl": {
+        "title": "MTSamples · Archivio Completo",
+        "description": "4.966 referti da 40 branche cliniche",
+        "badge": "Completo",
+        "records": 4966,
+    },
+    "all_datasets_merged.jsonl": {
+        "title": "Tutti i Dataset Uniti (IT + EN)",
+        "description": "5.016 referti clinici: RadGraph-IT e archivio MTSamples completo",
+        "badge": "Tutti Uniti",
+        "records": 5016,
+    },
+}
 MODEL_LOCK = threading.Lock()
 MAX_DATASET_ITEMS = 200
+BENCHMARK_JOBS: Dict[str, Dict[str, Any]] = {}
+BENCHMARK_JOBS_LOCK = threading.RLock()
+DATASET_JOBS: Dict[str, Dict[str, Any]] = {}
+DATASET_JOBS_LOCK = threading.RLock()
 
 app = Flask(__name__)
 app.config.update(
@@ -138,6 +186,265 @@ def _new_trace(source_type: str, source_name: str) -> TraceRecorder:
         source_name,
         str(app.config["MODEL_NAME"]),
     )
+
+
+def _benchmark_job_view(job: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": job["id"],
+        "status": job["status"],
+        "source_name": job["source_name"],
+        "trace_id": job["trace_id"],
+        "records_total": job["records_total"],
+        "total_executions": job["total_executions"],
+        "completed_executions": job["completed_executions"],
+        "current_report": job.get("current_report", 0),
+        "current_mode": job.get("current_mode"),
+        "test_mode": job.get("test_mode", "ab"),
+        "sample_info": job.get("sample_info"),
+        "started_at": job.get("started_at"),
+        "completed_at": job.get("completed_at"),
+        "error": job.get("error"),
+        "benchmark": job.get("benchmark") if job["status"] == "complete" else None,
+    }
+
+
+def _run_dataset_benchmark_job(
+    job_id: str,
+    records: list,
+    repeats: int,
+    trace: TraceRecorder,
+    test_mode: str = "ab",
+    sample_info: Optional[Dict[str, Any]] = None,
+) -> None:
+    acquired = False
+    try:
+        with BENCHMARK_JOBS_LOCK:
+            job = BENCHMARK_JOBS[job_id]
+            job["status"] = "queued"
+        with trace_scope(trace):
+            with traced_step("Attesa e accesso esclusivo ai modelli locali"):
+                MODEL_LOCK.acquire()
+                acquired = True
+            with BENCHMARK_JOBS_LOCK:
+                job["status"] = "running"
+                job["started_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+
+            def update_progress(progress: Dict[str, Any]) -> None:
+                with BENCHMARK_JOBS_LOCK:
+                    job["completed_executions"] = progress["completed_executions"]
+                    job["current_report"] = progress["report_index"]
+                    job["current_mode"] = progress["mode"]
+
+            base_url, model, timeout, max_chars = _settings()
+            result = run_dataset_benchmark(
+                records=records,
+                source_name=job["source_name"],
+                output_dir=Path(app.config["BENCHMARK_DIR"]),
+                base_url=base_url,
+                model=model,
+                timeout=timeout,
+                max_chars=max_chars,
+                repeats=repeats,
+                decision_model=str(app.config["DECISION_MODEL_NAME"]),
+                progress_callback=update_progress,
+                test_mode=test_mode,
+                sample_info=sample_info,
+            )
+            with BENCHMARK_JOBS_LOCK:
+                job["status"] = "complete"
+                job["completed_executions"] = job["total_executions"]
+                job["completed_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                job["benchmark"] = result
+            trace.set_artifact(
+                "benchmark_metrics",
+                {
+                    "benchmark_id": result["id"],
+                    "dataset": result["dataset"],
+                    "configuration": result["configuration"],
+                    "aggregates": result["aggregates"],
+                    "comparison": result["comparison"],
+                },
+            )
+            trace.complete(result["comparison"])
+    except Exception as exc:
+        message = f"Benchmark dataset non completato: {type(exc).__name__}: {exc}"
+        with BENCHMARK_JOBS_LOCK:
+            job = BENCHMARK_JOBS.get(job_id)
+            if job:
+                job["status"] = "error"
+                job["completed_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                job["error"] = message
+        trace.fail(message)
+    finally:
+        if acquired:
+            _release_model()
+
+
+def _dataset_job_view(job: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": job["id"],
+        "status": job["status"],
+        "source_name": job["source_name"],
+        "trace_id": job["trace_id"],
+        "records_total": job["records_total"],
+        "total_executions": job["total_executions"],
+        "completed_executions": job["completed_executions"],
+        "current_report": job.get("current_report", 0),
+        "started_at": job.get("started_at"),
+        "completed_at": job.get("completed_at"),
+        "error": job.get("error"),
+        "result": job.get("result") if job["status"] == "complete" else None,
+    }
+
+
+def _run_dataset_analysis_job(
+    job_id: str,
+    records: list,
+    limit: int,
+    output_name: str,
+    trace: TraceRecorder,
+) -> None:
+    acquired = False
+    try:
+        with DATASET_JOBS_LOCK:
+            job = DATASET_JOBS[job_id]
+            job["status"] = "queued"
+        with trace_scope(trace):
+            with traced_step("Attesa e accesso esclusivo ai modelli locali"):
+                MODEL_LOCK.acquire()
+                acquired = True
+            with DATASET_JOBS_LOCK:
+                job["status"] = "running"
+                job["started_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+
+            base_url, model, timeout, max_chars = _settings()
+            decision_model_name = str(app.config["DECISION_MODEL_NAME"])
+            output_path = RESULTS_DIR / output_name
+            items: List[Dict[str, Any]] = []
+
+            with output_path.open("w", encoding="utf-8") as destination:
+                for index, (record, report) in enumerate(records[:limit], start=1):
+                    with DATASET_JOBS_LOCK:
+                        job["current_report"] = index
+
+                    started = perf_counter()
+                    error = None
+                    explanation = ""
+                    with capture_model_calls() as calls:
+                        try:
+                            with traced_step(
+                                f"Elaborazione del referto {index}",
+                                {
+                                    "index": index,
+                                    "doc_key": record.get("doc_key"),
+                                    "report_text": report,
+                                },
+                            ) as step_details:
+                                explanation = explain_report(
+                                    report,
+                                    base_url=base_url,
+                                    model=model,
+                                    timeout=timeout,
+                                    max_chunk_chars=max_chars,
+                                    use_decision_model=True,
+                                    decision_model=decision_model_name,
+                                )
+                                step_details["explanation"] = explanation
+                        except Exception as exc:
+                            error = f"{type(exc).__name__}: {exc}"
+
+                    duration_ms = round((perf_counter() - started) * 1000, 2)
+                    generative = [c for c in calls if c.get("kind") == "generative"]
+                    decisions = [c for c in calls if c.get("kind") == "decision"]
+                    issues = validate_explanation(explanation) if explanation else []
+                    status = "ok" if (error is None and not issues) else "error"
+                    audit_skipped = bool(decisions and decisions[-1].get("should_skip_audit"))
+
+                    item = {
+                        "index": index,
+                        "doc_key": record.get("doc_key"),
+                        "status": status,
+                        "error": error or (", ".join(issues) if issues else ""),
+                        "duration_ms": duration_ms,
+                        "medgemma_calls": len(generative),
+                        "decision_calls": len(decisions),
+                        "prompt_tokens": sum(int(c.get("prompt_eval_count") or 0) for c in generative),
+                        "generated_tokens": sum(int(c.get("eval_count") or 0) for c in generative),
+                        "audit_called": any("Revisione" in str(c.get("stage")) for c in generative),
+                        "audit_skipped": audit_skipped,
+                        "decision_route": decisions[-1].get("route") if decisions else ("fast" if audit_skipped else "standard"),
+                        "decision_score": (decisions[-1].get("route_probability") or decisions[-1].get("grounding_score")) if decisions else None,
+                        "explanation": explanation,
+                        "report_text": report,
+                    }
+                    destination.write(json.dumps(item, ensure_ascii=False) + "\n")
+                    destination.flush()
+                    items.append(item)
+
+                    with DATASET_JOBS_LOCK:
+                        job["completed_executions"] = index
+
+            successes = sum(it["status"] == "ok" for it in items)
+            audit_skipped_count = sum(it["audit_skipped"] for it in items)
+            durations = [it["duration_ms"] for it in items]
+            median_ms = round(statistics.median(durations), 2) if durations else 0.0
+            mean_calls = round(statistics.mean(it["medgemma_calls"] for it in items), 2) if items else 0.0
+            total_tokens = sum(it["generated_tokens"] for it in items)
+
+            result_payload = {
+                "processed": len(items),
+                "successes": successes,
+                "errors": len(items) - successes,
+                "output_file": output_name,
+                "download_url": f"/download/{output_name}",
+                "trace_id": trace.trace_id,
+                "aggregates": {
+                    "total_duration_ms": round(sum(durations), 2) if durations else 0.0,
+                    "median_duration_ms": median_ms,
+                    "mean_medgemma_calls": mean_calls,
+                    "audit_skipped_count": audit_skipped_count,
+                    "audit_skipped_percent": round(audit_skipped_count / len(items) * 100, 1) if items else 0.0,
+                    "total_generated_tokens": total_tokens,
+                    "decision_model": decision_model_name,
+                },
+                "items": [
+                    {
+                        "index": it["index"],
+                        "doc_key": it["doc_key"],
+                        "status": it["status"],
+                        "error": it["error"],
+                        "duration_ms": it["duration_ms"],
+                        "medgemma_calls": it["medgemma_calls"],
+                        "audit_skipped": it["audit_skipped"],
+                        "decision_route": it["decision_route"],
+                        "decision_score": it["decision_score"],
+                        "generated_tokens": it["generated_tokens"],
+                        "explanation": it["explanation"],
+                    }
+                    for it in items
+                ],
+            }
+
+            with DATASET_JOBS_LOCK:
+                job["status"] = "complete"
+                job["completed_executions"] = job["total_executions"]
+                job["completed_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                job["result"] = result_payload
+
+            trace.set_artifact("dataset_metrics", result_payload["aggregates"])
+            trace.complete(result_payload["aggregates"])
+    except Exception as exc:
+        message = f"Elaborazione dataset non completata: {type(exc).__name__}: {exc}"
+        with DATASET_JOBS_LOCK:
+            job = DATASET_JOBS.get(job_id)
+            if job:
+                job["status"] = "error"
+                job["completed_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                job["error"] = message
+        trace.fail(message)
+    finally:
+        if acquired:
+            _release_model()
 
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -283,105 +590,124 @@ def analyze_pdf():
                 _release_model()
 
 
+@app.get("/api/datasets/predefined")
+def get_predefined_datasets():
+    datasets = []
+    for filename, meta in PREDEFINED_DATASETS.items():
+        file_path = DATASETS_DIR / filename
+        if file_path.is_file():
+            datasets.append(
+                {
+                    "filename": filename,
+                    "title": meta["title"],
+                    "description": meta["description"],
+                    "badge": meta.get("badge", ""),
+                    "records": meta.get("records", 0),
+                    "bytes": file_path.stat().st_size,
+                }
+            )
+    return jsonify({"ok": True, "datasets": datasets})
+
+
 @app.post("/api/analyze/dataset")
 def analyze_dataset():
+    dataset_name = request.form.get("dataset_name", "").strip()
     upload = request.files.get("dataset")
-    source_name = secure_filename(getattr(upload, "filename", "")) or "Dataset JSONL"
-    trace = _new_trace("dataset", source_name)
-    acquired = False
+
+    if dataset_name and dataset_name != "custom":
+        safe_name = Path(dataset_name).name
+        source_name = PREDEFINED_DATASETS.get(safe_name, {}).get("title", safe_name)
+        trace = _new_trace("dataset", source_name)
+        is_predefined = True
+    else:
+        source_name = secure_filename(getattr(upload, "filename", "")) or "Dataset JSONL"
+        trace = _new_trace("dataset", source_name)
+        is_predefined = False
+
     with trace_scope(trace):
         try:
-            with traced_step("Accesso al modello locale"):
-                acquired = _acquire_model()
+            if is_predefined:
+                safe_name = Path(dataset_name).name
+                dataset_path = DATASETS_DIR / safe_name
+                if not dataset_path.is_file() or dataset_path.suffix.lower() != ".jsonl":
+                    raise UserFacingError(f"Dataset predefinito non trovato: {safe_name}")
             try:
                 requested_limit = int(request.form.get("limit", "5"))
             except ValueError as exc:
                 raise UserFacingError("Il limite del dataset non e' valido.") from exc
             limit = max(1, min(requested_limit, MAX_DATASET_ITEMS))
 
-            with tempfile.TemporaryDirectory(prefix="referto-dataset-") as temp_name:
-                with traced_step("Caricamento del dataset JSONL") as details:
-                    dataset_path = _save_upload(upload, Path(temp_name), {".jsonl"})
+            if is_predefined:
+                with traced_step("Caricamento del dataset locale") as details:
                     records = load_jsonl_reports(dataset_path, limit=limit)
+                    if not records:
+                        raise UserFacingError("Il file non contiene referti testuali utilizzabili.")
                     details["filename"] = dataset_path.name
                     details["bytes"] = dataset_path.stat().st_size
                     details["records_loaded"] = len(records)
                     details["requested_limit"] = limit
+            else:
+                with tempfile.TemporaryDirectory(prefix="referto-dataset-upload-") as temp_name:
+                    with traced_step("Caricamento del dataset JSONL") as details:
+                        saved_path = _save_upload(upload, Path(temp_name), {".jsonl"})
+                        records = load_jsonl_reports(saved_path, limit=limit)
+                        if not records:
+                            raise UserFacingError("Il file non contiene referti testuali utilizzabili.")
+                        details["filename"] = saved_path.name
+                        details["bytes"] = saved_path.stat().st_size
+                        details["records_loaded"] = len(records)
+                        details["requested_limit"] = limit
 
             RESULTS_DIR.mkdir(parents=True, exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
             output_name = f"dataset-spiegato-{timestamp}.jsonl"
-            output_path = RESULTS_DIR / output_name
-            results = []
 
-            with output_path.open("w", encoding="utf-8") as destination:
-                for index, (record, report) in enumerate(records, start=1):
-                    item: Dict[str, Any] = {
-                        "index": index,
-                        "dataset": record.get("dataset"),
-                        "doc_key": record.get("doc_key"),
-                        "report_text": report,
-                    }
-                    try:
-                        with traced_step(
-                            f"Elaborazione del referto {index}",
-                            {
-                                "index": index,
-                                "doc_key": record.get("doc_key"),
-                                "report_text": report,
-                            },
-                        ) as details:
-                            item["explanation"] = _explain_text(report)
-                            details["explanation"] = item["explanation"]
-                        item["status"] = "ok"
-                    except UserFacingError as exc:
-                        item["status"] = "error"
-                        item["error"] = str(exc)
-                    destination.write(json.dumps(item, ensure_ascii=False) + "\n")
-                    results.append(item)
-
-            successes = sum(item["status"] == "ok" for item in results)
-            preview = [
-                {
-                    "index": item["index"],
-                    "doc_key": item.get("doc_key"),
-                    "status": item["status"],
-                    "explanation": item.get("explanation", "")[:700],
-                    "error": item.get("error", ""),
-                }
-                for item in results[:5]
-            ]
-            summary = {
-                "processed": len(results),
-                "successes": successes,
-                "errors": len(results) - successes,
-                "output_file": output_name,
+            job_id = f"job-{uuid.uuid4().hex[:12]}"
+            job = {
+                "id": job_id,
+                "status": "queued",
+                "source_name": source_name,
+                "trace_id": trace.trace_id,
+                "records_total": len(records),
+                "total_executions": len(records),
+                "completed_executions": 0,
+                "current_report": 0,
+                "started_at": None,
+                "completed_at": None,
+                "error": None,
+                "result": None,
             }
-            trace.set_artifact("dataset_results", results)
-            trace.complete(summary)
-            return jsonify(
-                {
-                    "ok": True,
-                    **summary,
-                    "preview": preview,
-                    "download_url": f"/download/{output_name}",
-                    "trace_id": trace.trace_id,
-                }
+            with DATASET_JOBS_LOCK:
+                DATASET_JOBS[job_id] = job
+
+            worker = threading.Thread(
+                target=_run_dataset_analysis_job,
+                args=(job_id, records, limit, output_name, trace),
+                daemon=True,
+                name=f"dataset-{job_id}",
             )
+            worker.start()
+            return jsonify({"ok": True, "job": _dataset_job_view(job)}), 202
         except UserFacingError as exc:
             trace.fail(str(exc))
             return _json_error(str(exc), trace_id=trace.trace_id)
-        except OSError as exc:
-            message = f"Errore durante il salvataggio: {exc}"
+        except Exception as exc:
+            message = f"Impossibile avviare l'elaborazione del dataset: {type(exc).__name__}: {exc}"
             trace.fail(message)
             return _json_error(message, 500, trace.trace_id)
-        except Exception as exc:
-            message = f"Errore interno imprevisto: {type(exc).__name__}: {exc}"
-            trace.fail(message)
-            return _json_error("Errore interno imprevisto.", 500, trace.trace_id)
-        finally:
-            if acquired:
-                _release_model()
+
+
+@app.get("/api/analyze/jobs/<job_id>")
+def dataset_analysis_job(job_id: str):
+    if not re.fullmatch(r"job-[0-9a-f]{12}", job_id):
+        return _json_error("Elaborazione dataset non trovata.", 404)
+    with DATASET_JOBS_LOCK:
+        job = DATASET_JOBS.get(job_id)
+        if job is None:
+            return _json_error("Elaborazione dataset non trovata.", 404)
+        payload = _dataset_job_view(job)
+    return jsonify({"ok": True, "job": payload})
+
 
 
 @app.get("/api/traces")
@@ -427,8 +753,13 @@ def run_benchmark():
                     "Incolla un referto sufficientemente completo oppure carica un PDF testuale."
                 )
 
+            test_mode = request.form.get("test_mode", "ab").strip().lower()
+            if test_mode not in {"ab", "decision", "baseline"}:
+                test_mode = "ab"
+
             trace.set_artifact("input_text", report)
             trace.set_artifact("repeats", repeats)
+            trace.set_artifact("test_mode", test_mode)
             with traced_step("Accesso esclusivo ai modelli locali"):
                 acquired = _acquire_model()
             base_url, model, timeout, max_chars = _settings()
@@ -442,6 +773,7 @@ def run_benchmark():
                 max_chars=max_chars,
                 repeats=repeats,
                 decision_model=str(app.config["DECISION_MODEL_NAME"]),
+                test_mode=test_mode,
             )
             trace.set_artifact("benchmark_metrics", result)
             trace.complete(result["comparison"])
@@ -458,6 +790,145 @@ def run_benchmark():
         finally:
             if acquired:
                 _release_model()
+
+
+@app.post("/api/benchmark/dataset")
+def start_dataset_benchmark():
+    dataset_name = request.form.get("dataset_name", "").strip()
+    upload = request.files.get("dataset")
+    test_mode = request.form.get("test_mode", "ab").strip().lower()
+    if test_mode not in {"ab", "decision", "baseline"}:
+        test_mode = "ab"
+
+    sample_size_raw = request.form.get("sample_size", "").strip()
+    sample_size = None
+    if sample_size_raw:
+        try:
+            sample_size = int(sample_size_raw)
+            if sample_size <= 0:
+                raise UserFacingError("Il numero di referti deve essere maggiore di zero.")
+        except ValueError as exc:
+            raise UserFacingError("Il numero di referti del campione non e' valido.") from exc
+
+    if dataset_name and dataset_name != "custom":
+        safe_name = Path(dataset_name).name
+        base_source_name = PREDEFINED_DATASETS.get(safe_name, {}).get("title", safe_name)
+        is_predefined = True
+    else:
+        base_source_name = secure_filename(getattr(upload, "filename", "")) or "Dataset JSONL"
+        is_predefined = False
+
+    trace = _new_trace("benchmark_dataset", base_source_name)
+    with trace_scope(trace):
+        try:
+            if is_predefined:
+                safe_name = Path(dataset_name).name
+                dataset_path = DATASETS_DIR / safe_name
+                if not dataset_path.is_file() or dataset_path.suffix.lower() != ".jsonl":
+                    raise UserFacingError(f"Dataset predefinito non trovato: {safe_name}")
+            try:
+                repeats = max(1, min(int(request.form.get("repeats", "1")), 3))
+            except ValueError as exc:
+                raise UserFacingError("Il numero di ripetizioni non e' valido.") from exc
+
+            if is_predefined:
+                with traced_step("Caricamento completo del dataset locale") as details:
+                    records = load_jsonl_reports(dataset_path, limit=None)
+                    if not records:
+                        raise UserFacingError("Il file non contiene referti testuali utilizzabili.")
+                    details["filename"] = dataset_path.name
+                    details["bytes"] = dataset_path.stat().st_size
+                    details["records_loaded"] = len(records)
+            else:
+                with tempfile.TemporaryDirectory(prefix="referto-benchmark-dataset-") as temp_name:
+                    with traced_step("Caricamento completo del dataset JSONL") as details:
+                        dataset_path = _save_upload(upload, Path(temp_name), {".jsonl"})
+                        records = load_jsonl_reports(dataset_path, limit=None)
+                        if not records:
+                            raise UserFacingError("Il file non contiene referti testuali utilizzabili.")
+                        details["filename"] = dataset_path.name
+                        details["bytes"] = dataset_path.stat().st_size
+                        details["records_loaded"] = len(records)
+
+            total_available = len(records)
+            if sample_size is not None and 0 < sample_size < total_available:
+                sampled_records = random.sample(records, sample_size)
+                sample_info = {
+                    "sampled": True,
+                    "sample_size": len(sampled_records),
+                    "total_available": total_available,
+                }
+                source_name = f"{base_source_name} ({len(sampled_records)} referti casuali)"
+            else:
+                sampled_records = records
+                sample_info = {
+                    "sampled": False,
+                    "sample_size": total_available,
+                    "total_available": total_available,
+                }
+                source_name = base_source_name
+
+            mode_multiplier = 2 if test_mode == "ab" else 1
+            total_executions = len(sampled_records) * repeats * mode_multiplier
+            job_id = f"job-{uuid.uuid4().hex[:12]}"
+            job = {
+                "id": job_id,
+                "status": "queued",
+                "source_name": source_name,
+                "trace_id": trace.trace_id,
+                "records_total": len(sampled_records),
+                "total_executions": total_executions,
+                "completed_executions": 0,
+                "current_report": 0,
+                "current_mode": None,
+                "test_mode": test_mode,
+                "sample_info": sample_info,
+                "started_at": None,
+                "completed_at": None,
+                "error": None,
+                "benchmark": None,
+            }
+            with BENCHMARK_JOBS_LOCK:
+                BENCHMARK_JOBS[job_id] = job
+            trace.set_artifact(
+                "dataset_summary",
+                {
+                    "filename": source_name,
+                    "records_tested": len(sampled_records),
+                    "total_available": total_available,
+                    "repeats": repeats,
+                    "test_mode": test_mode,
+                    "total_executions": total_executions,
+                    "sample_info": sample_info,
+                },
+            )
+            worker = threading.Thread(
+                target=_run_dataset_benchmark_job,
+                args=(job_id, sampled_records, repeats, trace, test_mode, sample_info),
+                daemon=True,
+                name=f"referto-{job_id}",
+            )
+            worker.start()
+            return jsonify({"ok": True, "job": _benchmark_job_view(job)}), 202
+        except UserFacingError as exc:
+            trace.fail(str(exc))
+            return _json_error(str(exc), trace_id=trace.trace_id)
+        except Exception as exc:
+            message = f"Impossibile avviare il benchmark dataset: {type(exc).__name__}: {exc}"
+            trace.fail(message)
+            return _json_error(message, 500, trace.trace_id)
+
+
+@app.get("/api/benchmark/jobs/<job_id>")
+def dataset_benchmark_job(job_id: str):
+    if not re.fullmatch(r"job-[0-9a-f]{12}", job_id):
+        return _json_error("Test di performance non trovato.", 404)
+    with BENCHMARK_JOBS_LOCK:
+        job = BENCHMARK_JOBS.get(job_id)
+        if job is None:
+            return _json_error("Test di performance non trovato.", 404)
+        payload = _benchmark_job_view(job)
+    return jsonify({"ok": True, "job": payload})
 
 
 @app.get("/api/benchmarks")
