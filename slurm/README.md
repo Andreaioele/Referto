@@ -5,15 +5,25 @@ Esegue `cluster_agent_task.py` su un dataset di referti come job array SLURM
 output in un unico `results.csv`, da analizzare in seguito con il decision model.
 
 Il decision model di routing è **spento** (`--no-decision-model`): ogni referto
-passa per l'audit generativo, quindi l'output misura MedGemma da solo.
+passa per l'audit generativo, quindi l'output misura il modello da solo.
 
 ## Prerequisiti sul cluster
 
 - Ollama installato e modelli già in `OLLAMA_MODELS` (i nodi sono offline: il
   job verifica che `MODEL` sia presente e altrimenti esce con codice 4).
-- Python ≥ 3.10 con `pip install -r requirements.txt`: `spiega_referto.py`
-  importa `pypdf` all'avvio. La preparazione degli shard e il merge usano solo
-  la libreria standard.
+- Ambiente Python gestito con [uv](https://docs.astral.sh/uv/), creato una
+  volta dal login node nella root del repo (`spiega_referto.py` importa `pypdf`
+  all'avvio):
+
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  uv venv --python 3.11 .venv
+  uv pip install --python .venv/bin/python -r requirements.txt
+  ```
+
+  `PYTHON` in `config.sh` punta già a `.venv/bin/python`. L'interprete scaricato
+  da uv sta in `~/.local/share/uv/python`, quindi la home deve essere visibile
+  anche dai nodi di calcolo.
 - Dataset JSONL, un referto per riga, nello stesso formato letto da
   `cluster_agent_task.py`.
 

@@ -25,19 +25,21 @@ MAX_PARALLEL="${MAX_PARALLEL:-2}"
 WORKERS="${WORKERS:-4}"
 
 # --- Modello ------------------------------------------------------------------
-MODEL="${MODEL:-medgemma:4b-it-q4_K_M}"
+MODEL="${MODEL:-gemma4:31b}"
 # Decision model spento: audit generativo sempre eseguito, così l'output misura
-# MedGemma da solo.
+# il modello da solo.
 EXTRA_ARGS="${EXTRA_ARGS:---no-decision-model}"
 REQUEST_TIMEOUT="${REQUEST_TIMEOUT:-300}"
 
 # --- Ollama (ambiente già pronto sul cluster, nodi senza internet) -------------
-OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
-# Cartella dei modelli già scaricati (default di Ollama).
-OLLAMA_MODELS="${OLLAMA_MODELS:-$HOME/.ollama/models}"
+CLUSTER_DIR="${CLUSTER_DIR:-/hpc/groups/users-urs/brnptr}"
+OLLAMA_BIN="${OLLAMA_BIN:-$CLUSTER_DIR/ollama/bin/ollama}"
+# Cartella dei modelli già scaricati dal login node.
+OLLAMA_MODELS="${OLLAMA_MODELS:-$CLUSTER_DIR/ollama-models}"
 
 # --- Python -------------------------------------------------------------------
-PYTHON="${PYTHON:-python3}"
+# Ambiente creato con uv nella root del repo (vedi slurm/README.md).
+PYTHON="${PYTHON:-$REPO_DIR/.venv/bin/python}"
 # Comandi eseguiti sul nodo prima del job (module load, attivazione venv, ...).
 setup_env() {
     :
@@ -50,7 +52,7 @@ QOS="${QOS:-}"
 TIME_LIMIT="${TIME_LIMIT:-04:00:00}"
 CPUS_PER_TASK="${CPUS_PER_TASK:-8}"
 MEM="${MEM:-64G}"
-GRES="${GRES:-gpu:1}"
+GRES="${GRES:-gpu:GH100:1}"
 
 # --- Output -------------------------------------------------------------------
 # Ogni run crea <RUN_ROOT>/<timestamp>/ con shard, CSV, trace e log.
