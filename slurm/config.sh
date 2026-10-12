@@ -55,5 +55,5 @@ MEM="${MEM:-128G}"
 GRES="${GRES:-gpu:GH100:1}"
 
 # --- Output -------------------------------------------------------------------
-# Ogni run crea <RUN_ROOT>/<timestamp>/ con shard, CSV, trace e log.
+# Ogni run crea <RUN_ROOT>/<modello>-<ora>-<minuto>/ con shard, CSV, trace e log.
 RUN_ROOT="${RUN_ROOT:-$REPO_DIR/risultati/slurm-runs}"

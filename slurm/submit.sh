@@ -47,7 +47,15 @@ else
         exit 2
     fi
 
-    RUN_DIR="$RUN_ROOT/$(date +%Y%m%d-%H%M%S)"
+    # Nome leggibile: <modello>-<ora>-<minuto>, es. qwen3.8_27b-22-16.
+    # ":" e "/" del nome del modello diventano "_"; se esiste già si aggiunge -2, -3, ...
+    RUN_NAME="$(echo "$MODEL" | tr ':/' '__')-$(date +%H-%M)"
+    RUN_DIR="$RUN_ROOT/$RUN_NAME"
+    n=2
+    while [ -e "$RUN_DIR" ]; do
+        RUN_DIR="$RUN_ROOT/$RUN_NAME-$n"
+        n=$((n + 1))
+    done
     mkdir -p "$RUN_DIR"/{shards,outputs,traces,logs}
 
     # Snapshot della configurazione: i job leggono questo, non config.sh.
