@@ -536,5 +536,138 @@ class WebTests(unittest.TestCase):
         self.assertEqual(job["records_total"], 50)
 
 
+class ClusterAgentTaskTests(unittest.TestCase):
+    def test_detect_cluster_hardware(self):
+        import cluster_agent_task
+
+        hw = cluster_agent_task.detect_cluster_hardware()
+        self.assertIn("hostname", hw)
+        self.assertIn("cpu_count", hw)
+        self.assertIn("slurm", hw)
+        self.assertIn("gpus", hw)
+        self.assertIn("gpu_detected", hw)
+        self.assertIsInstance(hw["gpus"], list)
+
+    def test_resolve_dataset_path(self):
+        import cluster_agent_task
+
+        # Percorso o nome standard
+        p = cluster_agent_task.resolve_dataset_path("all_datasets_merged.jsonl")
+        self.assertTrue(p.is_file())
+        self.assertEqual(p.name, "all_datasets_merged.jsonl")
+
+        # Senza estensione
+        p2 = cluster_agent_task.resolve_dataset_path("radgraph_it_50")
+        self.assertTrue(p2.is_file())
+        self.assertEqual(p2.name, "radgraph_it_50.jsonl")
+
+        # File inesistente
+        with self.assertRaises(FileNotFoundError):
+            cluster_agent_task.resolve_dataset_path("non_esiste_proprio_xyz.jsonl")
+
+    def test_load_processed_keys(self):
+        import cluster_agent_task
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out_file = Path(temp_dir) / "output.jsonl"
+            self.assertEqual(cluster_agent_task.load_processed_keys(out_file), set())
+
+            out_file.write_text(
+                json.dumps({"doc_key": "k1", "status": "ok"}) + "\n"
+                + json.dumps({"id": "k2", "status": "ok"}) + "\n"
+                + "corrupted json line\n",
+                encoding="utf-8",
+            )
+            keys = cluster_agent_task.load_processed_keys(out_file)
+            self.assertEqual(keys, {"k1", "k2"})
+
+    def test_run_cluster_agent_task_execution_and_resume(self):
+        import cluster_agent_task
+        from performance_metrics import record_model_call
+
+        valid_explanation = (
+            "SINTESI\nNessun versamento pleurico o consolidamento polmonare.\n\n"
+            "SPIEGAZIONE IN PAROLE SEMPLICI\nI campi polmonari sono liberi e non mostrano segni di infiammazione.\n\n"
+            "INCERTEZZE O LIMITI DEL REFERTO\nNessun limite tecnico segnalato nel referto.\n\n"
+            "INDICAZIONI RIPORTATE NEL DOCUMENTO\nNessuna indicazione terapeutica prescritta."
+        )
+
+        def mock_explain(*args, **kwargs):
+            record_model_call({
+                "kind": "decision",
+                "stage": "Decision Model",
+                "route": "fast",
+                "should_skip_audit": True,
+                "route_probability": 0.94,
+            })
+            record_model_call({
+                "kind": "generative",
+                "stage": "Bozza iniziale",
+                "prompt_eval_count": 40,
+                "eval_count": 80,
+            })
+            return valid_explanation
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            dataset_file = temp_path / "mini_dataset.jsonl"
+            output_file = temp_path / "output.jsonl"
+            summary_file = temp_path / "output_summary.json"
+            traces_dir = temp_path / "traces"
+
+            # 3 referti nel dataset di test
+            sample_records = [
+                {"doc_key": f"test-doc-{i}", "text": f"Referto torace numero {i}. Regolare."}
+                for i in range(1, 4)
+            ]
+            dataset_file.write_text(
+                "\n".join(json.dumps(r) for r in sample_records), encoding="utf-8"
+            )
+
+            # Esecuzione con limit=2
+            with patch("cluster_agent_task.explain_report", side_effect=mock_explain):
+                summary = cluster_agent_task.run_cluster_agent_task(
+                    dataset_path=dataset_file,
+                    output_path=output_file,
+                    summary_path=summary_file,
+                    traces_dir=traces_dir,
+                    workers=2,
+                    limit=2,
+                    resume=False,
+                    quiet=True,
+                )
+
+            self.assertEqual(summary["dataset"]["processed_in_this_run"], 2)
+            self.assertEqual(summary["dataset"]["successes"], 2)
+            self.assertEqual(summary["dataset"]["errors"], 0)
+            self.assertEqual(summary["performance_metrics"]["audit_skipped_count"], 2)
+            self.assertTrue(output_file.is_file())
+            self.assertTrue(summary_file.is_file())
+
+            # Verifica righe scritte nel file di output
+            lines = [json.loads(line) for line in output_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+            self.assertEqual(len(lines), 2)
+            self.assertEqual({l["doc_key"] for l in lines}, {"test-doc-1", "test-doc-2"})
+
+            # Esecuzione con resume=True e tutti i 3 referti: deve elaborare solo il terzo!
+            with patch("cluster_agent_task.explain_report", side_effect=mock_explain):
+                summary_resume = cluster_agent_task.run_cluster_agent_task(
+                    dataset_path=dataset_file,
+                    output_path=output_file,
+                    summary_path=summary_file,
+                    traces_dir=traces_dir,
+                    workers=1,
+                    limit=None,
+                    resume=True,
+                    quiet=True,
+                )
+
+            self.assertEqual(summary_resume["dataset"]["processed_in_this_run"], 1)
+            lines_after = [json.loads(line) for line in output_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+            self.assertEqual(len(lines_after), 3)
+            self.assertEqual({l["doc_key"] for l in lines_after}, {"test-doc-1", "test-doc-2", "test-doc-3"})
+
+
 if __name__ == "__main__":
     unittest.main()
+

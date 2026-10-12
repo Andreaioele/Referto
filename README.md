@@ -299,6 +299,38 @@ python3 spiega_referto.py referto.pdf \
 
 Usa `--senza-decision-model` per eseguire il percorso standard completo.
 
+## Esecuzione su Cluster GPU (NVIDIA H100 / SLURM)
+
+Per elaborare in batch dataset clinici su larga scala (es. `all_datasets_merged.jsonl` con oltre 5.000 referti) su nodi di calcolo ad alte prestazioni come **NVIDIA H100 (80GB VRAM)**:
+
+### 1. Esecuzione diretta con Python
+```bash
+python3 cluster_agent_task.py \
+  --dataset all_datasets_merged.jsonl \
+  --workers 4 \
+  --decision-model bge-m3:latest \
+  --resume
+```
+
+Parametri principali:
+- `-d, --dataset`: nome del file o percorso del dataset (`datasets/` o assoluto);
+- `-w, --workers`: numero di worker thread concorrenti (consigliato 4–8 su H100 per saturare la GPU);
+- `-s, --sample`: campionamento casuale di N referti (con `--seed`);
+- `-l, --limit`: limita ai primi L referti;
+- `--resume`: riprende il lavoro saltando i referti già presenti nel file di output (tollerante a interruzioni);
+- `-o, --output`: percorso personalizzato del file `.jsonl` di output (genera in automatico anche il `*_summary.json`).
+
+### 2. Sottomissione SLURM automatica
+È disponibile lo script preconfigurato `submit_h100.sh`:
+```bash
+sbatch submit_h100.sh all_datasets_merged.jsonl 4
+```
+Lo script:
+1. Alloca le risorse richieste (`--gres=gpu:1`, 8 CPU, 64GB RAM);
+2. Rileva l'hardware e avvia Ollama se non già in ascolto;
+3. Esegue `cluster_agent_task.py` con logging in tempo reale e salvataggio atomico dei risultati in `risultati/`;
+4. Registra le trace complete in `traces/` compatibili con la Cronologia web.
+
 ## Test
 
 Con l’ambiente virtuale attivo:
