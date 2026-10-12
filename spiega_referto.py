@@ -548,6 +548,8 @@ def ollama_chat(
                 user_message,
             ],
             "stream": False,
+            # Niente ragionamento (<think>) nei modelli che lo supportano, es. Qwen3.
+            "think": False,
             "options": trace_details["options"],
             "keep_alive": "30m",
         }

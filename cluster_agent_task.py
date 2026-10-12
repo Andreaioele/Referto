@@ -20,6 +20,7 @@ import json
 import os
 import platform
 import random
+import re
 import shutil
 import statistics
 import subprocess
@@ -149,6 +150,32 @@ def resolve_dataset_path(dataset_arg: Optional[str]) -> Path:
             return p.resolve()
 
     raise FileNotFoundError("Nessun dataset .jsonl trovato nella directory datasets/.")
+
+
+def load_reports(path: Path) -> List[Tuple[Dict[str, Any], str]]:
+    """Carica i referti da JSONL oppure da un file di testo.
+
+    Nel file di testo ogni referto è separato da una riga di soli trattini
+    (es. "-----"); senza separatori l'intero file è un unico referto.
+    """
+    if path.suffix.lower() == ".jsonl":
+        return load_jsonl_reports(path, limit=None)
+
+    try:
+        content = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise UserFacingError(f"Non riesco a leggere il file di testo: {exc}") from exc
+    blocks = [b.strip() for b in re.split(r"^\s*-{3,}\s*$", content, flags=re.MULTILINE)]
+    blocks = [b for b in blocks if b]
+    if not blocks:
+        raise UserFacingError("Il file di testo non contiene referti.")
+
+    records: List[Tuple[Dict[str, Any], str]] = []
+    for i, block in enumerate(blocks, start=1):
+        doc_key = path.stem if len(blocks) == 1 else f"{path.stem}-{i}"
+        record = {"doc_key": doc_key, "dataset": "text-file", "text": block}
+        records.append((record, dataset_record_to_text(record)))
+    return records
 
 
 class ProgressTracker:
@@ -486,7 +513,7 @@ def run_cluster_agent_task(
     master_trace.set_artifact("dataset_path", str(dataset_path))
 
     # Caricamento dataset
-    all_records = load_jsonl_reports(dataset_path, limit=None)
+    all_records = load_reports(dataset_path)
     total_in_dataset = len(all_records)
 
     # Campionamento o limite
@@ -693,7 +720,7 @@ def parse_args() -> argparse.Namespace:
         "--dataset",
         type=str,
         default="all_datasets_merged.jsonl",
-        help="Percorso o nome del file JSONL (default: all_datasets_merged.jsonl)",
+        help="Percorso o nome del file JSONL, oppure file di testo con uno o più referti separati da '-----' (default: all_datasets_merged.jsonl)",
     )
     parser.add_argument(
         "-m",
