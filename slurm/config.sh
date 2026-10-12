@@ -19,8 +19,8 @@ SEED="${SEED:-42}"
 # Numero di shard = numero di task dell'array. Più shard piccoli rendono più
 # economico rilanciare quelli falliti e aiutano a stare dentro TIME_LIMIT.
 NUM_SHARDS="${NUM_SHARDS:-8}"
-# Task in esecuzione contemporanea (uno per GPU: 2 H100).
-MAX_PARALLEL="${MAX_PARALLEL:-2}"
+# Task in esecuzione contemporanea: ogni task usa già 2 H100, quindi 1.
+MAX_PARALLEL="${MAX_PARALLEL:-1}"
 # Richieste concorrenti verso Ollama per ogni task (= OLLAMA_NUM_PARALLEL).
 WORKERS="${WORKERS:-4}"
 
@@ -46,13 +46,13 @@ setup_env() {
 }
 
 # --- Risorse SLURM ------------------------------------------------------------
-PARTITION="${PARTITION:-}"
+PARTITION="${PARTITION:-gpu_H100}"
 ACCOUNT="${ACCOUNT:-}"
 QOS="${QOS:-}"
 TIME_LIMIT="${TIME_LIMIT:-04:00:00}"
-CPUS_PER_TASK="${CPUS_PER_TASK:-8}"
-MEM="${MEM:-64G}"
-GRES="${GRES:-gpu:GH100:1}"
+CPUS_PER_TASK="${CPUS_PER_TASK:-24}"
+MEM="${MEM:-256G}"
+GRES="${GRES:-gpu:GH100:2}"
 
 # --- Output -------------------------------------------------------------------
 # Ogni run crea <RUN_ROOT>/<timestamp>/ con shard, CSV, trace e log.
