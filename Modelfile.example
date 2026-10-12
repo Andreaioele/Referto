@@ -1,0 +1,6 @@
+# Sostituisci il percorso con un file GGUF oppure con una cartella Safetensors
+# compatibile con Ollama.
+FROM /percorso/assoluto/al/modello-o-alla-cartella
+
+PARAMETER temperature 0
+PARAMETER num_ctx 16384

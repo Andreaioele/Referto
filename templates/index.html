@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Referto</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">R</div>
+        <div>
+          <h1>Referto</h1>
+          <p>Il linguaggio medico, spiegato con parole semplici.</p>
+        </div>
+      </div>
+      <div class="local-status" title="Il modello viene eseguito sul tuo computer">
+        <span aria-hidden="true"></span>
+        Elaborazione locale
+      </div>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">ASSISTENTE ALLA COMPRENSIONE</p>
+      <h2>Comprendi le informazioni importanti del tuo referto.</h2>
+      <p>Carica un documento oppure incolla il testo. Referto lo sintetizza in modo fedele, chiaro e senza fornire consigli medici.</p>
+    </section>
+
+    <section class="workspace">
+      <aside class="sidebar">
+        <p class="nav-label">Scegli il formato</p>
+        <nav class="tabs" aria-label="Tipo di input">
+          <button class="tab active" type="button" data-tab="pdf">
+            <span class="tab-icon" aria-hidden="true">PDF</span>
+            <span><strong>Documento PDF</strong><small>Carica un referto</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="image">
+            <span class="tab-icon" aria-hidden="true">IMG</span>
+            <span><strong>Immagine</strong><small>Foto o scansione</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="text">
+            <span class="tab-icon" aria-hidden="true">TXT</span>
+            <span><strong>Testo</strong><small>Scrivi o incolla</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="dataset">
+            <span class="tab-icon" aria-hidden="true">DATA</span>
+            <span><strong>Dataset</strong><small>Elabora un JSONL</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="traces">
+            <span class="tab-icon" aria-hidden="true">LOG</span>
+            <span><strong>Cronologia</strong><small>Date, orari e passaggi</small></span>
+          </button>
+        </nav>
+
+        <div class="privacy-note">
+          <span class="privacy-icon" aria-hidden="true">✓</span>
+          <div><strong>I dati restano locali</strong><p>Il documento viene elaborato sul tuo computer con {{ model_name }}.</p></div>
+        </div>
+      </aside>
+
+      <div class="content">
+        <section id="panel-pdf" class="panel active" data-panel="pdf">
+          <div class="panel-heading">
+            <p class="section-label">DOCUMENTO PDF</p>
+            <h2>Carica il tuo referto</h2>
+            <p>Puoi usare PDF testuali e scansioni fino a 12 pagine.</p>
+          </div>
+          <form class="analysis-form" data-endpoint="/api/analyze/pdf" data-result="result-pdf">
+            <label class="dropzone">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <strong>Scegli un file PDF</strong>
+              <span class="file-name">oppure trascinalo in quest’area</span>
+              <input type="file" name="pdf" accept="application/pdf,.pdf" required>
+            </label>
+            <button class="primary" type="submit">Spiega il referto</button>
+          </form>
+          <div id="result-pdf" class="result" hidden></div>
+        </section>
+
+        <section id="panel-image" class="panel" data-panel="image" hidden>
+          <div class="panel-heading">
+            <p class="section-label">IMMAGINE</p>
+            <h2>Carica una foto o scansione</h2>
+            <p>L’immagine deve contenere il testo leggibile di un referto.</p>
+          </div>
+          <form class="analysis-form" data-endpoint="/api/analyze/image" data-result="result-image">
+            <label class="dropzone">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <strong>Scegli un’immagine</strong>
+              <span class="file-name">PNG, JPG, WEBP, BMP o TIFF</span>
+              <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/bmp,image/tiff" required>
+            </label>
+            <button class="primary" type="submit">Leggi e spiega</button>
+          </form>
+          <div id="result-image" class="result" hidden></div>
+        </section>
+
+        <section id="panel-text" class="panel" data-panel="text" hidden>
+          <div class="panel-heading">
+            <p class="section-label">TESTO</p>
+            <h2>Incolla il testo del referto</h2>
+            <p>Rimuovi i dati identificativi se non sono necessari.</p>
+          </div>
+          <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-text">
+            <label class="field-label" for="report-text">Testo del referto</label>
+            <textarea id="report-text" name="text" rows="13" placeholder="Incolla qui il contenuto del referto…" required></textarea>
+            <div class="form-footer"><span id="text-count">0 caratteri</span><button class="primary" type="submit">Spiega il testo</button></div>
+          </form>
+          <div id="result-text" class="result" hidden></div>
+        </section>
+
+        <section id="panel-dataset" class="panel" data-panel="dataset" hidden>
+          <div class="panel-heading">
+            <p class="section-label">DATASET</p>
+            <h2>Elabora più referti</h2>
+            <p>Compatibile con RadGraph-IT e con i comuni campi testuali JSONL.</p>
+          </div>
+          <form class="analysis-form" data-endpoint="/api/analyze/dataset" data-result="result-dataset" data-dataset="true">
+            <label class="dropzone compact">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <strong>Scegli il dataset</strong>
+              <span class="file-name">Una riga JSON per ogni referto</span>
+              <input type="file" name="dataset" accept="application/json,.jsonl" required>
+            </label>
+            <div class="dataset-options">
+              <label for="dataset-limit"><span>Numero massimo di referti</span><small>Inizia con pochi elementi: ogni referto richiede più passaggi.</small></label>
+              <input id="dataset-limit" name="limit" type="number" min="1" max="200" value="5" required>
+            </div>
+            <button class="primary" type="submit">Avvia elaborazione</button>
+          </form>
+          <div id="result-dataset" class="result" hidden></div>
+        </section>
+
+        <section id="panel-traces" class="panel traces-panel" data-panel="traces" hidden>
+          <div class="panel-heading trace-heading">
+            <div>
+              <p class="section-label">CRONOLOGIA LOCALE</p>
+              <h2>Trace delle esecuzioni</h2>
+              <p>Ogni analisi, riuscita o fallita, resta salvata con data, ora e dettaglio dei passaggi.</p>
+            </div>
+            <button id="refresh-traces" class="secondary" type="button">Aggiorna</button>
+          </div>
+          <div class="trace-privacy">
+            Le trace possono contenere il testo dei referti e le risposte del modello. Sono archiviate soltanto su questo computer.
+          </div>
+          <div id="trace-list" class="trace-list" aria-live="polite">
+            <p class="empty-state">Caricamento della cronologia…</p>
+          </div>
+          <div id="trace-detail" class="trace-detail" hidden></div>
+        </section>
+      </div>
+    </section>
+
+    <footer>
+      <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
+    </footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

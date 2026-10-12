@@ -1,0 +1,28 @@
+# Ambienti e cache Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Configurazione locale e segreti
+.env
+.env.*
+!.env.example
+
+# Dati sanitari e file generati localmente
+traces/
+risultati/
+uploads/
+*_spiegato.txt
+
+# Modelli locali (non devono finire nel repository)
+models/
+*.gguf
+*.safetensors
+
+# Sistema operativo ed editor
+.DS_Store
+.idea/
+.vscode/
