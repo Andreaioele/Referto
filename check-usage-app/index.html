@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Usage</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --fg: #1a1d23; --muted: #6b7280; --line: #e5e7eb;
+    --accent: #ed1c24; --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --bar: #fde2e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1115; --card: #181b21; --fg: #e8eaed; --muted: #9aa0a6; --line: #2a2e36; --bar: #3a1d20; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 16px; margin: 32px 0 12px; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .progress { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; margin: 8px 0; }
+  .progress > div { height: 100%; background: var(--ok); }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--card); font-size: 12px; color: var(--muted); font-weight: 600; }
+  th:first-child, td:first-child { text-align: left; }
+  td.txt { text-align: left; }
+  tr:last-child td { border-bottom: 0; }
+  .barcell { position: relative; }
+  .barcell span { position: absolute; inset: 3px auto 3px 0; background: var(--bar); z-index: 0; border-radius: 3px; }
+  .barcell b { position: relative; font-weight: 500; }
+  .err { color: var(--bad); }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; background: var(--line); }
+  .tag.bad { background: var(--bad); color: #fff; }
+  pre { margin: 0; padding: 16px; overflow: auto; max-height: 600px; font-size: 12px; }
+  details summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+  #empty { text-align: center; padding: 64px 16px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>AMD Radeon API · Team Usage</h1>
+      <div class="muted" id="stamp">Nessun dato caricato</div>
+    </div>
+    <button id="btn">Check usage</button>
+  </header>
+
+  <div id="error" class="card err" hidden></div>
+  <div id="empty" class="card muted">Premi <b>Check usage</b> per leggere i consumi aggiornati.</div>
+  <div id="out" hidden></div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nf = new Intl.NumberFormat("it-IT");
+
+function fmt(key, v) {
+  if (v === null || v === undefined || v === "") return '<span class="muted">—</span>';
+  if (typeof v === "boolean") return v ? "sì" : "no";
+  if (typeof v === "number") {
+    if (/cost|usd/.test(key)) return "$" + v.toFixed(v !== 0 && Math.abs(v) < 0.01 ? 6 : 4);
+    if (/rate/.test(key)) return (v * 100).toFixed(1) + "%";
+    return nf.format(v);
+  }
+  return esc(v);
+}
+const label = (k) => k.replace(/_/g, " ");
+const localTime = (s) => {
+  if (!s) return "—";
+  const d = new Date(/Z|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(" ", "T") + "Z");
+  return isNaN(d) ? s : d.toLocaleString("it-IT");
+};
+
+function kpi(lbl, val, sub = "") {
+  return `<div class="card kpi"><div class="label">${esc(lbl)}</div><div class="value">${val}</div>${sub ? `<div class="muted">${sub}</div>` : ""}</div>`;
+}
+
+// Tabella metriche × periodi: una riga per ogni campo numerico presente in almeno un periodo.
+function periodsTable(d) {
+  const periods = ["today", "last_24_hours", "last_30_days", "all_time"].filter((p) => d[p]);
+  const keys = [...new Set(periods.flatMap((p) => Object.keys(d[p])))];
+  const rows = keys.map((k) => `<tr><td>${label(k)}</td>${periods.map((p) =>
+    `<td>${/_at$/.test(k) ? esc(localTime(d[p][k])) : fmt(k, d[p][k])}</td>`).join("")}</tr>`).join("");
+  return `<div class="scroll"><table><thead><tr><th>Metrica</th>${periods.map((p) => `<th>${label(p)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// Tabella generica da array di oggetti: colonne = unione di tutte le chiavi.
+function arrayTable(arr, barKey) {
+  if (!arr || !arr.length) return '<div class="card muted">Nessun dato</div>';
+  const cols = [...new Set(arr.flatMap((r) => Object.keys(r)))];
+  const max = barKey ? Math.max(...arr.map((r) => r[barKey] || 0)) || 1 : 1;
+  const cell = (r, c) => {
+    const v = r[c];
+    if (/_at$/.test(c)) return `<td class="txt">${esc(localTime(v))}</td>`;
+    if (c === "has_error") return `<td><span class="tag ${v ? "bad" : ""}">${v ? "errore" : "ok"}</span></td>`;
+    if (c === barKey) return `<td class="barcell"><span style="width:${(100 * (v || 0) / max).toFixed(1)}%"></span><b>${fmt(c, v)}</b></td>`;
+    return `<td class="${typeof v === "number" ? "" : "txt"}">${fmt(c, v)}</td>`;
+  };
+  return `<div class="scroll"><table><thead><tr>${cols.map((c) => `<th>${label(c)}</th>`).join("")}</tr></thead>
+    <tbody>${arr.map((r) => `<tr>${cols.map((c) => cell(r, c)).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function render(d) {
+  const used = d.daily_cost_used_usd ?? 0, limit = d.daily_cost_limit_usd ?? 0;
+  const pct = limit ? Math.min(100, (used / limit) * 100) : 0;
+  const color = pct > 85 ? "var(--bad)" : pct > 60 ? "var(--warn)" : "var(--ok)";
+  const resetMs = d.daily_reset_epoch ? d.daily_reset_epoch * 1000 - Date.now() : null;
+  const resetIn = resetMs > 0 ? `${Math.floor(resetMs / 3.6e6)}h ${Math.floor((resetMs % 3.6e6) / 6e4)}m` : "—";
+  const t = d.today || {};
+
+  // Campi top-level scalari non già mostrati nei KPI: mostrati tutti per completezza.
+  const scalars = Object.entries(d).filter(([, v]) => v === null || typeof v !== "object");
+
+  $("#out").innerHTML = `
+    <h2>Budget giornaliero</h2>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <b>${fmt("cost", used)} usati su ${fmt("usd", limit)}</b>
+        <span class="muted">${pct.toFixed(2)}% · rimangono ${fmt("usd", d.daily_cost_remaining_usd)}</span>
+      </div>
+      <div class="progress"><div style="width:${pct}%;background:${color}"></div></div>
+      <div class="muted">Reset tra ${resetIn} — ${esc(localTime(d.daily_reset_at))} (timezone API: ${esc(d.daily_reset_timezone)})</div>
+    </div>
+
+    <h2>Oggi in sintesi</h2>
+    <div class="grid">
+      ${kpi("Richieste", fmt("n", t.requests), `${fmt("n", t.errors)} errori`)}
+      ${kpi("Token totali", fmt("n", t.total_tokens), `${fmt("n", t.prompt_tokens)} in · ${fmt("n", t.completion_tokens)} out`)}
+      ${kpi("Reasoning token", fmt("n", t.reasoning_tokens))}
+      ${kpi("Cache hit", fmt("rate", t.kv_cache_hit_rate), `${fmt("n", t.cached_tokens)} token in cache`)}
+      ${kpi("Costo oggi", fmt("cost", t.cost), `in ${fmt("cost", t.input_cost)} · out ${fmt("cost", t.output_cost)}`)}
+      ${kpi("Limite RPM", fmt("n", d.rpm_limit), "richieste/minuto")}
+    </div>
+
+    <h2>Account e periodo</h2>
+    <div class="scroll"><table><tbody>
+      ${scalars.map(([k, v]) => `<tr><td>${label(k)}</td><td class="txt">${/_at$/.test(k) ? esc(localTime(v)) + ` <span class="muted">(${esc(v)})</span>` : fmt(k, v)}</td></tr>`).join("")}
+    </tbody></table></div>
+
+    <h2>Confronto per periodo</h2>
+    ${periodsTable(d)}
+
+    <h2>Per modello</h2>
+    ${arrayTable(d.by_model, "cost")}
+
+    <h2>Per sorgente</h2>
+    ${arrayTable(d.by_source, "requests")}
+
+    <h2>Richieste recenti <span class="muted">(${(d.recent || []).length})</span></h2>
+    ${arrayTable(d.recent, "total_tokens")}
+
+    <h2>JSON grezzo</h2>
+    <details class="card" style="padding:0"><summary>Mostra risposta completa</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>
+  `;
+}
+
+$("#btn").addEventListener("click", async () => {
+  const btn = $("#btn");
+  btn.disabled = true; btn.textContent = "Caricamento…";
+  $("#error").hidden = true;
+  try {
+    const r = await fetch("/api/usage", { cache: "no-store" });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error + (d.detail ? ` — ${d.detail}` : ""));
+    render(d);
+    $("#empty").hidden = true; $("#out").hidden = false;
+    $("#stamp").textContent = "Aggiornato alle " + new Date().toLocaleTimeString("it-IT");
+  } catch (e) {
+    $("#error").textContent = "Errore: " + e.message;
+    $("#error").hidden = false;
+  } finally {
+    btn.disabled = false; btn.textContent = "Check usage";
+  }
+});
+</script>
+</body>
+</html>
