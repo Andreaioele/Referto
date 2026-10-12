@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -27,7 +28,27 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def load_text_records(path: Path) -> List[Dict[str, Any]]:
+    """File di testo: referti separati da una riga di soli trattini (es. "-----").
+
+    Stesse regole di load_reports() in cluster_agent_task.py.
+    """
+    content = path.read_text(encoding="utf-8")
+    blocks = [b.strip() for b in re.split(r"^\s*-{3,}\s*$", content, flags=re.MULTILINE)]
+    blocks = [b for b in blocks if b]
+    return [
+        {
+            "doc_key": path.stem if len(blocks) == 1 else f"{path.stem}-{i}",
+            "dataset": "text-file",
+            "text": block,
+        }
+        for i, block in enumerate(blocks, start=1)
+    ]
+
+
 def load_records(path: Path) -> List[Dict[str, Any]]:
+    if path.suffix.lower() != ".jsonl":
+        return load_text_records(path)
     records: List[Dict[str, Any]] = []
     seen: Dict[str, int] = {}
     with path.open("r", encoding="utf-8") as source:
