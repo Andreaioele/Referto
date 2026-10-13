@@ -179,36 +179,118 @@ def _product_view(drug: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def lookup(name: str, ingredient: str = "") -> Optional[Dict[str, Any]]:
-    """Collega un farmaco del referto ai farmaci autorizzati AIFA."""
+PARALLEL_IMPORT = "Importazione Parallela"
+MAX_ALTERNATIVES = 200
+
+
+def _without_parallel_imports(codes: Iterable[str]) -> List[Dict[str, Any]]:
+    """Farmaci di riferimento: le importazioni parallele sono copie dello stesso
+    medicinale di un'altra ditta e renderebbero ambiguo il nome."""
+    drugs = [_aifa()["drugs"][code] for code in codes]
+    reference = [drug for drug in drugs if drug.get("procedura") != PARALLEL_IMPORT]
+    return reference or drugs
+
+
+def _brand_candidates(name: str) -> Tuple[str, List[Dict[str, Any]]]:
+    """Nome commerciale italiano scritto nel referto, anche seguito dal dosaggio
+    ("Brufen 600 mg" -> BRUFEN). Restituisce (nome trovato, farmaci con quel nome)."""
     data = _aifa()
-    candidates: List[Tuple[str, str]] = []  # (metodo, chiave principio attivo o marchio)
+    words = normalize(name).split()
+    for size in range(len(words), 0, -1):
+        if not words[size - 1].isalpha():
+            continue
+        brand = " ".join(words[:size])
+        codes = data["by_brand"].get(brand)
+        if not codes:
+            continue
+        drugs = _without_parallel_imports(codes)
+        # Un farmaco che si chiama come il suo principio attivo (es. "LORAZEPAM")
+        # è un generico: il nome non identifica il prodotto.
+        if all(normalize(_ingredient_label(d["pa"])) == brand for d in drugs):
+            return "", []
+        return brand, drugs
+    return "", []
+
+
+def _ingredient_candidates(name: str, ingredient: str) -> Tuple[str, List[Dict[str, Any]]]:
+    """Farmaci con il principio attivo del referto. Restituisce (alias usato, farmaci)."""
+    data = _aifa()
     for text in (ingredient, name):
         if not text:
             continue
-        alias = ALIASES.get(normalize(text))
-        if alias:
-            candidates.append(("principio attivo", _ingredient_query_key(alias)))
-        candidates.append(("principio attivo", _ingredient_query_key(text)))
-    brand_codes = data["by_brand"].get(normalize(name), [])
-    for method, key in candidates:
-        codes = data["by_ingredient"].get(key)
-        if codes:
-            break
-    else:
-        method, codes = ("nome commerciale", brand_codes) if brand_codes else ("", [])
-    if not codes:
+        alias = ALIASES.get(normalize(text), "")
+        for query in filter(None, (alias, text)):
+            codes = data["by_ingredient"].get(_ingredient_query_key(query))
+            if codes:
+                return (alias if query == alias else ""), _without_parallel_imports(codes)
+    return "", []
+
+
+def lookup(name: str, ingredient: str = "") -> Optional[Dict[str, Any]]:
+    """Collega un farmaco del referto a UN farmaco AIFA, solo se la corrispondenza è univoca.
+
+    - Nome commerciale italiano con un solo farmaco di riferimento: univoco
+      (es. "Brufen" -> BRUFEN di Viatris, principio attivo ibuprofene).
+    - Solo principio attivo, marchio estero o nome con più farmaci: nessun
+      farmaco scelto d'ufficio; si restituiscono le alternative tra cui il
+      paziente sceglie il suo.
+    - Principio attivo con un solo farmaco in commercio: univoco anche così.
+    """
+    brand, drugs = _brand_candidates(name)
+    alias = ""
+    kind = "nome commerciale"
+    if not drugs:
+        alias, drugs = _ingredient_candidates(name, ingredient)
+        kind = "principio attivo"
+    if not drugs:
         return None
-    products = sorted(
-        (data["drugs"][code] for code in codes), key=lambda d: (-d["n_confezioni"], d["nome"])
-    )
-    return {
-        "match": method,
-        "principio_attivo": _ingredient_label(products[0]["pa"]),
-        "atc": products[0]["atc"],
-        "prodotti": [_product_view(drug) for drug in products[:MAX_PRODUCTS]],
-        "prodotti_totali": len(products),
+    drugs = sorted(drugs, key=lambda d: (d["nome"], d["ditta"]))
+    ingredient_label = _ingredient_label(drugs[0]["pa"])
+    result: Dict[str, Any] = {
+        "principio_attivo": ingredient_label,
+        "atc": drugs[0]["atc"],
+        "farmaco": None,
+        "corrispondenza": "da scegliere",
+        "perche": "",
+        "alternative": [_product_view(drug) for drug in drugs[:MAX_ALTERNATIVES]],
+        "alternative_totali": len(drugs),
     }
+    if len(drugs) == 1:
+        result["farmaco"] = result["alternative"][0]
+        result["corrispondenza"] = kind if kind == "nome commerciale" else "unico con questo principio attivo"
+    elif kind == "nome commerciale":
+        result["perche"] = (
+            f"In Italia ci sono {len(drugs)} farmaci di ditte diverse che si chiamano così: "
+            "scegli quello della tua confezione (la ditta è scritta sulla scatola)."
+        )
+    elif alias:
+        result["perche"] = (
+            f"Nel referto è scritto «{name}», un nome (inglese o estero) che non indica un "
+            f"farmaco preciso in Italia. Il principio attivo è {ingredient_label}: scegli il "
+            "farmaco che usi per leggere il suo foglietto."
+        )
+    else:
+        result["perche"] = (
+            f"Nel referto c'è il principio attivo ({ingredient_label}), non il nome del farmaco. "
+            f"In Italia ci sono {len(drugs)} farmaci con questo principio attivo: scegli quello che usi."
+        )
+    return result
+
+
+def resolve_medication(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Il farmaco del referto con la corrispondenza AIFA ricalcolata e la scelta del paziente."""
+    aifa = lookup(item.get("nome", ""), item.get("principio_attivo_modello", ""))
+    choice = item.get("scelta")
+    if aifa and choice and not aifa["farmaco"]:
+        chosen = next((p for p in aifa["alternative"] if p["cod"] == choice), None)
+        if chosen:
+            aifa = {**aifa, "farmaco": chosen, "corrispondenza": "scelto da te"}
+    return {**item, "aifa": aifa}
+
+
+def valid_choice(item: Dict[str, Any], code: str) -> bool:
+    aifa = lookup(item.get("nome", ""), item.get("principio_attivo_modello", ""))
+    return bool(aifa and not aifa["farmaco"] and any(p["cod"] == code for p in aifa["alternative"]))
 
 
 def search_catalog(query: str, limit: int = 20) -> List[Dict[str, Any]]:
@@ -387,33 +469,29 @@ def extract_medications(
             "motivo": _grounded(item.get("motivo"), source),
             "citazione": _grounded(item.get("citazione"), source),
             "uso": item.get("uso") if item.get("uso") in USE_TYPES else "citato",
-            "aifa": lookup(name, str(item.get("principio_attivo") or "")),
+            "principio_attivo_modello": str(item.get("principio_attivo") or "")[:80],
         }
-        medications.append(medication)
+        medications.append(resolve_medication(medication))
     return {"method": method, "items": medications}
 
 
 def history_overview(reports: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Raggruppa per principio attivo i farmaci di tutti i referti analizzati."""
+    """Raggruppa i farmaci di tutti i referti: per farmaco AIFA quando la
+    corrispondenza è univoca (o scelta dal paziente), altrimenti per nome scritto."""
     groups: Dict[str, Dict[str, Any]] = {}
     for report in reports:
-        for medication in (report.get("medications") or {}).get("items", []):
+        for index, raw in enumerate((report.get("medications") or {}).get("items", [])):
+            medication = resolve_medication(raw)
             aifa = medication.get("aifa")
-            key = aifa["principio_attivo"] if aifa else normalize(medication["nome"])
-            group = groups.setdefault(
-                key,
-                {
-                    "chiave": key,
-                    "nome": aifa["principio_attivo"] if aifa else medication["nome"],
-                    "aifa": aifa,
-                    "menzioni": [],
-                },
-            )
+            product = (aifa or {}).get("farmaco")
+            key = f"cod:{product['cod']}" if product else f"nome:{normalize(medication['nome'])}"
+            group = groups.setdefault(key, {"chiave": key, "aifa": aifa, "menzioni": []})
             group["menzioni"].append(
                 {
                     "trace_id": report["id"],
+                    "indice": index,
                     "data": report.get("started_at"),
-                    "referto": report.get("source_name"),
+                    "referto": report.get("title") or report.get("source_name"),
                     "branca": (report.get("branch") or {}).get("label"),
                     **{k: medication.get(k, "") for k in ("nome", "dose", "frequenza", "via", "motivo", "uso", "citazione")},
                 }

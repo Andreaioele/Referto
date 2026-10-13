@@ -20,7 +20,7 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 
 ## Test (`test_app.py`)
 
-43 test, nessuno chiama un modello vero (le chiamate sono sostituite con
+47 test, nessuno chiama un modello vero (le chiamate sono sostituite con
 `unittest.mock.patch`). Classi:
 
 | Classe | Copre |
@@ -32,7 +32,7 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 | `ClusterAgentTaskTests` | job batch e `--resume` |
 | `GlossaryTests` | [[06-glossario-hpo]] |
 | `FacilitiesTests` | [[07-branca-e-strutture]] |
-| `MedicationTests`, `ArchiveTests` | [[08-referti-e-farmaci-aifa]] |
+| `MedicationTests`, `UnivocalMedicationTests`, `ArchiveTests` | [[08-referti-e-farmaci-aifa]] |
 
 Ogni nuova funzione arriva con i suoi test, nello stile esistente
 (`patch.object` sulle chiamate al modello e ai servizi esterni, cartelle temporanee).

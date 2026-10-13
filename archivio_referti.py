@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from farmaci_referti import resolve_medication
 from trace_store import load_trace
 
 # Dove ogni tipo di analisi salva il testo del referto.
@@ -98,5 +99,13 @@ def load_report(root: Path, trace_id: str) -> Optional[Dict[str, Any]]:
         "explanation": trace.get("output") or "",
         "glossary": artifacts.get("glossary") or [],
         "branch": artifacts.get("branch"),
-        "medications": artifacts.get("medications"),
+        "medications": _resolved(artifacts.get("medications")),
     }
+
+
+def _resolved(medications: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Corrispondenze AIFA ricalcolate a ogni lettura: valgono le regole attuali
+    (e le scelte del paziente) anche per i referti analizzati in passato."""
+    if not medications:
+        return medications
+    return {**medications, "items": [resolve_medication(item) for item in medications.get("items", [])]}

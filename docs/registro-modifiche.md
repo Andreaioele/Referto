@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-13
 
+- `staging` · Farmaci: corrispondenza univoca nome → foglietto. Nome commerciale italiano (escluse le importazioni parallele) o unico farmaco con quel principio attivo; negli altri casi sceglie il paziente, mai l'app · [[08-referti-e-farmaci-aifa]]
 - `staging` · File, Foto e Testo uniti nella sezione "Spiegami un referto": si sceglie la modalità e compare solo lo strumento giusto; la Foto apre la fotocamera dal vivo · [[05-webapp-e-interfaccia]]
 - `staging` · Creata la documentazione `docs/` (vault Obsidian) e `CLAUDE.md`
   con la regola di aggiornamento · [[00-indice]]

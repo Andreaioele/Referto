@@ -44,6 +44,7 @@ from farmaci_referti import (
     catalog_info,
     extract_medications,
     history_overview,
+    valid_choice,
     leaflet_pdf,
     search_catalog,
 )
@@ -1113,6 +1114,26 @@ def report_medications(trace_id: str):
             _release_model()
     update_trace_artifact(root, trace_id, "medications", medications)
     return jsonify({"ok": True, "medications": medications})
+
+
+@app.post("/api/referti/<trace_id>/farmaci/<int:index>/scelta")
+def medication_choice(trace_id: str, index: int):
+    """Il paziente indica quale farmaco usa quando il referto non lo identifica."""
+    root = Path(app.config["TRACE_DIR"])
+    trace = load_trace(root, trace_id)
+    medications = ((trace or {}).get("artifacts") or {}).get("medications")
+    if not medications or not 0 <= index < len(medications.get("items", [])):
+        return _json_error("Farmaco non trovato.", 404)
+    code = (request.get_json(silent=True) or {}).get("cod")
+    item = medications["items"][index]
+    if code is None:
+        item.pop("scelta", None)
+    elif valid_choice(item, str(code)):
+        item["scelta"] = str(code)
+    else:
+        return _json_error("Questo farmaco non corrisponde a quello scritto nel referto.")
+    update_trace_artifact(root, trace_id, "medications", medications)
+    return jsonify({"ok": True})
 
 
 @app.get("/api/farmaci")

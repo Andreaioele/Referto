@@ -307,7 +307,7 @@ function moreItem(title, content, open = false) {
   return item;
 }
 
-function renderMoreSections({ glossary, medications, branch }) {
+function renderMoreSections({ glossary, medications, branch, traceId }) {
   const section = el("section", "more");
   section.append(el("h3", "more-title", "Per saperne di più"));
   if (glossary?.length) {
@@ -315,7 +315,7 @@ function renderMoreSections({ glossary, medications, branch }) {
   }
   if (medications) {
     const count = medications.items?.length || 0;
-    section.append(moreItem(count ? `Farmaci scritti nel referto (${count})` : "Farmaci scritti nel referto", renderReportMedications(medications)));
+    section.append(moreItem(count ? `Farmaci scritti nel referto (${count})` : "Farmaci scritti nel referto", renderReportMedications(medications, traceId)));
   }
   if (branch) {
     section.append(moreItem(`Chi se ne occupa: ${branch.label}`, renderResultBranch(branch)));
@@ -635,33 +635,8 @@ function renderProduct(product) {
   return row;
 }
 
-function renderAifa(aifa) {
-  const box = el("div", "aifa-box");
-  if (!aifa) {
-    box.append(el("p", "aifa-missing", "Non trovato nel prontuario AIFA: potrebbe non essere in commercio in Italia o essere scritto con un nome diverso. Cercalo qui sotto nel prontuario."));
-    return box;
-  }
-  box.append(el("p", "aifa-title", `Principio attivo: ${aifa.principio_attivo} · ATC ${aifa.atc}`));
-  const list = el("ul", "product-list");
-  aifa.prodotti.forEach((product, index) => {
-    const row = renderProduct(product);
-    row.hidden = index >= 3;
-    list.append(row);
-  });
-  box.append(list);
-  if (aifa.prodotti.length > 3) {
-    const more = el("button", "link-button", `Mostra altri ${aifa.prodotti.length - 3} farmaci con questo principio attivo`);
-    more.type = "button";
-    more.addEventListener("click", () => {
-      [...list.children].forEach((row) => { row.hidden = false; });
-      more.remove();
-    });
-    box.append(more);
-  }
-  if (aifa.prodotti_totali > aifa.prodotti.length) {
-    box.append(el("p", "aifa-more", `Altri ${aifa.prodotti_totali - aifa.prodotti.length} farmaci con lo stesso principio attivo: cercali nel prontuario qui sotto.`));
-  }
-  return box;
+function titleCase(name) {
+  return (name || "").toLowerCase().replace(/(^|[\s\-/(])([a-zà-ÿ])/g, (_, sep, letter) => sep + letter.toUpperCase());
 }
 
 function medicationFacts(item) {
@@ -672,52 +647,137 @@ function medicationFacts(item) {
   return facts;
 }
 
-function leafletButton(aifa) {
-  if (!aifa?.prodotti?.length) return el("p", "aifa-missing", "Foglietto non trovato: questo farmaco potrebbe non essere in commercio in Italia con questo nome.");
-  const button = el("button", "primary leaflet-button", "Leggi il foglietto illustrativo");
-  button.type = "button";
-  button.addEventListener("click", () => openLeaflet(aifa.prodotti[0], "FI"));
-  return button;
-}
-
-function medicationDetails(item, aifa, extra) {
-  const details = el("details", "med-details");
-  details.append(el("summary", "", "Altre informazioni"));
-  if (item?.citazione) details.append(el("p", "med-label", "Frase del referto"), el("blockquote", "med-quote", item.citazione));
-  if (item?.uso) details.append(el("p", "med-written", `Nel referto risulta: ${item.uso}`));
-  if (extra) details.append(extra);
-  if (aifa) details.append(el("p", "med-label", "Farmaci in commercio con questo principio attivo"));
-  details.append(renderAifa(aifa));
-  return details;
-}
-
-function medicationTitle(item, aifa) {
-  const name = aifa?.principio_attivo || item.nome;
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-function renderMedicationItem(item) {
-  const card = el("article", "med-card");
-  card.append(el("h4", "", medicationTitle(item, item.aifa)));
-  if (item.aifa && normalizeName(item.nome) !== normalizeName(item.aifa.principio_attivo)) {
-    card.append(el("p", "med-written", `Nel referto è scritto: ${item.nome}`));
-  }
-  card.append(medicationFacts(item), leafletButton(item.aifa), medicationDetails(item, item.aifa));
-  return card;
-}
-
 function normalizeName(text) {
   return (text || "").toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
 }
 
-function renderReportMedications(medications) {
+async function saveMedicationChoice(mentions, code) {
+  for (const mention of mentions) {
+    await fetchJson(`/api/referti/${mention.trace_id}/farmaci/${mention.indice}/scelta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cod: code }),
+    });
+  }
+}
+
+function medicationPicker(aifa, mentions, onChange) {
+  // Il referto non identifica un solo farmaco: sceglie il paziente, mai l'app.
+  const box = el("div", "med-picker");
+  box.append(el("p", "med-picker-why", aifa.perche));
+  box.append(el("p", "med-label", "Scegli il tuo farmaco (guarda il nome sulla scatola)"));
+  let filter = null;
+  if (aifa.alternative.length > 6) {
+    filter = el("input", "glossary-search");
+    filter.type = "search";
+    filter.placeholder = "Scrivi il nome sulla scatola, per esempio Brufen";
+    box.append(filter);
+  }
+  const list = el("ul", "product-list");
+  aifa.alternative.forEach((product, index) => {
+    const row = el("li", "product");
+    row.dataset.name = normalizeName(product.nome);
+    row.hidden = !!filter && index >= 6;
+    const info = el("div", "product-info");
+    info.append(el("strong", "", titleCase(product.nome)), el("small", "", [product.ditta, product.forme.join(", ")].filter(Boolean).join(" · ")));
+    const choose = el("button", "secondary small", "È il mio farmaco");
+    choose.type = "button";
+    choose.addEventListener("click", async () => {
+      choose.disabled = true;
+      try {
+        await saveMedicationChoice(mentions, product.cod);
+        onChange();
+      } catch (error) {
+        choose.disabled = false;
+        box.append(el("p", "facilities-status error", error.message));
+      }
+    });
+    row.append(info, choose);
+    list.append(row);
+  });
+  box.append(list);
+  if (filter) {
+    const hint = el("p", "aifa-more", `Ne vedi 6 su ${aifa.alternative.length}: scrivi il nome per trovare il tuo.`);
+    filter.addEventListener("input", () => {
+      const query = normalizeName(filter.value);
+      let shown = 0;
+      [...list.children].forEach((row) => {
+        const match = query ? row.dataset.name.includes(query) : shown < 6;
+        row.hidden = !match;
+        if (match) shown += 1;
+      });
+    });
+    box.append(hint);
+  }
+  return box;
+}
+
+function renderMedicationCard(item, aifa, mentions, onChange, extra) {
+  // item: dose, motivo, citazione... come scritti nel referto (la menzione più recente)
+  const card = el("article", "med-card");
+  const product = aifa?.farmaco;
+  card.append(el("h4", "", product ? titleCase(product.nome) : item.nome.charAt(0).toUpperCase() + item.nome.slice(1)));
+  if (aifa) card.append(el("p", "med-ingredient", `Principio attivo: ${aifa.principio_attivo}`));
+  if (product && aifa.corrispondenza === "unico con questo principio attivo") {
+    card.append(el("p", "med-written", `Nel referto è scritto «${item.nome}»: in Italia l'unico farmaco con questo principio attivo è ${titleCase(product.nome)}.`));
+  } else if (product && normalizeName(item.nome) !== normalizeName(product.nome)) {
+    card.append(el("p", "med-written", `Nel referto è scritto: ${item.nome}`));
+  }
+  card.append(medicationFacts(item));
+
+  if (product) {
+    const actions = el("div", "med-actions");
+    const leaflet = el("button", "primary leaflet-button", "Leggi il foglietto illustrativo");
+    leaflet.type = "button";
+    leaflet.addEventListener("click", () => openLeaflet(product, "FI"));
+    actions.append(leaflet);
+    if (aifa.corrispondenza === "scelto da te") {
+      actions.append(el("span", "report-branch", "Scelto da te"));
+      const change = el("button", "link-button", "Cambia farmaco");
+      change.type = "button";
+      change.addEventListener("click", async () => {
+        await saveMedicationChoice(mentions, null);
+        onChange();
+      });
+      actions.append(change);
+    }
+    card.append(actions);
+  } else if (aifa) {
+    card.append(medicationPicker(aifa, mentions, onChange));
+  } else {
+    card.append(el("p", "aifa-missing", "Non trovo questo farmaco tra quelli in commercio in Italia. Chiedi al farmacista."));
+  }
+
+  const details = el("details", "med-details");
+  details.append(el("summary", "", "Altre informazioni"));
+  if (item.citazione) details.append(el("p", "med-label", "Frase del referto"), el("blockquote", "med-quote", item.citazione));
+  if (item.uso) details.append(el("p", "med-written", `Nel referto risulta: ${item.uso}`));
+  if (product) {
+    details.append(el("p", "med-written", `${titleCase(product.nome)} · ${product.ditta} · ATC ${product.atc}`));
+    const rcp = el("button", "secondary small", "Scheda per i professionisti (RCP)");
+    rcp.type = "button";
+    rcp.addEventListener("click", () => openLeaflet(product, "RCP"));
+    details.append(rcp);
+  }
+  if (extra) details.append(extra);
+  card.append(details);
+  return card;
+}
+
+function renderReportMedications(medications, traceId) {
   const box = el("div", "more-body");
   if (!medications?.items?.length) {
     box.append(el("p", "glossary-intro", "Nel referto non sono scritti farmaci."));
     return box;
   }
   box.append(el("p", "glossary-intro", "Sono i farmaci scritti nel referto, non consigli di Referto."));
-  medications.items.forEach((item) => box.append(renderMedicationItem(item)));
+  const refresh = async () => {
+    const { report } = await fetchJson(`/api/referti/${traceId}`);
+    box.replaceWith(renderReportMedications(report.medications, traceId));
+  };
+  medications.items.forEach((item, index) => {
+    box.append(renderMedicationCard(item, item.aifa, [{ trace_id: traceId, indice: index }], refresh));
+  });
   return box;
 }
 
@@ -776,7 +836,7 @@ async function showReportDetail(id) {
     reportDetail.append(back, header);
     reportDetail.append(renderExplanation(report.explanation));
 
-    const more = renderMoreSections({ glossary: report.glossary, medications: report.medications, branch: report.branch })
+    const more = renderMoreSections({ glossary: report.glossary, medications: report.medications, branch: report.branch, traceId: id })
       || (() => { const section = el("section", "more"); section.append(el("h3", "more-title", "Per saperne di più")); return section; })();
     if (!report.medications) {
       const pending = el("div", "more-body");
@@ -826,8 +886,6 @@ const medicationsPending = document.querySelector("#medications-pending");
 
 function renderMedicationGroup(group) {
   const [latest, ...others] = group.menzioni;
-  const card = el("article", "med-card");
-  card.append(el("h4", "", medicationTitle(latest, group.aifa)));
   const source = el("button", "med-source", `Dal referto del ${formatTraceDate(latest.data, { dateOnly: true })}`);
   source.type = "button";
   source.title = "Apri il referto";
@@ -835,11 +893,6 @@ function renderMedicationGroup(group) {
     activatePanel("reports");
     showReportDetail(latest.trace_id);
   });
-  card.append(source);
-  if (group.aifa && normalizeName(latest.nome) !== normalizeName(group.aifa.principio_attivo)) {
-    card.append(el("p", "med-written", `Nel referto è scritto: ${latest.nome}`));
-  }
-  card.append(medicationFacts(latest), leafletButton(group.aifa));
   let extra = null;
   if (others.length) {
     extra = el("div", "med-others");
@@ -854,7 +907,8 @@ function renderMedicationGroup(group) {
       extra.append(row);
     });
   }
-  card.append(medicationDetails(latest, group.aifa, extra));
+  const card = renderMedicationCard(latest, group.aifa, group.menzioni, loadMedications, extra);
+  card.querySelector("h4").after(source);
   return card;
 }
 
@@ -931,7 +985,7 @@ function showSingleResult(target, result, traceId, glossary, branch, medications
   const title = document.createElement("h3");
   title.textContent = "Ecco la spiegazione del tuo referto";
   target.append(title, renderExplanation(result));
-  const more = renderMoreSections({ glossary, medications, branch });
+  const more = renderMoreSections({ glossary, medications, branch, traceId });
   if (more) target.append(more);
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);

@@ -60,6 +60,9 @@ def main() -> int:
                 "cod_ditta": first["CODICE_DITTA"].strip(),
                 "pa": first["PA_ASSOCIATI"].strip(),
                 "atc": first["CODICE_ATC"].strip(),
+                # "Importazione Parallela": stesso medicinale importato da un'altra
+                # ditta. Serve a riconoscere il farmaco di riferimento di un nome.
+                "procedura": first["TIPO_PROCEDURA"].strip(),
                 "forme": [form for form, _ in forms.most_common(4)],
                 "fornitura": supply.most_common(1)[0][0] if supply else "",
                 "confezioni": [row["DESCRIZIONE"].strip() for row in rows[:2]],

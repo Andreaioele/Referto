@@ -808,6 +808,31 @@ class MedicationTests(unittest.TestCase):
         self.assertEqual({item["nome"] for item in result["items"]}, {"metformin", "lisinopril"})
 
 
+class UnivocalMedicationTests(unittest.TestCase):
+    def test_italian_brand_maps_to_exactly_one_leaflet(self):
+        result = farmaci_referti.lookup("Brufen 600 mg")
+        self.assertEqual(result["farmaco"]["nome"], "BRUFEN")
+        self.assertEqual(result["principio_attivo"], "ibuprofene")
+        # le 10 importazioni parallele di Brufen non rendono ambiguo il nome
+        self.assertEqual(result["alternative_totali"], 1)
+
+    def test_active_ingredient_or_foreign_brand_is_never_guessed(self):
+        for name in ("ibuprofen", "Motrin", "metformin"):
+            result = farmaci_referti.lookup(name)
+            self.assertIsNone(result["farmaco"], name)
+            self.assertEqual(result["corrispondenza"], "da scegliere")
+            self.assertGreater(result["alternative_totali"], 1)
+
+    def test_patient_choice_fixes_the_product(self):
+        item = {"nome": "Motrin"}
+        brufen = next(p["cod"] for p in farmaci_referti.lookup("Motrin")["alternative"] if p["nome"] == "BRUFEN")
+        self.assertTrue(farmaci_referti.valid_choice(item, brufen))
+        self.assertFalse(farmaci_referti.valid_choice(item, "017758"))  # Glucophage: altro principio attivo
+        resolved = farmaci_referti.resolve_medication({**item, "scelta": brufen})
+        self.assertEqual(resolved["aifa"]["farmaco"]["nome"], "BRUFEN")
+        self.assertEqual(resolved["aifa"]["corrispondenza"], "scelto da te")
+
+
 class ArchiveTests(unittest.TestCase):
     def setUp(self):
         self.trace_directory = tempfile.TemporaryDirectory()
@@ -846,6 +871,20 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(overview["farmaci"][0]["menzioni"][0]["trace_id"], trace_id)
         self.assertEqual(self.client.delete(f"/api/referti/{trace_id}").status_code, 200)
         self.assertEqual(self.client.get("/api/referti").get_json()["reports"], [])
+
+    def test_choice_endpoint_accepts_only_matching_products(self):
+        trace_id = self._analyze()
+        medications = {"method": "modello", "items": [{"nome": "Motrin", "dose": "800 mg"}]}
+        web_app.update_trace_artifact(Path(self.trace_directory.name), trace_id, "medications", medications)
+        brufen = next(p["cod"] for p in farmaci_referti.lookup("Motrin")["alternative"] if p["nome"] == "BRUFEN")
+        wrong = self.client.post(f"/api/referti/{trace_id}/farmaci/0/scelta", json={"cod": "017758"})
+        self.assertEqual(wrong.status_code, 400)
+        ok = self.client.post(f"/api/referti/{trace_id}/farmaci/0/scelta", json={"cod": brufen})
+        self.assertEqual(ok.status_code, 200)
+        item = self.client.get(f"/api/referti/{trace_id}").get_json()["report"]["medications"]["items"][0]
+        self.assertEqual(item["aifa"]["farmaco"]["nome"], "BRUFEN")
+        group = self.client.get("/api/farmaci").get_json()["farmaci"][0]
+        self.assertEqual(group["chiave"], f"cod:{brufen}")
 
     def test_leaflet_endpoint_serves_pdf_and_rejects_unknown_codes(self):
         pdf = Path(self.trace_directory.name) / "FI_017758.pdf"
