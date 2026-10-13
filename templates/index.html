@@ -7,7 +7,7 @@
   <title>Referto</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=4">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=5">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
@@ -59,6 +59,18 @@
           <button class="tab" type="button" data-tab="traces">
             <span class="tab-icon" aria-hidden="true">LOG</span>
             <span><strong>Cronologia</strong><small>Date, orari e passaggi</small></span>
+          </button>
+        </nav>
+
+        <p class="nav-label nav-label-group">Il tuo archivio</p>
+        <nav class="tabs" aria-label="Il tuo archivio">
+          <button class="tab" type="button" data-tab="reports">
+            <span class="tab-icon" aria-hidden="true">DOC</span>
+            <span><strong>Referti</strong><small>Il tuo storico e le analisi</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="medications">
+            <span class="tab-icon" aria-hidden="true">Rx</span>
+            <span><strong>Farmaci</strong><small>Dai tuoi referti, con foglietto</small></span>
           </button>
           <button class="tab" type="button" data-tab="glossary">
             <span class="tab-icon" aria-hidden="true">ABC</span>
@@ -352,6 +364,47 @@
           <div id="trace-detail" class="trace-detail" hidden></div>
         </section>
 
+        <section id="panel-reports" class="panel reports-panel" data-panel="reports" hidden>
+          <div class="panel-heading trace-heading">
+            <div>
+              <p class="section-label">I TUOI REFERTI</p>
+              <h2>Storico dei referti e delle analisi</h2>
+              <p>Ogni referto che fai spiegare resta qui, con la spiegazione, le parole del glossario, la branca e i farmaci citati.</p>
+            </div>
+            <button id="refresh-reports" class="secondary" type="button">Aggiorna</button>
+          </div>
+          <div class="trace-privacy">I referti sono salvati solo su questo computer. Puoi eliminarli quando vuoi.</div>
+          <div id="reports-list" class="reports-list" aria-live="polite">
+            <p class="empty-state">Caricamento dei referti…</p>
+          </div>
+          <div id="report-detail" class="report-detail" hidden></div>
+        </section>
+
+        <section id="panel-medications" class="panel medications-panel" data-panel="medications" hidden>
+          <div class="panel-heading trace-heading">
+            <div>
+              <p class="section-label">FARMACI</p>
+              <h2>I farmaci citati nei tuoi referti</h2>
+              <p>Per ogni farmaco: quantità e motivo come scritti nel referto, il referto da cui viene e il foglietto illustrativo ufficiale AIFA.</p>
+            </div>
+            <button id="refresh-medications" class="secondary" type="button">Aggiorna</button>
+          </div>
+          <div class="facilities-notice">
+            Referto non suggerisce farmaci né dosi: qui trovi solo i farmaci scritti nei tuoi referti, con dose e motivo copiati dal documento. Non cambiare una terapia senza parlarne con il medico; per dubbi sui farmaci chiedi anche al farmacista.
+          </div>
+          <div id="medications-pending" class="medications-pending" hidden></div>
+          <div id="medications-list" class="medications-list" aria-live="polite">
+            <p class="empty-state">Caricamento dei farmaci…</p>
+          </div>
+          <div class="catalog">
+            <h3>Cerca un farmaco nel prontuario AIFA</h3>
+            <p>Tutti i farmaci autorizzati in Italia, con il foglietto illustrativo ufficiale.</p>
+            <input id="catalog-search" class="glossary-search" type="search" placeholder="Nome commerciale o principio attivo, es. Tachipirina o metformina" aria-label="Cerca nel prontuario AIFA">
+            <div id="catalog-results" class="catalog-results"></div>
+          </div>
+          <p id="medications-source" class="glossary-source"></p>
+        </section>
+
         <section id="panel-glossary" class="panel glossary-panel" data-panel="glossary" hidden>
           <div class="panel-heading trace-heading">
             <div>
@@ -403,10 +456,24 @@
       </div>
     </section>
 
+    <div id="leaflet-modal" class="leaflet-modal" hidden>
+      <div class="leaflet-box" role="dialog" aria-modal="true" aria-labelledby="leaflet-title">
+        <div class="leaflet-header">
+          <div><p class="section-label" id="leaflet-kind">FOGLIETTO ILLUSTRATIVO</p><strong id="leaflet-title"></strong></div>
+          <div class="leaflet-actions">
+            <a id="leaflet-open" class="secondary" target="_blank" rel="noopener">Apri in una nuova scheda</a>
+            <button id="leaflet-close" class="secondary" type="button">Chiudi</button>
+          </div>
+        </div>
+        <iframe id="leaflet-frame" title="Documento ufficiale AIFA"></iframe>
+        <p class="leaflet-source">Documento ufficiale della Banca Dati Farmaci AIFA. Leggi sempre il foglietto della confezione che hai in casa.</p>
+      </div>
+    </div>
+
     <footer>
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=4" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=5" defer></script>
 </body>
 </html>

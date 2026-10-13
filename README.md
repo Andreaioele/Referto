@@ -33,6 +33,7 @@ chiaramente attribuite alla fonte.
 - Trace salvate anche per le esecuzioni fallite.
 - Glossario delle parole mediche del referto (vedi sotto).
 - Branca del referto e mappa delle strutture nella zona del paziente (vedi sotto).
+- Storico dei referti e farmaci citati, con il foglietto illustrativo ufficiale AIFA (vedi sotto).
 
 ## Requisiti
 
@@ -335,6 +336,39 @@ python strutture_sanitarie.py "Milano" --raggio 10
 
 I dati di OpenStreetMap sono incompleti: molte strutture non indicano la
 specialità. L'elenco è informativo e non sostituisce l'indicazione del medico.
+
+## Storico dei referti e farmaci
+
+La sezione **Referti** raccoglie ogni referto spiegato (testo, PDF o foto) con
+testo originale, spiegazione, glossario, branca e farmaci. Lo storico è
+costruito sulle trace in `traces/`: nessun secondo salvataggio, tutto resta su
+questo computer e ogni referto si può eliminare.
+
+La sezione **Farmaci** raggruppa per principio attivo i farmaci **scritti nei
+referti**: Referto non suggerisce farmaci né dosi. Per ogni farmaco mostra
+quantità, frequenza, via e motivo come scritti nel referto, la citazione, il
+referto di origine e i farmaci autorizzati in Italia con lo stesso principio
+attivo.
+
+- **Estrazione verificabile:** il modello propone i farmaci, ma ogni campo
+  (nome, dose, motivo, citazione) resta solo se compare alla lettera nel
+  referto. Una ricerca deterministica nel testo aggiunge i principi attivi che
+  il modello ha saltato e fa da riserva se il modello non risponde.
+- **Prontuario AIFA:** `farmaci/aifa_farmaci.json` contiene i circa 12.600
+  farmaci autorizzati (elenco ufficiale delle confezioni AIFA, CC BY 4.0). I nomi
+  inglesi e i marchi USA dei referti (metformin, Tylenol, Motrin...) vengono
+  collegati al principio attivo italiano.
+- **Foglietti illustrativi:** sono i PDF ufficiali della Banca Dati Farmaci
+  AIFA, disponibili per tutti i farmaci in commercio. Si scaricano alla prima
+  consultazione e restano in `farmaci_cache/` (esclusa da Git). Dalla stessa
+  sezione si può cercare qualsiasi farmaco del prontuario.
+
+Per aggiornare il prontuario:
+
+```bash
+curl -L -o confezioni_fornitura.csv https://drive.aifa.gov.it/farmaci/confezioni_fornitura.csv
+python farmaci/build_aifa_index.py --csv confezioni_fornitura.csv
+```
 
 ## Uso da terminale
 

@@ -425,3 +425,61 @@ footer { max-width: 750px; margin: 0 auto; padding: 24px 10px 0; color: var(--mu
 .facility-links a { color: var(--green); }
 .facilities-notice { margin-top: 18px; padding: 14px 16px; border: 1px solid #e6ddc9; border-radius: 12px; background: var(--warm); color: #514a3e; font-size: 12px; line-height: 1.55; }
 @media (max-width: 520px) { .facilities-row { grid-template-columns: 1fr; } .facilities-map { height: 300px; } }
+
+/* Archivio: referti, farmaci, foglietti */
+.nav-label-group { margin-top: 26px; }
+.reports-list { display: grid; gap: 12px; }
+.report-card { display: grid; gap: 6px; width: 100%; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.report-card:hover { border-color: var(--green); }
+.report-card strong { font-size: 16px; }
+.report-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.report-date { color: var(--muted); font-size: 12px; }
+.report-branch { padding: 3px 9px; border-radius: 999px; background: var(--mint); color: var(--green-dark); font-size: 11px; font-weight: 700; }
+.report-summary { margin: 0; color: #34423e; font-size: 14px; line-height: 1.55; }
+.report-counts { color: var(--muted); font-size: 12px; }
+.report-detail { display: grid; gap: 18px; }
+.report-detail-header h3 { margin: 6px 0 0; font-size: 22px; letter-spacing: -.02em; }
+.report-original { border: 1px solid var(--line); border-radius: 12px; background: #fafcfb; }
+.report-original summary { padding: 12px 16px; cursor: pointer; color: var(--green-dark); font-size: 13px; font-weight: 700; }
+.report-original pre { margin: 0; padding: 0 16px 16px; white-space: pre-wrap; font: inherit; font-size: 13px; line-height: 1.6; color: #34423e; }
+.danger-button { justify-self: start; padding: 9px 14px; border: 1px solid #ebc7c7; border-radius: 10px; background: #fff8f8; color: var(--danger); font: inherit; font-size: 13px; cursor: pointer; }
+.result-medications { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.result-medications > h3 { margin: 0; color: var(--green-dark); font-size: 11px; letter-spacing: .09em; font-weight: 800; text-transform: uppercase; }
+.medications-pending { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--mint); font-size: 14px; }
+.medications-pending p { margin: 0; }
+.medications-list { display: grid; gap: 14px; margin-top: 16px; }
+.med-card { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); display: grid; gap: 10px; }
+.med-card h4 { margin: 0; font-size: 19px; letter-spacing: -.01em; text-transform: capitalize; }
+.med-card-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.med-mention { padding: 12px 0; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+.med-source { justify-self: start; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; text-align: left; }
+.med-written { margin: 0; color: var(--muted); font-size: 12px; }
+.med-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0; font-size: 14px; }
+.med-facts dt { color: var(--muted); }
+.med-facts dd { margin: 0; color: var(--ink); }
+.med-facts dd.missing { color: var(--muted); font-style: italic; }
+.med-quote { margin: 0; padding: 8px 12px; border-left: 3px solid var(--line); color: #514a3e; background: var(--warm); font-size: 13px; line-height: 1.5; }
+.aifa-box { padding: 12px 14px; border-radius: 12px; background: #fafcfb; border: 1px solid var(--line); }
+.aifa-title { margin: 0 0 8px; color: var(--green-dark); font-size: 12px; font-weight: 700; }
+.aifa-missing, .aifa-more { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.product-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.product { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.product-info { display: grid; gap: 2px; min-width: 0; }
+.product-info strong { font-size: 14px; }
+.product-info small { color: var(--muted); font-size: 12px; }
+.product-actions { display: flex; gap: 8px; }
+button.small { padding: 7px 12px; font-size: 12px; }
+.catalog { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
+.catalog h3 { margin: 0 0 4px; font-size: 18px; }
+.catalog > p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+.leaflet-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px; background: rgba(15, 30, 26, .55); }
+.leaflet-modal[hidden] { display: none; }
+.leaflet-box { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; width: min(980px, 100%); height: min(92vh, 1100px); padding: 16px; border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
+.leaflet-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.leaflet-header strong { display: block; margin-top: 4px; font-size: 16px; }
+.leaflet-actions { display: flex; gap: 8px; }
+.leaflet-actions a { text-decoration: none; }
+#leaflet-frame { width: 100%; height: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); }
+.leaflet-source { margin: 0; color: var(--muted); font-size: 12px; }
+body.modal-open { overflow: hidden; }
+.link-button { margin-top: 8px; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }

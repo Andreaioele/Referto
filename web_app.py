@@ -16,7 +16,7 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, Dict, List, Optional, Tuple
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_file, send_from_directory
 from PIL import Image, UnidentifiedImageError
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.utils import secure_filename
@@ -38,12 +38,23 @@ from strutture_sanitarie import (
     find_facilities,
     geocode,
 )
+from archivio_referti import list_reports, load_report
+from farmaci_referti import (
+    LeafletUnavailable,
+    catalog_info,
+    extract_medications,
+    history_overview,
+    leaflet_pdf,
+    search_catalog,
+)
 from trace_store import (
     TraceRecorder,
+    delete_trace,
     list_trace_summaries,
     load_trace,
     trace_scope,
     traced_step,
+    update_trace_artifact,
 )
 
 from spiega_referto import (
@@ -176,6 +187,16 @@ def _branch(report: str) -> Dict[str, Any]:
         branch = classify_report(report, base_url, model, timeout)
         details.update(branch)
     return branch
+
+
+def _medications(report: str) -> Dict[str, Any]:
+    """Farmaci scritti nel referto, collegati al prontuario AIFA."""
+    base_url, model, timeout, _ = _settings()
+    with traced_step("Estrazione dei farmaci") as details:
+        medications = extract_medications(report, base_url, model, timeout)
+        details["method"] = medications["method"]
+        details["count"] = len(medications["items"])
+    return medications
 
 
 def _save_upload(upload: Any, directory: Path, allowed_suffixes: set[str]) -> Path:
@@ -505,8 +526,10 @@ def analyze_text():
             result = _explain_text(report)
             glossary = _glossary(report, result)
             branch = _branch(report)
+            medications = _medications(report)
             trace.set_artifact("glossary", glossary)
             trace.set_artifact("branch", branch)
+            trace.set_artifact("medications", medications)
             trace.complete(result)
             return jsonify(
                 {
@@ -514,6 +537,7 @@ def analyze_text():
                     "result": result,
                     "glossary": glossary,
                     "branch": branch,
+                    "medications": medications,
                     "trace_id": trace.trace_id,
                 }
             )
@@ -558,8 +582,10 @@ def analyze_image():
                 result = _explain_text(report)
                 glossary = _glossary(report, result)
                 branch = _branch(report)
+                medications = _medications(report)
                 trace.set_artifact("glossary", glossary)
                 trace.set_artifact("branch", branch)
+                trace.set_artifact("medications", medications)
                 trace.complete(result)
                 return jsonify(
                     {
@@ -567,6 +593,7 @@ def analyze_image():
                         "result": result,
                         "glossary": glossary,
                         "branch": branch,
+                        "medications": medications,
                         "transcription": report,
                         "trace_id": trace.trace_id,
                     }
@@ -621,8 +648,10 @@ def analyze_pdf():
                 result = _explain_text(report)
                 glossary = _glossary(report, result)
                 branch = _branch(report)
+                medications = _medications(report)
                 trace.set_artifact("glossary", glossary)
                 trace.set_artifact("branch", branch)
+                trace.set_artifact("medications", medications)
                 trace.complete(result)
                 return jsonify(
                     {
@@ -630,6 +659,7 @@ def analyze_pdf():
                         "result": result,
                         "glossary": glossary,
                         "branch": branch,
+                        "medications": medications,
                         "source": "Lettura visiva del PDF scansionato" if used_vision else "Testo del PDF",
                         "trace_id": trace.trace_id,
                     }
@@ -1041,6 +1071,84 @@ def facilities_near():
         )
     except FacilitiesUnavailable as exc:
         return _json_error(str(exc), 503)
+
+
+@app.get("/api/referti")
+def reports_index():
+    return jsonify({"ok": True, "reports": list_reports(Path(app.config["TRACE_DIR"]))})
+
+
+@app.get("/api/referti/<trace_id>")
+def report_detail(trace_id: str):
+    report = load_report(Path(app.config["TRACE_DIR"]), trace_id)
+    if report is None:
+        return _json_error("Referto non trovato.", 404)
+    return jsonify({"ok": True, "report": report})
+
+
+@app.delete("/api/referti/<trace_id>")
+def report_delete(trace_id: str):
+    root = Path(app.config["TRACE_DIR"])
+    if load_report(root, trace_id) is None or not delete_trace(root, trace_id):
+        return _json_error("Referto non trovato.", 404)
+    return jsonify({"ok": True})
+
+
+@app.post("/api/referti/<trace_id>/farmaci")
+def report_medications(trace_id: str):
+    """Estrae i farmaci da un referto analizzato prima di questa funzione."""
+    root = Path(app.config["TRACE_DIR"])
+    report = load_report(root, trace_id)
+    if report is None:
+        return _json_error("Referto non trovato.", 404)
+    acquired = False
+    try:
+        acquired = _acquire_model()
+        base_url, model, timeout, _ = _settings()
+        medications = extract_medications(report["report_text"], base_url, model, timeout)
+    except UserFacingError as exc:
+        return _json_error(str(exc), 409)
+    finally:
+        if acquired:
+            _release_model()
+    update_trace_artifact(root, trace_id, "medications", medications)
+    return jsonify({"ok": True, "medications": medications})
+
+
+@app.get("/api/farmaci")
+def medications_index():
+    reports = list_reports(Path(app.config["TRACE_DIR"]))
+    return jsonify(
+        {
+            "ok": True,
+            "farmaci": history_overview(reports),
+            "referti_totali": len(reports),
+            "referti_da_analizzare": [r["id"] for r in reports if r["medications"] is None],
+            "prontuario": catalog_info(),
+        }
+    )
+
+
+@app.get("/api/farmaci/cerca")
+def medications_search():
+    return jsonify({"ok": True, "risultati": search_catalog(request.args.get("q", ""))})
+
+
+@app.get("/api/farmaci/<code>/foglietto")
+def medication_leaflet(code: str):
+    document_type = request.args.get("tipo", "FI").upper()
+    try:
+        path = leaflet_pdf(code, document_type)
+    except KeyError:
+        return _json_error("Farmaco o documento non trovato.", 404)
+    except LeafletUnavailable as exc:
+        return _json_error(str(exc), 503)
+    return send_file(
+        path,
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name=f"{document_type}_{code}.pdf",
+    )
 
 
 @app.get("/download/<path:filename>")

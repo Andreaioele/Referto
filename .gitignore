@@ -36,3 +36,6 @@ glossario/*.tmp
 
 # Risposte di OpenStreetMap salvate per la mappa delle strutture
 strutture_cache/
+
+# Foglietti illustrativi AIFA scaricati alla prima consultazione
+farmaci_cache/

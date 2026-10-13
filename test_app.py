@@ -10,6 +10,7 @@ import benchmarking
 import decision_model
 import glossario_medico
 import strutture_sanitarie
+import farmaci_referti
 import web_app
 from spiega_referto import (
     dataset_record_to_text,
@@ -771,6 +772,89 @@ class FacilitiesTests(unittest.TestCase):
             response = client.get("/api/facilities?lat=45.46&lon=9.19&branch=cardiologia")
         self.assertEqual(response.status_code, 503)
         self.assertIn("sovraccarico", response.get_json()["error"])
+
+
+class MedicationTests(unittest.TestCase):
+    REPORT = "MEDICATIONS: Metformin 500 mg twice daily for diabetes. Lisinopril 10 mg daily."
+
+    def test_lookup_links_english_names_and_us_brands_to_aifa(self):
+        self.assertEqual(farmaci_referti.lookup("metformin")["principio_attivo"], "metformina")
+        self.assertEqual(farmaci_referti.lookup("Tylenol")["principio_attivo"], "paracetamolo")
+        self.assertEqual(farmaci_referti.lookup("insulin glargine")["principio_attivo"], "insulina glargine")
+        self.assertIsNone(farmaci_referti.lookup("farmaco inesistente xyz"))
+
+    def test_model_fields_are_kept_only_if_written_in_the_report(self):
+        model_output = [
+            {"nome": "Metformin", "dose": "500 mg", "frequenza": "twice daily", "motivo": "for diabetes",
+             "uso": "in terapia", "citazione": "Metformin 500 mg twice daily for diabetes."},
+            {"nome": "Lisinopril", "dose": "20 mg", "motivo": "per la pressione alta", "uso": "in terapia"},
+            {"nome": "Atorvastatin", "dose": "40 mg"},
+        ]
+        with patch.object(farmaci_referti, "_extract_with_model", return_value=model_output):
+            result = farmaci_referti.extract_medications(self.REPORT, "http://x", "m", 5)
+        names = [item["nome"] for item in result["items"]]
+        self.assertEqual(names, ["Metformin", "Lisinopril"])  # Atorvastatin non è nel referto
+        metformin, lisinopril = result["items"]
+        self.assertEqual((metformin["dose"], metformin["motivo"]), ("500 mg", "for diabetes"))
+        self.assertEqual((lisinopril["dose"], lisinopril["motivo"]), ("", ""))  # dose e motivo inventati
+        self.assertEqual(metformin["aifa"]["principio_attivo"], "metformina")
+
+    def test_text_scan_is_used_when_model_is_offline(self):
+        with patch.object(
+            farmaci_referti, "_extract_with_model", side_effect=urllib.error.URLError("offline")
+        ):
+            result = farmaci_referti.extract_medications(self.REPORT, "http://x", "m", 5)
+        self.assertEqual(result["method"], "ricerca nel testo")
+        self.assertEqual({item["nome"] for item in result["items"]}, {"metformin", "lisinopril"})
+
+
+class ArchiveTests(unittest.TestCase):
+    def setUp(self):
+        self.trace_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.trace_directory.cleanup)
+        web_app.app.config.update(TESTING=True, TRACE_DIR=Path(self.trace_directory.name))
+        self.client = web_app.app.test_client()
+
+    def _analyze(self):
+        medications = {"method": "modello", "items": []}
+        with patch("web_app._explain_text", return_value="SINTESI\nTutto nella norma."), \
+                patch("web_app._glossary", return_value=[]), \
+                patch("web_app._branch", return_value={"id": "radiologia", "label": "Radiologia"}), \
+                patch("web_app._medications", return_value=medications):
+            response = self.client.post(
+                "/api/analyze/text",
+                data={"text": "RX torace: nessun versamento pleurico, cuore nei limiti."},
+            )
+        return response.get_json()["trace_id"]
+
+    def test_analyzed_report_appears_in_history_with_details(self):
+        trace_id = self._analyze()
+        reports = self.client.get("/api/referti").get_json()["reports"]
+        self.assertEqual([r["id"] for r in reports], [trace_id])
+        self.assertEqual(reports[0]["summary"], "Tutto nella norma.")
+        self.assertEqual(reports[0]["branch"]["label"], "Radiologia")
+        detail = self.client.get(f"/api/referti/{trace_id}").get_json()["report"]
+        self.assertIn("versamento pleurico", detail["report_text"])
+
+    def test_medications_can_be_extracted_later_and_report_deleted(self):
+        trace_id = self._analyze()
+        later = {"method": "modello", "items": [{"nome": "x", "aifa": None}]}
+        with patch("web_app.extract_medications", return_value=later):
+            response = self.client.post(f"/api/referti/{trace_id}/farmaci")
+        self.assertEqual(response.status_code, 200)
+        overview = self.client.get("/api/farmaci").get_json()
+        self.assertEqual(overview["farmaci"][0]["menzioni"][0]["trace_id"], trace_id)
+        self.assertEqual(self.client.delete(f"/api/referti/{trace_id}").status_code, 200)
+        self.assertEqual(self.client.get("/api/referti").get_json()["reports"], [])
+
+    def test_leaflet_endpoint_serves_pdf_and_rejects_unknown_codes(self):
+        pdf = Path(self.trace_directory.name) / "FI_017758.pdf"
+        pdf.write_bytes(b"%PDF-1.7 test")
+        with patch("web_app.leaflet_pdf", return_value=pdf):
+            response = self.client.get("/api/farmaci/017758/foglietto?tipo=FI")
+        self.assertEqual(response.mimetype, "application/pdf")
+        response.close()
+        self.assertEqual(self.client.get("/api/farmaci/999999999/foglietto").status_code, 404)
 
 
 if __name__ == "__main__":

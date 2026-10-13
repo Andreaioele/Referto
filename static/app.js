@@ -14,6 +14,8 @@ tabs.forEach((tab) => {
     if (name === "performance") loadBenchmarks();
     if (name === "glossary") loadGlossary();
     if (name === "facilities") showFacilitiesPanel();
+    if (name === "reports") loadReports();
+    if (name === "medications") loadMedications();
   });
 });
 
@@ -534,7 +536,304 @@ document.querySelector("#facilities-gps")?.addEventListener("click", () => {
   );
 });
 
-function showSingleResult(target, result, traceId, glossary, branch) {
+
+/* ---------- Foglietto illustrativo AIFA ---------- */
+const leafletModal = document.querySelector("#leaflet-modal");
+const leafletFrame = document.querySelector("#leaflet-frame");
+
+function openLeaflet(product, type = "FI") {
+  const url = type === "RCP" ? product.rcp_url : product.foglietto_url;
+  document.querySelector("#leaflet-kind").textContent = type === "RCP" ? "RIASSUNTO DELLE CARATTERISTICHE DEL PRODOTTO" : "FOGLIETTO ILLUSTRATIVO";
+  document.querySelector("#leaflet-title").textContent = `${product.nome} · ${product.ditta}`;
+  document.querySelector("#leaflet-open").href = url;
+  leafletFrame.src = url;
+  leafletModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeLeaflet() {
+  leafletModal.hidden = true;
+  leafletFrame.src = "about:blank";
+  document.body.classList.remove("modal-open");
+}
+document.querySelector("#leaflet-close")?.addEventListener("click", closeLeaflet);
+leafletModal?.addEventListener("click", (event) => { if (event.target === leafletModal) closeLeaflet(); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !leafletModal.hidden) closeLeaflet(); });
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = text;
+  return node;
+}
+
+function renderProduct(product) {
+  const row = el("li", "product");
+  const info = el("div", "product-info");
+  info.append(el("strong", "", product.nome), el("small", "", [product.ditta, product.forme.join(", "), product.fornitura].filter(Boolean).join(" · ")));
+  const actions = el("div", "product-actions");
+  const leaflet = el("button", "primary small", "Foglietto illustrativo");
+  leaflet.type = "button";
+  leaflet.addEventListener("click", () => openLeaflet(product, "FI"));
+  const rcp = el("button", "secondary small", "RCP");
+  rcp.type = "button";
+  rcp.title = "Riassunto delle caratteristiche del prodotto (per i professionisti)";
+  rcp.addEventListener("click", () => openLeaflet(product, "RCP"));
+  actions.append(leaflet, rcp);
+  row.append(info, actions);
+  return row;
+}
+
+function renderAifa(aifa) {
+  const box = el("div", "aifa-box");
+  if (!aifa) {
+    box.append(el("p", "aifa-missing", "Non trovato nel prontuario AIFA: potrebbe non essere in commercio in Italia o essere scritto con un nome diverso. Cercalo qui sotto nel prontuario."));
+    return box;
+  }
+  box.append(el("p", "aifa-title", `Principio attivo: ${aifa.principio_attivo} · ATC ${aifa.atc}`));
+  const list = el("ul", "product-list");
+  aifa.prodotti.forEach((product, index) => {
+    const row = renderProduct(product);
+    row.hidden = index >= 3;
+    list.append(row);
+  });
+  box.append(list);
+  if (aifa.prodotti.length > 3) {
+    const more = el("button", "link-button", `Mostra altri ${aifa.prodotti.length - 3} farmaci con questo principio attivo`);
+    more.type = "button";
+    more.addEventListener("click", () => {
+      [...list.children].forEach((row) => { row.hidden = false; });
+      more.remove();
+    });
+    box.append(more);
+  }
+  if (aifa.prodotti_totali > aifa.prodotti.length) {
+    box.append(el("p", "aifa-more", `Altri ${aifa.prodotti_totali - aifa.prodotti.length} farmaci con lo stesso principio attivo: cercali nel prontuario qui sotto.`));
+  }
+  return box;
+}
+
+function medicationFacts(item) {
+  const facts = el("dl", "med-facts");
+  [["Quantità", [item.dose, item.frequenza, item.via].filter(Boolean).join(" · ")], ["Motivo", item.motivo], ["Uso", item.uso]].forEach(([label, value]) => {
+    facts.append(el("dt", "", label), el("dd", value ? "" : "missing", value || "Non indicato nel referto"));
+  });
+  return facts;
+}
+
+function renderReportMedications(medications) {
+  const section = el("section", "result-medications");
+  section.append(el("h3", "", "Farmaci citati nel referto"));
+  if (!medications?.items?.length) {
+    section.append(el("p", "glossary-intro", "Nel referto non sono citati farmaci."));
+    return section;
+  }
+  section.append(el("p", "glossary-intro", "Copiati dal referto, non suggeriti da Referto. Trovi lo storico completo nella sezione Farmaci."));
+  medications.items.forEach((item) => {
+    const card = el("article", "med-card");
+    card.append(el("h4", "", item.nome), medicationFacts(item));
+    if (item.citazione) card.append(el("blockquote", "med-quote", item.citazione));
+    card.append(renderAifa(item.aifa));
+    section.append(card);
+  });
+  return section;
+}
+
+/* ---------- Referti ---------- */
+const reportsList = document.querySelector("#reports-list");
+const reportDetail = document.querySelector("#report-detail");
+
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
+  return data;
+}
+
+async function loadReports() {
+  if (!reportsList) return;
+  reportDetail.hidden = true;
+  reportsList.hidden = false;
+  try {
+    const data = await fetchJson("/api/referti");
+    reportsList.replaceChildren();
+    if (!data.reports.length) {
+      reportsList.append(el("p", "empty-state", "Non ci sono ancora referti. Spiegane uno da PDF, immagine o testo per iniziare."));
+      return;
+    }
+    data.reports.forEach((report) => {
+      const card = el("button", "report-card");
+      card.type = "button";
+      const top = el("div", "report-card-top");
+      top.append(el("span", "report-date", formatTraceDate(report.started_at)));
+      if (report.branch) top.append(el("span", "report-branch", report.branch.label));
+      card.append(top, el("strong", "", report.title));
+      card.append(el("p", "report-summary", report.summary || report.excerpt));
+      const counts = [`${report.glossary_count} parole nel glossario`];
+      counts.push(report.medications_count === null ? "farmaci non ancora cercati" : `${report.medications_count} farmaci`);
+      card.append(el("small", "report-counts", `${report.source_label} · ${counts.join(" · ")}`));
+      card.addEventListener("click", () => showReportDetail(report.id));
+      reportsList.append(card);
+    });
+  } catch (error) {
+    reportsList.replaceChildren(el("p", "empty-state", error.message));
+  }
+}
+
+async function showReportDetail(id) {
+  try {
+    const { report } = await fetchJson(`/api/referti/${id}`);
+    reportsList.hidden = true;
+    reportDetail.hidden = false;
+    reportDetail.replaceChildren();
+    const back = el("button", "back-button", "← Tutti i referti");
+    back.type = "button";
+    back.addEventListener("click", loadReports);
+    const header = el("div", "report-detail-header");
+    header.append(el("p", "section-label", `${report.source_label.toUpperCase()} · ${formatTraceDate(report.started_at)}`), el("h3", "", report.title));
+    reportDetail.append(back, header);
+    if (report.branch) reportDetail.append(renderResultBranch(report.branch));
+
+    const original = el("details", "report-original");
+    original.append(el("summary", "", "Testo originale del referto"), el("pre", "", report.report_text));
+    reportDetail.append(original, renderExplanation(report.explanation));
+    if (report.glossary.length) reportDetail.append(renderResultGlossary(report.glossary));
+
+    if (report.medications) {
+      reportDetail.append(renderReportMedications(report.medications));
+    } else {
+      const pending = el("section", "result-medications");
+      pending.append(el("h3", "", "Farmaci citati nel referto"));
+      const button = el("button", "secondary", "Cerca i farmaci in questo referto");
+      button.type = "button";
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        button.textContent = "Ricerca in corso…";
+        try {
+          await fetchJson(`/api/referti/${id}/farmaci`, { method: "POST" });
+          showReportDetail(id);
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "Cerca i farmaci in questo referto";
+          pending.append(el("p", "facilities-status error", error.message));
+        }
+      });
+      pending.append(button);
+      reportDetail.append(pending);
+    }
+
+    const remove = el("button", "danger-button", "Elimina questo referto dallo storico");
+    remove.type = "button";
+    remove.addEventListener("click", async () => {
+      if (!window.confirm("Eliminare definitivamente il referto, la sua spiegazione e i farmaci estratti?")) return;
+      try {
+        await fetchJson(`/api/referti/${id}`, { method: "DELETE" });
+        loadReports();
+      } catch (error) {
+        window.alert(error.message);
+      }
+    });
+    reportDetail.append(remove);
+    reportDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    reportsList.replaceChildren(el("p", "empty-state", error.message));
+  }
+}
+document.querySelector("#refresh-reports")?.addEventListener("click", loadReports);
+
+/* ---------- Farmaci ---------- */
+const medicationsList = document.querySelector("#medications-list");
+const medicationsPending = document.querySelector("#medications-pending");
+
+function renderMedicationGroup(group) {
+  const card = el("article", "med-card");
+  const title = el("div", "med-card-title");
+  title.append(el("h4", "", group.nome), el("span", "report-branch", `${group.menzioni.length} ${group.menzioni.length === 1 ? "referto" : "referti"}`));
+  card.append(title);
+  group.menzioni.forEach((mention) => {
+    const block = el("div", "med-mention");
+    const source = el("button", "med-source", `${formatTraceDate(mention.data)} · ${mention.referto || "Referto"}${mention.branca ? ` · ${mention.branca}` : ""}`);
+    source.type = "button";
+    source.title = "Apri il referto";
+    source.addEventListener("click", () => {
+      activatePanel("reports");
+      showReportDetail(mention.trace_id);
+    });
+    block.append(source, el("p", "med-written", `Scritto nel referto: ${mention.nome}`), medicationFacts(mention));
+    if (mention.citazione) block.append(el("blockquote", "med-quote", mention.citazione));
+    card.append(block);
+  });
+  card.append(renderAifa(group.aifa));
+  return card;
+}
+
+async function analyzePendingReports(ids, button) {
+  button.disabled = true;
+  for (let index = 0; index < ids.length; index += 1) {
+    button.textContent = `Cerco i farmaci… ${index + 1} di ${ids.length}`;
+    try {
+      await fetchJson(`/api/referti/${ids[index]}/farmaci`, { method: "POST" });
+    } catch (error) {
+      medicationsPending.append(el("p", "facilities-status error", error.message));
+      break;
+    }
+  }
+  loadMedications();
+}
+
+async function loadMedications() {
+  if (!medicationsList) return;
+  try {
+    const data = await fetchJson("/api/farmaci");
+    document.querySelector("#medications-source").textContent = `Prontuario: ${data.prontuario.source}, ${data.prontuario.farmaci} farmaci autorizzati, aggiornato al ${data.prontuario.built_on}. I foglietti sono i PDF ufficiali della Banca Dati Farmaci AIFA.`;
+    medicationsPending.replaceChildren();
+    medicationsPending.hidden = !data.referti_da_analizzare.length;
+    if (data.referti_da_analizzare.length) {
+      const count = data.referti_da_analizzare.length;
+      medicationsPending.append(el("p", "", `${count} ${count === 1 ? "referto dello storico non è ancora stato analizzato" : "referti dello storico non sono ancora stati analizzati"} per i farmaci.`));
+      const button = el("button", "primary", "Cerca i farmaci nei referti precedenti");
+      button.type = "button";
+      button.addEventListener("click", () => analyzePendingReports(data.referti_da_analizzare, button));
+      medicationsPending.append(button);
+    }
+    medicationsList.replaceChildren();
+    if (!data.farmaci.length) {
+      medicationsList.append(el("p", "empty-state", data.referti_totali ? "Nei referti analizzati non sono citati farmaci." : "Non ci sono ancora referti. Spiegane uno per iniziare."));
+      return;
+    }
+    data.farmaci.forEach((group) => medicationsList.append(renderMedicationGroup(group)));
+  } catch (error) {
+    medicationsList.replaceChildren(el("p", "empty-state", error.message));
+  }
+}
+document.querySelector("#refresh-medications")?.addEventListener("click", loadMedications);
+
+let catalogTimer = null;
+document.querySelector("#catalog-search")?.addEventListener("input", (event) => {
+  clearTimeout(catalogTimer);
+  const query = event.target.value.trim();
+  const results = document.querySelector("#catalog-results");
+  if (query.length < 3) {
+    results.replaceChildren();
+    return;
+  }
+  catalogTimer = setTimeout(async () => {
+    try {
+      const data = await fetchJson(`/api/farmaci/cerca?${new URLSearchParams({ q: query })}`);
+      const list = el("ul", "product-list");
+      data.risultati.forEach((product) => {
+        const row = renderProduct(product);
+        row.querySelector(".product-info").append(el("small", "", `Principio attivo: ${product.principio_attivo} · ATC ${product.atc}`));
+        list.append(row);
+      });
+      results.replaceChildren(data.risultati.length ? list : el("p", "empty-state", "Nessun farmaco trovato."));
+    } catch (error) {
+      results.replaceChildren(el("p", "empty-state", error.message));
+    }
+  }, 300);
+});
+
+function showSingleResult(target, result, traceId, glossary, branch, medications) {
   target.hidden = false;
   target.className = "result";
   target.replaceChildren();
@@ -544,6 +843,7 @@ function showSingleResult(target, result, traceId, glossary, branch) {
   if (branch) target.append(renderResultBranch(branch));
   target.append(renderExplanation(result));
   if (glossary?.length) target.append(renderResultGlossary(glossary));
+  if (medications) target.append(renderReportMedications(medications));
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);
 }
@@ -765,7 +1065,7 @@ document.querySelectorAll(".analysis-form").forEach((form) => {
         requestError.traceId = data.trace_id;
         throw requestError;
       }
-      showSingleResult(target, data.result, data.trace_id, data.glossary, data.branch);
+      showSingleResult(target, data.result, data.trace_id, data.glossary, data.branch, data.medications);
     } catch (error) {
       showError(target, error.message || "Errore di connessione.", error.traceId);
     } finally {

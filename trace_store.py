@@ -190,3 +190,32 @@ def load_trace(root: Path, trace_id: str) -> Optional[Dict[str, Any]]:
         return json.loads(matches[0].read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def update_trace_artifact(root: Path, trace_id: str, name: str, value: Any) -> bool:
+    """Aggiunge un artefatto a una trace già conclusa (es. farmaci estratti dopo)."""
+    if not trace_id or any(character not in "0123456789-abcdef" for character in trace_id):
+        return False
+    matches = list(Path(root).glob(f"*/{trace_id}.json"))
+    if len(matches) != 1:
+        return False
+    path = matches[0]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    data.setdefault("artifacts", {})[name] = value
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    temporary.replace(path)
+    return True
+
+
+def delete_trace(root: Path, trace_id: str) -> bool:
+    if not trace_id or any(character not in "0123456789-abcdef" for character in trace_id):
+        return False
+    matches = list(Path(root).glob(f"*/{trace_id}.json"))
+    if len(matches) != 1:
+        return False
+    matches[0].unlink()
+    return True
