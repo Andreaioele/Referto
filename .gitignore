@@ -39,3 +39,8 @@ strutture_cache/
 
 # Foglietti illustrativi AIFA scaricati alla prima consultazione
 farmaci_cache/
+
+# Obsidian: nel repo solo la configurazione del grafo
+docs/.obsidian/*
+!docs/.obsidian/graph.json
+!docs/.obsidian/app.json

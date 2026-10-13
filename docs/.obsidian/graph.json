@@ -1,0 +1,72 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "tag:#area/indice",
+      "color": {
+        "a": 1,
+        "rgb": 1003843
+      }
+    },
+    {
+      "query": "tag:#area/core",
+      "color": {
+        "a": 1,
+        "rgb": 2857592
+      }
+    },
+    {
+      "query": "tag:#area/funzioni",
+      "color": {
+        "a": 1,
+        "rgb": 3898840
+      }
+    },
+    {
+      "query": "tag:#area/interfaccia",
+      "color": {
+        "a": 1,
+        "rgb": 9133255
+      }
+    },
+    {
+      "query": "tag:#area/valutazione",
+      "color": {
+        "a": 1,
+        "rgb": 14256683
+      }
+    },
+    {
+      "query": "tag:#area/infrastruttura",
+      "color": {
+        "a": 1,
+        "rgb": 13191754
+      }
+    },
+    {
+      "query": "tag:#area/progetto OR tag:#area/sviluppo",
+      "color": {
+        "a": 1,
+        "rgb": 9080717
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.5,
+  "repelStrength": 12,
+  "linkStrength": 1,
+  "linkDistance": 200,
+  "scale": 1,
+  "close": false
+}

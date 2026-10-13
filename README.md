@@ -19,6 +19,13 @@ chiaramente attribuite alla fonte.
 > errori. Referto non formula diagnosi e non deve essere usato per decisioni
 > terapeutiche o valutazioni di urgenza.
 
+## Documentazione per chi entra nel progetto
+
+La cartella [`docs/`](docs/00-indice.md) spiega architettura, moduli, dati e
+flusso di lavoro, nota per nota. Si legge con Claude Code (partendo da
+`docs/00-indice.md`) o in Obsidian aprendo `docs/` come vault, con il grafo dei
+collegamenti. Ogni modifica al codice aggiorna anche `docs/` (vedi `CLAUDE.md`).
+
 ## Caratteristiche
 
 - Elaborazione locale tramite l’API di Ollama su `127.0.0.1:11434`.
