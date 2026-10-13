@@ -16,6 +16,9 @@ Nessun secondo salvataggio: lo storico è una vista sulle trace
 
 - `list_reports()`: elenco con titolo, specialità, prima frase della sintesi, conteggi.
 - `load_report()`: testo, spiegazione, glossario, branca, farmaci.
+- Nel dettaglio, glossario, farmaci e specialità sono righe che portano alle
+  rispettive sezioni filtrate su quel referto ([[05-webapp-e-interfaccia]]): la
+  scelta del farmaco si fa nella sezione Farmaci.
 - `trace_store.update_trace_artifact()` aggiunge i farmaci a referti già
   analizzati; `trace_store.delete_trace()` elimina un referto (pulsante
   "Elimina questo referto", con conferma).

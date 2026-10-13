@@ -2,8 +2,14 @@ const tabs = [...document.querySelectorAll(".tab")];
 const panels = [...document.querySelectorAll(".panel")];
 
 tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
+  tab.addEventListener("click", (event) => {
     const name = tab.dataset.tab;
+    // Clic vero sulla barra laterale: si riparte senza il filtro "questo referto".
+    // I collegamenti da un referto passano da activatePanel() (clic simulato).
+    if (event.isTrusted) {
+      glossaryFilter = null;
+      medicationsFilter = null;
+    }
     tabs.forEach((item) => item.classList.toggle("active", item === tab));
     panels.forEach((panel) => {
       const selected = panel.dataset.panel === name;
@@ -188,118 +194,6 @@ function glossaryTermName(term) {
   return term.name_it || term.it || term.en;
 }
 
-function glossaryDetail(term, position, total, onMove, showHistory) {
-  const card = document.createElement("article");
-  card.className = "glossary-detail";
-
-  const header = document.createElement("div");
-  header.className = "glossary-detail-header";
-  const counter = document.createElement("span");
-  counter.className = "glossary-counter";
-  counter.textContent = `${position + 1} di ${total}`;
-  const nav = document.createElement("div");
-  nav.className = "glossary-nav";
-  [["‹ Indietro", -1], ["Avanti ›", 1]].forEach(([label, step]) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "secondary";
-    button.textContent = label;
-    button.disabled = position + step < 0 || position + step >= total;
-    button.addEventListener("click", () => onMove(position + step));
-    nav.append(button);
-  });
-  header.append(counter, nav);
-
-  const title = document.createElement("h4");
-  title.textContent = glossaryTermName(term);
-  card.append(header, title);
-
-  const block = (label, text, className = "") => {
-    if (!text) return;
-    const section = document.createElement("section");
-    section.className = `glossary-block ${className}`.trim();
-    const heading = document.createElement("h5");
-    heading.textContent = label;
-    const paragraph = document.createElement("p");
-    paragraph.textContent = text;
-    section.append(heading, paragraph);
-    card.append(section);
-  };
-  if (term.simple_it) {
-    block("In parole semplici", term.simple_it, "simple");
-    const note = document.createElement("p");
-    note.className = "glossary-note";
-    note.textContent = "In caso di dubbio chiedi al tuo medico.";
-    card.append(note);
-  } else {
-    block("In parole semplici", "Spiegazione semplice non ancora disponibile: apri «Dettagli per chi vuole approfondire».", "simple pending");
-  }
-  const technical = document.createElement("details");
-  technical.className = "glossary-technical";
-  const technicalSummary = document.createElement("summary");
-  technicalSummary.textContent = "Dettagli per chi vuole approfondire";
-  technical.append(technicalSummary);
-  [["Nome inglese", term.en !== glossaryTermName(term) ? term.en : ""], ["Parole comuni (inglese)", (term.lay_en || []).join(" · ")], ["Definizione di riferimento (HPO, inglese)", term.definition_en]].forEach(([label, text]) => {
-    if (!text) return;
-    const section = document.createElement("section");
-    section.className = "glossary-block";
-    const heading = document.createElement("h5");
-    heading.textContent = label;
-    const paragraph = document.createElement("p");
-    paragraph.textContent = text;
-    section.append(heading, paragraph);
-    technical.append(section);
-  });
-  card.append(technical);
-
-  const footer = document.createElement("p");
-  footer.className = "glossary-meta";
-  if (showHistory && term.count) {
-    footer.append(`Trovata in ${term.count} analisi · ultima volta ${formatTraceDate(term.last_seen)} · `);
-  }
-  const link = document.createElement("a");
-  link.href = term.source_url;
-  link.target = "_blank";
-  link.rel = "noopener";
-  link.textContent = `Scheda ${term.id} su HPO ↗`;
-  footer.append(link);
-  technical.append(footer);
-  return card;
-}
-
-function renderGlossaryViewer(terms, { showHistory = false } = {}) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "glossary-viewer";
-  const chips = document.createElement("div");
-  chips.className = "glossary-chips";
-  const detailSlot = document.createElement("div");
-  let current = 0;
-
-  const select = (index) => {
-    current = index;
-    [...chips.children].forEach((chip, i) => chip.classList.toggle("active", i === index));
-    detailSlot.replaceChildren(glossaryDetail(terms[index], index, terms.length, select, showHistory));
-  };
-  terms.forEach((term, index) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "glossary-chip";
-    chip.textContent = glossaryTermName(term);
-    chip.addEventListener("click", () => select(index));
-    chips.append(chip);
-  });
-  wrapper.append(chips, detailSlot);
-  if (terms.length) select(current);
-  return wrapper;
-}
-
-function renderResultGlossary(terms) {
-  const box = el("div", "more-body");
-  box.append(el("p", "glossary-intro", "Premi su una parola per leggere cosa significa. Se una parola è nell’elenco non vuol dire che tu abbia quel problema: il referto può nominarla anche per escluderlo."));
-  box.append(renderGlossaryViewer(terms));
-  return box;
-}
-
 function moreItem(title, content, open = false) {
   const item = el("details", "more-item");
   item.open = open;
@@ -307,18 +201,70 @@ function moreItem(title, content, open = false) {
   return item;
 }
 
-function renderMoreSections({ glossary, medications, branch, traceId }) {
+let glossaryFilter = null;      // {traceId, title, ids}: vocabolario di un solo referto
+let medicationsFilter = null;   // {traceId, title}: farmaci di un solo referto
+
+function moreLink(title, summary, actionText, onAction) {
+  // Riga compatta: riassunto di una riga e un pulsante che porta alla sezione.
+  const row = el("div", "more-link");
+  const text = el("div", "more-link-text");
+  text.append(el("strong", "", title));
+  if (summary) text.append(el("p", "", summary));
+  const button = el("button", "secondary", actionText);
+  button.type = "button";
+  button.addEventListener("click", onAction);
+  row.append(text, button);
+  return row;
+}
+
+function listPreview(names, max = 4) {
+  const shown = names.slice(0, max).join(", ");
+  return names.length > max ? `${shown} e altre ${names.length - max}` : shown;
+}
+
+function renderMoreSections({ glossary, medications, branch, traceId, title }) {
   const section = el("section", "more");
   section.append(el("h3", "more-title", "Per saperne di più"));
   if (glossary?.length) {
-    section.append(moreItem(`Terminologie (${glossary.length})`, renderResultGlossary(glossary)));
+    section.append(moreLink(
+      `Terminologie · ${glossary.length} ${glossary.length === 1 ? "parola" : "parole"}`,
+      listPreview(glossary.map(glossaryTermName)),
+      "Apri il vocabolario",
+      () => {
+        glossaryFilter = { traceId, title, ids: glossary.map((term) => term.id) };
+        activatePanel("glossary");
+      },
+    ));
   }
   if (medications) {
-    const count = medications.items?.length || 0;
-    section.append(moreItem(count ? `Farmaci scritti nel referto (${count})` : "Farmaci scritti nel referto", renderReportMedications(medications, traceId)));
+    const items = medications.items || [];
+    const names = items.map((item) => (item.aifa?.farmaco ? titleCase(item.aifa.farmaco.nome) : item.nome));
+    const toChoose = items.filter((item) => item.aifa && !item.aifa.farmaco).length;
+    const summary = items.length
+      ? `${listPreview(names)}${toChoose ? ` · ${toChoose} da scegliere per vedere il foglietto` : ""}`
+      : "Nel referto non sono scritti farmaci.";
+    section.append(moreLink(
+      `Farmaci · ${items.length}`,
+      summary,
+      items.length ? "Vai ai farmaci" : "Vai ai miei farmaci",
+      () => {
+        medicationsFilter = items.length ? { traceId, title } : null;
+        activatePanel("medications");
+      },
+    ));
   }
   if (branch) {
-    section.append(moreItem(`Chi se ne occupa: ${branch.label}`, renderResultBranch(branch)));
+    section.append(moreLink(
+      `Chi se ne occupa · ${branch.label}`,
+      "Ospedali, ambulatori e studi vicino a te.",
+      "Vedi sulla mappa",
+      () => {
+        facilitiesBranch.value = branch.id;
+        branchFromReport = true;
+        document.querySelector("#facilities-branch-origin").textContent = "Scelta in base a questo referto. Puoi cambiarla.";
+        activatePanel("facilities");
+      },
+    ));
   }
   return section.children.length > 1 ? section : null;
 }
@@ -396,11 +342,18 @@ function renderSavedGlossary() {
     glossarySaved.innerHTML = '<p class="empty-state">Il vocabolario è vuoto: si riempie da solo quando fai spiegare un referto.</p>';
     return;
   }
-  const terms = sortedTerms(glossaryTerms);
+  const filterIds = glossaryFilter ? new Set(glossaryFilter.ids) : null;
+  const terms = sortedTerms(filterIds ? glossaryTerms.filter((term) => filterIds.has(term.id)) : glossaryTerms);
+  if (!terms.length) {
+    glossaryFilter = null;
+    renderSavedGlossary();
+    return;
+  }
   if (!terms.some((term) => term.id === glossarySelected)) glossarySelected = terms[0].id;
 
   const picker = el("div", "vocab-picker");
   const label = el("label", "field-label", `Scegli una parola (${terms.length} in ordine alfabetico)`);
+  if (glossaryFilter) label.textContent = `Scegli una parola di questo referto (${terms.length} in ordine alfabetico)`;
   label.htmlFor = "vocab-select";
   const select = el("select", "vocab-select");
   select.id = "vocab-select";
@@ -436,7 +389,12 @@ function renderSavedGlossary() {
     document.querySelector("#vocab-select")?.focus();
   });
   picker.append(label, select, nav);
-  glossarySaved.replaceChildren(picker, renderVocabularyEntry(terms[index]));
+  const parts = [picker, renderVocabularyEntry(terms[index])];
+  if (glossaryFilter) parts.unshift(filterBanner(`Parole di «${glossaryFilter.title}»`, glossaryFilter.traceId, "Mostra tutte le parole", () => {
+    glossaryFilter = null;
+    renderSavedGlossary();
+  }));
+  glossarySaved.replaceChildren(...parts);
 }
 
 async function loadGlossary() {
@@ -496,22 +454,6 @@ function activatePanel(name) {
 
 function branchLabel() {
   return facilitiesBranch.selectedOptions[0]?.textContent || "medicina generale";
-}
-
-function renderResultBranch(branch) {
-  const section = el("section", "result-branch");
-  const text = el("div");
-  text.append(el("p", "result-branch-label", "Specialità del referto"), el("strong", "", branch.label), el("small", "", "È la specialità medica che si occupa di questo tipo di esame."));
-  const button = el("button", "secondary", "Cerca specialisti vicino a me");
-  button.type = "button";
-  button.addEventListener("click", () => {
-    facilitiesBranch.value = branch.id;
-    branchFromReport = true;
-    document.querySelector("#facilities-branch-origin").textContent = "Scelta in base a questo referto. Puoi cambiarla.";
-    activatePanel("facilities");
-  });
-  section.append(text, button);
-  return section;
 }
 
 async function showFacilitiesPanel() {
@@ -902,26 +844,28 @@ function renderMedicationCard(item, aifa, mentions, onChange, extra) {
   return card;
 }
 
-function renderReportMedications(medications, traceId) {
-  const box = el("div", "more-body");
-  if (!medications?.items?.length) {
-    box.append(el("p", "glossary-intro", "Nel referto non sono scritti farmaci."));
-    return box;
-  }
-  box.append(el("p", "glossary-intro", "Sono i farmaci scritti nel referto, non consigli di Referto."));
-  const refresh = async () => {
-    const { report } = await fetchJson(`/api/referti/${traceId}`);
-    box.replaceWith(renderReportMedications(report.medications, traceId));
-  };
-  medications.items.forEach((item, index) => {
-    box.append(renderMedicationCard(item, item.aifa, [{ trace_id: traceId, indice: index }], refresh));
-  });
-  return box;
-}
-
 /* ---------- Referti ---------- */
 const reportsList = document.querySelector("#reports-list");
 const reportDetail = document.querySelector("#report-detail");
+
+function filterBanner(text, traceId, clearText, onClear) {
+  // "Stai guardando solo questo referto": torna al referto o togli il filtro.
+  const banner = el("div", "filter-banner");
+  banner.append(el("p", "", text));
+  const actions = el("div", "filter-banner-actions");
+  const back = el("button", "secondary", "← Torna al referto");
+  back.type = "button";
+  back.addEventListener("click", () => {
+    activatePanel("reports");
+    showReportDetail(traceId);
+  });
+  const clear = el("button", "link-button", clearText);
+  clear.type = "button";
+  clear.addEventListener("click", onClear);
+  actions.append(back, clear);
+  banner.append(actions);
+  return banner;
+}
 
 async function fetchJson(url, options) {
   const response = await fetch(url, options);
@@ -974,26 +918,23 @@ async function showReportDetail(id) {
     reportDetail.append(back, header);
     reportDetail.append(renderExplanation(report.explanation));
 
-    const more = renderMoreSections({ glossary: report.glossary, medications: report.medications, branch: report.branch, traceId: id })
+    const more = renderMoreSections({ glossary: report.glossary, medications: report.medications, branch: report.branch, traceId: id, title: report.title })
       || (() => { const section = el("section", "more"); section.append(el("h3", "more-title", "Per saperne di più")); return section; })();
     if (!report.medications) {
-      const pending = el("div", "more-body");
-      const button = el("button", "secondary", "Cerca i farmaci in questo referto");
-      button.type = "button";
-      button.addEventListener("click", async () => {
+      const row = moreLink("Farmaci", "Non ho ancora cercato i farmaci in questo referto.", "Cerca i farmaci", async () => {
+        const button = row.querySelector("button");
         button.disabled = true;
-        button.textContent = "Sto cercando… può volerci un minuto";
+        button.textContent = "Sto cercando…";
         try {
           await fetchJson(`/api/referti/${id}/farmaci`, { method: "POST" });
           showReportDetail(id);
         } catch (error) {
           button.disabled = false;
-          button.textContent = "Cerca i farmaci in questo referto";
-          pending.append(el("p", "facilities-status error", error.message));
+          button.textContent = "Cerca i farmaci";
+          row.append(el("p", "facilities-status error", error.message));
         }
       });
-      pending.append(button);
-      more.append(moreItem("Farmaci scritti nel referto", pending));
+      more.append(row);
     }
     const original = el("pre", "report-original-text", report.report_text);
     more.append(moreItem("Il testo originale del referto", original));
@@ -1080,6 +1021,17 @@ async function loadMedications() {
       medicationsPending.append(button);
     }
     medicationsList.replaceChildren();
+    if (medicationsFilter) {
+      const filter = medicationsFilter;
+      const groups = data.farmaci.filter((group) => group.menzioni.some((m) => m.trace_id === filter.traceId));
+      medicationsPending.hidden = true;
+      medicationsList.append(filterBanner(`Farmaci di «${filter.title}»`, filter.traceId, "Mostra tutti i miei farmaci", () => {
+        medicationsFilter = null;
+        loadMedications();
+      }));
+      groups.forEach((group) => medicationsList.append(renderMedicationGroup(group)));
+      return;
+    }
     if (!data.farmaci.length) {
       medicationsList.append(el("p", "empty-state", data.referti_totali ? "Nei tuoi referti non sono scritti farmaci." : "Non ci sono ancora referti. Spiegane uno per iniziare."));
       return;
@@ -1123,7 +1075,7 @@ function showSingleResult(target, result, traceId, glossary, branch, medications
   const title = document.createElement("h3");
   title.textContent = "Ecco la spiegazione del tuo referto";
   target.append(title, renderExplanation(result));
-  const more = renderMoreSections({ glossary, medications, branch, traceId });
+  const more = renderMoreSections({ glossary, medications, branch, traceId, title: branch ? `Referto di ${branch.label.toLowerCase()}` : "Questo referto" });
   if (more) target.append(more);
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);

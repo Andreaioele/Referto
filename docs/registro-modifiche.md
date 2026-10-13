@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-13
 
+- `staging` · "Per saperne di più" con righe compatte che portano a Terminologie, Farmaci e Dove andare filtrati sul referto, con ritorno al referto; tolte le viste interne non più usate · [[05-webapp-e-interfaccia]]
 - `staging` · Terminologie in stile vocabolario: menu a tendina alfabetico per iniziale e scheda completa della parola, con i referti in cui compare · [[06-glossario-hpo]]
 - `staging` · "Dove andare" automatico: città dal profilo (Ferrara), specialità dall'ultimo referto, mappa ed elenco a gruppi subito; geocoding sul comune e non sulla provincia; mirror Overpass `maps.mail.ru` · [[07-branca-e-strutture]]
 - `staging` · Farmaci: corrispondenza univoca nome → foglietto. Nome commerciale italiano (escluse le importazioni parallele) o unico farmaco con quel principio attivo; negli altri casi sceglie il paziente, mai l'app · [[08-referti-e-farmaci-aifa]]
