@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-13
 
+- `staging` · File, Foto e Testo uniti nella sezione "Spiegami un referto": si sceglie la modalità e compare solo lo strumento giusto; la Foto apre la fotocamera dal vivo · [[05-webapp-e-interfaccia]]
 - `staging` · Creata la documentazione `docs/` (vault Obsidian) e `CLAUDE.md`
   con la regola di aggiornamento · [[00-indice]]
 - `main` · Merge di `feature-proposal-pietro` in `main`; creato il branch

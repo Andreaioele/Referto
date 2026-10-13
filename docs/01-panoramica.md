@@ -10,7 +10,8 @@ Torna a [[00-indice]].
 ## Cos'è Referto
 
 Un'app web che spiega un referto medico al paziente in italiano semplice. Il
-paziente carica un PDF, una foto o incolla il testo; Referto restituisce una
+paziente, dalla sezione "Spiegami un referto", carica un PDF, scatta una foto o
+incolla il testo; Referto restituisce una
 spiegazione in quattro sezioni (vedi [[03-pipeline-spiegazione]]) e, intorno a
 questa, strumenti per orientarsi:
 

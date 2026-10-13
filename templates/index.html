@@ -7,7 +7,7 @@
   <title>Referto</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=6">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=7">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
@@ -30,7 +30,7 @@
       <p class="eyebrow">ASSISTENTE ALLA COMPRENSIONE</p>
       <h2>Capisci il tuo referto, con parole semplici.</h2>
       <ol class="steps" aria-label="Come funziona">
-        <li><span>1</span>Scegli come caricare il referto</li>
+        <li><span>1</span>Scegli file, foto o testo</li>
         <li><span>2</span>Premi «Spiega il referto»</li>
         <li><span>3</span>Leggi la spiegazione</li>
       </ol>
@@ -38,19 +38,10 @@
 
     <section class="workspace">
       <aside class="sidebar">
-        <p class="nav-label">Spiega un referto</p>
-        <nav class="tabs" aria-label="Spiega un referto">
-          <button class="tab active" type="button" data-tab="pdf">
-            <span class="tab-icon" aria-hidden="true">PDF</span>
-            <span><strong>File PDF</strong><small>Il referto sul computer</small></span>
-          </button>
-          <button class="tab" type="button" data-tab="image">
-            <span class="tab-icon" aria-hidden="true">FOTO</span>
-            <span><strong>Foto</strong><small>Una foto del foglio</small></span>
-          </button>
-          <button class="tab" type="button" data-tab="text">
-            <span class="tab-icon" aria-hidden="true">TESTO</span>
-            <span><strong>Testo</strong><small>Scrivi o incolla</small></span>
+        <nav class="tabs" aria-label="Spiegami un referto">
+          <button class="tab active" type="button" data-tab="explain">
+            <span class="tab-icon" aria-hidden="true">REF</span>
+            <span><strong>Spiegami un referto</strong><small>Da file, foto o testo</small></span>
           </button>
         </nav>
 
@@ -98,54 +89,72 @@
       </aside>
 
       <div class="content">
-        <section id="panel-pdf" class="panel active" data-panel="pdf">
+        <section id="panel-explain" class="panel active" data-panel="explain">
           <div class="panel-heading">
-            <p class="section-label">FILE PDF</p>
-            <h2>Carica il referto in PDF</h2>
-            <p>Premi il riquadro qui sotto e scegli il file del referto. Poi premi «Spiega il referto».</p>
+            <p class="section-label">SPIEGAMI UN REFERTO</p>
+            <h2>Come vuoi darmi il referto?</h2>
+            <p>Scegli una delle tre possibilità qui sotto.</p>
           </div>
-          <form class="analysis-form" data-endpoint="/api/analyze/pdf" data-result="result-pdf">
-            <label class="dropzone">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <strong>Premi qui per scegliere il file</strong>
-              <span class="file-name">oppure trascinalo in questo riquadro</span>
-              <input type="file" name="pdf" accept="application/pdf,.pdf" required>
-            </label>
-            <button class="primary" type="submit">Spiega il referto</button>
-          </form>
-          <div id="result-pdf" class="result" hidden></div>
-        </section>
 
-        <section id="panel-image" class="panel" data-panel="image" hidden>
-          <div class="panel-heading">
-            <p class="section-label">FOTO</p>
-            <h2>Carica una foto del referto</h2>
-            <p>Fotografa il foglio dritto, con buona luce, in modo che si legga tutto il testo.</p>
+          <div class="mode-picker" role="tablist" aria-label="Come caricare il referto">
+            <button class="mode active" type="button" role="tab" aria-selected="true" data-mode="file">
+              <span class="mode-icon" aria-hidden="true">FILE</span>
+              <strong>File</strong><small>Un PDF sul computer</small>
+            </button>
+            <button class="mode" type="button" role="tab" aria-selected="false" data-mode="photo">
+              <span class="mode-icon" aria-hidden="true">FOTO</span>
+              <strong>Foto</strong><small>Fotografa il foglio</small>
+            </button>
+            <button class="mode" type="button" role="tab" aria-selected="false" data-mode="text">
+              <span class="mode-icon" aria-hidden="true">TESTO</span>
+              <strong>Testo</strong><small>Scrivi o incolla</small>
+            </button>
           </div>
-          <form class="analysis-form" data-endpoint="/api/analyze/image" data-result="result-image">
-            <label class="dropzone">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <strong>Premi qui per scegliere la foto</strong>
-              <span class="file-name">oppure trascinala in questo riquadro</span>
-              <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/bmp,image/tiff" required>
-            </label>
-            <button class="primary" type="submit">Spiega il referto</button>
-          </form>
-          <div id="result-image" class="result" hidden></div>
-        </section>
 
-        <section id="panel-text" class="panel" data-panel="text" hidden>
-          <div class="panel-heading">
-            <p class="section-label">TESTO</p>
-            <h2>Scrivi o incolla il testo</h2>
-            <p>Copia il testo del referto nel riquadro qui sotto. Non servono nome e cognome: puoi toglierli.</p>
+          <div class="mode-panel" data-mode-panel="file">
+            <p class="mode-hint">Premi il riquadro, scegli il file del referto e poi premi «Spiega il referto».</p>
+            <form class="analysis-form" data-endpoint="/api/analyze/pdf" data-result="result-explain">
+              <label class="dropzone">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <strong>Premi qui per scegliere il file</strong>
+                <span class="file-name">oppure trascinalo in questo riquadro</span>
+                <input type="file" name="pdf" accept="application/pdf,.pdf" required>
+              </label>
+              <button class="primary" type="submit">Spiega il referto</button>
+            </form>
           </div>
-          <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-text">
-            <label class="field-label" for="report-text">Testo del referto</label>
-            <textarea id="report-text" name="text" rows="13" placeholder="Incolla qui il contenuto del referto…" required></textarea>
-            <div class="form-footer"><span id="text-count" class="advanced-only">0 caratteri</span><button class="primary" type="submit">Spiega il referto</button></div>
-          </form>
-          <div id="result-text" class="result" hidden></div>
+
+          <div class="mode-panel" data-mode-panel="photo" hidden>
+            <p class="mode-hint">Metti il foglio su un tavolo con buona luce, inquadralo tutto e premi «Scatta la foto».</p>
+            <form id="photo-form" class="analysis-form" data-endpoint="/api/analyze/image" data-result="result-explain">
+              <div id="camera" class="camera">
+                <video id="camera-video" playsinline muted hidden></video>
+                <img id="camera-preview" alt="Foto del referto appena scattata" hidden>
+                <p id="camera-status" class="camera-status">Accendo la fotocamera…</p>
+              </div>
+              <div class="camera-actions">
+                <button id="camera-shoot" class="primary" type="button" hidden>Scatta la foto</button>
+                <button id="camera-retake" class="secondary" type="button" hidden>Rifai la foto</button>
+                <button id="photo-submit" class="primary" type="submit" hidden>Spiega il referto</button>
+              </div>
+              <label class="photo-fallback">
+                <span>Oppure scegli una foto già salvata</span>
+                <input id="photo-input" type="file" name="image" accept="image/*" required>
+              </label>
+              <canvas id="camera-canvas" hidden></canvas>
+            </form>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="text" hidden>
+            <p class="mode-hint">Copia il testo del referto nel riquadro. Non servono nome e cognome: puoi toglierli.</p>
+            <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-explain">
+              <label class="field-label" for="report-text">Testo del referto</label>
+              <textarea id="report-text" name="text" rows="13" placeholder="Incolla qui il contenuto del referto…" required></textarea>
+              <div class="form-footer"><span id="text-count" class="advanced-only">0 caratteri</span><button class="primary" type="submit">Spiega il referto</button></div>
+            </form>
+          </div>
+
+          <div id="result-explain" class="result" hidden></div>
         </section>
 
         <section id="panel-dataset" class="panel" data-panel="dataset" hidden>
@@ -482,6 +491,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=6" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=7" defer></script>
 </body>
 </html>

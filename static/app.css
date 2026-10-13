@@ -577,3 +577,21 @@ button.small { padding: 9px 14px; font-size: 14px; }
 .leaflet-source { font-size: 14px; }
 .long-advice > summary { cursor: pointer; color: #786332; font-size: 16px; font-weight: 700; }
 .long-advice[open] > summary { margin-bottom: 10px; }
+
+/* Spiegami un referto: scelta tra file, foto e testo */
+.mode-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.mode { display: grid; justify-items: center; gap: 6px; padding: 18px 10px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; transition: .16s ease; }
+.mode:hover { border-color: #a9c5ba; background: #f8fbfa; }
+.mode.active { border-color: var(--green); background: var(--mint); box-shadow: 0 7px 20px rgba(28,63,53,.08); }
+.mode-icon { width: 54px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: #e9eeec; color: #61706b; font-size: 11px; letter-spacing: .04em; font-weight: 800; }
+.mode.active .mode-icon { background: var(--paper); color: var(--green-dark); }
+.mode strong { font-size: 19px; }
+.mode small { color: var(--muted); font-size: 14px; text-align: center; }
+.mode-hint { margin: 0 0 16px; color: var(--muted); font-size: 17px; line-height: 1.55; }
+.camera { position: relative; display: grid; place-items: center; min-height: 260px; overflow: hidden; border: 1.5px dashed #a9c5ba; border-radius: 18px; background: #f8fbfa; }
+.camera video, .camera img { display: block; width: 100%; max-height: 520px; object-fit: contain; background: #10201b; }
+.camera-status { margin: 0; padding: 24px; color: var(--muted); font-size: 17px; line-height: 1.55; text-align: center; }
+.camera-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.photo-fallback { justify-self: start; color: var(--green); font-size: 16px; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.photo-fallback input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+@media (max-width: 520px) { .mode-picker { gap: 8px; } .mode { padding: 14px 6px; } .mode small { display: none; } }

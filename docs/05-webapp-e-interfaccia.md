@@ -37,7 +37,20 @@ ricaricano, grazie al parametro `?v=` negli URL: alzalo quando li cambi).
 
 Barra laterale in tre gruppi (`templates/index.html`, logica in `static/app.js`):
 
-- **Spiega un referto:** File PDF, Foto, Testo.
+- **Spiegami un referto:** un'unica sezione (`panel-explain`). In alto tre
+  grandi pulsanti (`.mode`: File, Foto, Testo); sotto compare solo lo
+  strumento scelto (`.mode-panel`):
+  - **File:** riquadro per caricare il PDF;
+  - **Foto:** fotocamera dal vivo con `getUserMedia` (fotocamera posteriore se
+    c'è), «Scatta la foto», anteprima, «Rifai la foto». La foto scattata finisce
+    nello stesso campo del modulo (`#photo-input`, tramite `DataTransfer`), quindi
+    l'invio è quello di sempre. Se la fotocamera non è disponibile o è negata,
+    resta «Oppure scegli una foto già salvata». La fotocamera si spegne cambiando
+    modalità o sezione e all'invio;
+  - **Testo:** riquadro per scrivere o incollare.
+
+  Il risultato compare sotto, in `#result-explain`. Serve un contesto sicuro
+  (localhost o HTTPS) perché il browser conceda la fotocamera.
 - **Il tuo archivio:** I miei referti, I miei farmaci, Terminologie, Dove andare.
 - **Strumenti per il team:** Dataset, Performance, Cronologia. Nascosti di
   default; il link "Mostra strumenti per il team" in fondo alla barra li

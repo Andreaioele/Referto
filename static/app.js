@@ -15,6 +15,8 @@ tabs.forEach((tab) => {
     if (name === "glossary") loadGlossary();
     if (name === "facilities") showFacilitiesPanel();
     if (name === "reports") loadReports();
+    if (name !== "explain") stopCamera();
+    else if (document.querySelector(".mode.active")?.dataset.mode === "photo") startCamera();
     if (name === "medications") loadMedications();
   });
 });
@@ -1990,10 +1992,108 @@ function setAdvanced(enabled) {
   }
   try { localStorage.setItem("referto-advanced", enabled ? "1" : "0"); } catch { /* storage non disponibile */ }
   const active = document.querySelector(".tab.active");
-  if (!enabled && active?.closest(".advanced-only")) activatePanel("pdf");
+  if (!enabled && active?.closest(".advanced-only")) activatePanel("explain");
 }
 
 let advancedStored = false;
 try { advancedStored = localStorage.getItem("referto-advanced") === "1"; } catch { /* storage non disponibile */ }
 setAdvanced(advancedStored);
 advancedToggle?.addEventListener("click", () => setAdvanced(!document.body.classList.contains("advanced")));
+
+/* ---------- Spiegami un referto: file, foto o testo ---------- */
+const modeButtons = [...document.querySelectorAll(".mode")];
+const modePanels = [...document.querySelectorAll(".mode-panel")];
+const cameraVideo = document.querySelector("#camera-video");
+const cameraPreview = document.querySelector("#camera-preview");
+const cameraStatus = document.querySelector("#camera-status");
+const cameraShoot = document.querySelector("#camera-shoot");
+const cameraRetake = document.querySelector("#camera-retake");
+const photoSubmit = document.querySelector("#photo-submit");
+const photoInput = document.querySelector("#photo-input");
+let cameraStream = null;
+
+function setMode(mode) {
+  modeButtons.forEach((button) => {
+    const selected = button.dataset.mode === mode;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+  modePanels.forEach((panel) => { panel.hidden = panel.dataset.modePanel !== mode; });
+  document.querySelector("#result-explain").hidden = true;
+  if (mode === "photo") startCamera();
+  else stopCamera();
+  if (mode === "text") document.querySelector("#report-text")?.focus();
+}
+modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
+
+function stopCamera() {
+  cameraStream?.getTracks().forEach((track) => track.stop());
+  cameraStream = null;
+  if (cameraVideo) cameraVideo.srcObject = null;
+}
+
+function showCameraState(state, message = "") {
+  // state: "live" (inquadratura), "shot" (foto pronta), "off" (nessuna fotocamera)
+  cameraVideo.hidden = state !== "live";
+  cameraPreview.hidden = state !== "shot";
+  cameraShoot.hidden = state !== "live";
+  cameraRetake.hidden = state !== "shot" || !cameraStream;
+  photoSubmit.hidden = state !== "shot";
+  cameraStatus.hidden = !message;
+  cameraStatus.textContent = message;
+}
+
+async function startCamera() {
+  if (cameraStream) {
+    showCameraState("live");
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    showCameraState("off", "Questo browser non può usare la fotocamera: premi «Oppure scegli una foto già salvata».");
+    return;
+  }
+  showCameraState("off", "Accendo la fotocamera… se il browser lo chiede, premi «Consenti».");
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false,
+    });
+    cameraVideo.srcObject = cameraStream;
+    await cameraVideo.play();
+    showCameraState("live");
+  } catch {
+    stopCamera();
+    showCameraState("off", "Non riesco ad accendere la fotocamera. Puoi scegliere una foto già salvata qui sotto.");
+  }
+}
+
+function useFile(file) {
+  // La foto finisce nello stesso campo del modulo, così l'invio resta quello di sempre.
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  photoInput.files = transfer.files;
+  cameraPreview.src = URL.createObjectURL(file);
+  showCameraState("shot");
+}
+
+cameraShoot?.addEventListener("click", () => {
+  const canvas = document.querySelector("#camera-canvas");
+  canvas.width = cameraVideo.videoWidth;
+  canvas.height = cameraVideo.videoHeight;
+  canvas.getContext("2d").drawImage(cameraVideo, 0, 0);
+  canvas.toBlob((blob) => {
+    if (blob) useFile(new File([blob], "foto-referto.jpg", { type: "image/jpeg" }));
+  }, "image/jpeg", 0.92);
+});
+
+cameraRetake?.addEventListener("click", () => showCameraState("live"));
+
+photoInput?.addEventListener("change", () => {
+  if (photoInput.files?.length) {
+    cameraPreview.src = URL.createObjectURL(photoInput.files[0]);
+    showCameraState("shot");
+  }
+});
+
+// Durante l'analisi la fotocamera non serve più: si spegne.
+document.querySelector("#photo-form")?.addEventListener("submit", stopCamera);
