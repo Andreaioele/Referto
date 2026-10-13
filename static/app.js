@@ -13,6 +13,7 @@ tabs.forEach((tab) => {
     if (name === "traces") loadTraces();
     if (name === "performance") loadBenchmarks();
     if (name === "glossary") loadGlossary();
+    if (name === "facilities") showFacilitiesPanel();
   });
 });
 
@@ -312,13 +313,236 @@ async function loadGlossary() {
 glossarySearch?.addEventListener("input", renderSavedGlossary);
 document.querySelector("#refresh-glossary")?.addEventListener("click", loadGlossary);
 
-function showSingleResult(target, result, traceId, glossary) {
+const facilitiesBranch = document.querySelector("#facilities-branch");
+const facilitiesStatus = document.querySelector("#facilities-status");
+const facilitiesList = document.querySelector("#facilities-list");
+const facilitiesMapElement = document.querySelector("#facilities-map");
+const matchLabels = {
+  specialita: "Specialità indicata",
+  nome: "Dal nome della struttura",
+  ospedale: "Ospedale con più reparti",
+};
+const matchColors = { specialita: "#176b58", nome: "#3f8f7a", ospedale: "#8a8f8d" };
+let facilitiesMap = null;
+let facilitiesLayer = null;
+
+async function loadBranches() {
+  if (!facilitiesBranch) return;
+  try {
+    const response = await fetch("/api/branches");
+    const data = await response.json();
+    (data.branches || []).forEach((branch) => {
+      const option = document.createElement("option");
+      option.value = branch.id;
+      option.textContent = branch.label;
+      facilitiesBranch.append(option);
+    });
+    facilitiesBranch.value = "medicina-generale";
+  } catch {
+    facilitiesStatus.textContent = "Impossibile caricare l’elenco delle branche.";
+  }
+}
+loadBranches();
+
+function activatePanel(name) {
+  const tab = document.querySelector(`.tab[data-tab="${name}"]`);
+  tab?.click();
+}
+
+function renderResultBranch(branch) {
+  const section = document.createElement("section");
+  section.className = "result-branch";
+  const label = document.createElement("p");
+  label.className = "result-branch-label";
+  label.textContent = "Branca del documento";
+  const name = document.createElement("strong");
+  name.textContent = branch.label;
+  const how = document.createElement("small");
+  how.textContent = branch.method === "modello"
+    ? `Riconosciuta dal modello${branch.reason ? `: ${branch.reason}` : ""}`
+    : "Riconosciuta dalle parole del referto";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "secondary";
+  button.textContent = "Trova strutture nella tua zona";
+  button.addEventListener("click", () => {
+    facilitiesBranch.value = branch.id;
+    document.querySelector("#facilities-branch-origin").textContent = `Proposta dall’analisi del referto (${how.textContent.toLowerCase()}). Puoi cambiarla.`;
+    activatePanel("facilities");
+    document.querySelector("#facilities-place")?.focus();
+  });
+  const text = document.createElement("div");
+  text.append(label, name, how);
+  section.append(text, button);
+  return section;
+}
+
+function showFacilitiesPanel() {
+  if (!facilitiesMap) return;
+  setTimeout(() => facilitiesMap.invalidateSize(), 50);
+}
+
+function ensureFacilitiesMap() {
+  if (facilitiesMap || !window.L) return facilitiesMap;
+  facilitiesMapElement.hidden = false;
+  facilitiesMap = L.map(facilitiesMapElement, { scrollWheelZoom: false });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; contributori di OpenStreetMap",
+  }).addTo(facilitiesMap);
+  facilitiesLayer = L.layerGroup().addTo(facilitiesMap);
+  return facilitiesMap;
+}
+
+function facilityPopup(facility) {
+  const box = document.createElement("div");
+  const name = document.createElement("strong");
+  name.textContent = facility.name;
+  const detail = document.createElement("div");
+  detail.textContent = `${matchLabels[facility.match]} · ${facility.distance_km} km`;
+  box.append(name, detail);
+  if (facility.address) {
+    const address = document.createElement("div");
+    address.textContent = facility.address;
+    box.append(address);
+  }
+  return box;
+}
+
+function renderFacilities(data, placeLabel) {
+  facilitiesList.replaceChildren();
+  const map = ensureFacilitiesMap();
+  const center = [data.center.lat, data.center.lon];
+  const markers = {};
+  if (map) {
+    facilitiesLayer.clearLayers();
+    L.circleMarker(center, { radius: 7, color: "#0f5143", fillColor: "#ffffff", fillOpacity: 1, weight: 3 })
+      .bindPopup(placeLabel)
+      .addTo(facilitiesLayer);
+  }
+  data.facilities.forEach((facility, index) => {
+    if (map) {
+      markers[index] = L.circleMarker([facility.lat, facility.lon], {
+        radius: 8,
+        color: "#ffffff",
+        weight: 2,
+        fillColor: matchColors[facility.match],
+        fillOpacity: 0.95,
+      }).bindPopup(facilityPopup(facility)).addTo(facilitiesLayer);
+    }
+    const item = document.createElement("li");
+    item.className = `facility facility-${facility.match}`;
+    const title = document.createElement("button");
+    title.type = "button";
+    title.className = "facility-name";
+    title.textContent = facility.name;
+    title.addEventListener("click", () => {
+      if (!map) return;
+      map.setView([facility.lat, facility.lon], 16);
+      markers[index].openPopup();
+      facilitiesMapElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    const meta = document.createElement("p");
+    meta.className = "facility-meta";
+    meta.textContent = [matchLabels[facility.match], `${facility.distance_km} km`, facility.address].filter(Boolean).join(" · ");
+    const links = document.createElement("p");
+    links.className = "facility-links";
+    const addLink = (href, text) => {
+      const link = document.createElement("a");
+      link.href = href;
+      link.textContent = text;
+      if (!href.startsWith("tel:")) {
+        link.target = "_blank";
+        link.rel = "noopener";
+      }
+      links.append(link);
+    };
+    if (facility.phone) addLink(`tel:${facility.phone.replace(/\s+/g, "")}`, facility.phone);
+    if (facility.website) addLink(facility.website, "Sito web");
+    addLink(`https://www.openstreetmap.org/directions?to=${facility.lat}%2C${facility.lon}`, "Indicazioni");
+    addLink(facility.osm_url, "Scheda OpenStreetMap");
+    item.append(title, meta, links);
+    facilitiesList.append(item);
+  });
+  if (map) {
+    const points = [center, ...data.facilities.map((facility) => [facility.lat, facility.lon])];
+    if (points.length > 1) map.fitBounds(points, { padding: [30, 30], maxZoom: 15 });
+    else map.setView(center, 13);
+    setTimeout(() => map.invalidateSize(), 50);
+  }
+  const specific = data.facilities.filter((facility) => facility.match !== "ospedale").length;
+  facilitiesStatus.className = "facilities-status";
+  facilitiesStatus.textContent = data.facilities.length
+    ? `${data.facilities.length} strutture entro ${data.radius_km} km da ${placeLabel}: ${specific} specifiche per ${data.branch.label.toLowerCase()}, le altre sono ospedali con più reparti.${data.cached ? " Dati dalla copia salvata." : ""}`
+    : `Nessuna struttura per ${data.branch.label.toLowerCase()} trovata su OpenStreetMap entro ${data.radius_km} km. Prova ad allargare il raggio.`;
+}
+
+async function searchFacilities(lat, lon, placeLabel) {
+  const params = new URLSearchParams({
+    lat,
+    lon,
+    branch: facilitiesBranch.value,
+    radius: document.querySelector("#facilities-radius").value,
+  });
+  facilitiesStatus.className = "facilities-status loading";
+  facilitiesStatus.textContent = "Cerco le strutture su OpenStreetMap… può richiedere fino a un paio di minuti.";
+  const response = await fetch(`/api/facilities?${params}`);
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
+  renderFacilities(data, placeLabel);
+}
+
+function facilitiesError(error) {
+  facilitiesStatus.className = "facilities-status error";
+  facilitiesStatus.textContent = error.message || "Errore di connessione.";
+}
+
+document.querySelector("#facilities-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const query = document.querySelector("#facilities-place").value.trim();
+  if (!query) {
+    facilitiesError(new Error("Scrivi una città o un indirizzo, oppure usa la tua posizione."));
+    return;
+  }
+  const button = event.submitter;
+  if (button) button.disabled = true;
+  try {
+    facilitiesStatus.className = "facilities-status loading";
+    facilitiesStatus.textContent = "Cerco la zona…";
+    const response = await fetch(`/api/geocode?${new URLSearchParams({ q: query })}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Zona non trovata.");
+    await searchFacilities(data.place.lat, data.place.lon, data.place.label.split(",")[0]);
+  } catch (error) {
+    facilitiesError(error);
+  } finally {
+    if (button) button.disabled = false;
+  }
+});
+
+document.querySelector("#facilities-gps")?.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    facilitiesError(new Error("Il browser non permette di leggere la posizione: scrivi la tua città."));
+    return;
+  }
+  facilitiesStatus.className = "facilities-status loading";
+  facilitiesStatus.textContent = "Chiedo la posizione al browser…";
+  navigator.geolocation.getCurrentPosition(
+    (position) => searchFacilities(position.coords.latitude, position.coords.longitude, "la tua posizione").catch(facilitiesError),
+    () => facilitiesError(new Error("Posizione non disponibile o permesso negato: scrivi la tua città.")),
+    { timeout: 15000, maximumAge: 300000 },
+  );
+});
+
+function showSingleResult(target, result, traceId, glossary, branch) {
   target.hidden = false;
   target.className = "result";
   target.replaceChildren();
   const title = document.createElement("h3");
   title.textContent = "Spiegazione del referto";
-  target.append(title, renderExplanation(result));
+  target.append(title);
+  if (branch) target.append(renderResultBranch(branch));
+  target.append(renderExplanation(result));
   if (glossary?.length) target.append(renderResultGlossary(glossary));
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);
@@ -541,7 +765,7 @@ document.querySelectorAll(".analysis-form").forEach((form) => {
         requestError.traceId = data.trace_id;
         throw requestError;
       }
-      showSingleResult(target, data.result, data.trace_id, data.glossary);
+      showSingleResult(target, data.result, data.trace_id, data.glossary, data.branch);
     } catch (error) {
       showError(target, error.message || "Errore di connessione.", error.traceId);
     } finally {

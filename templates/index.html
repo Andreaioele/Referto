@@ -6,7 +6,9 @@
   <meta name="color-scheme" content="light">
   <title>Referto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=3">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=4">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
   <main class="shell">
@@ -61,6 +63,10 @@
           <button class="tab" type="button" data-tab="glossary">
             <span class="tab-icon" aria-hidden="true">ABC</span>
             <span><strong>Glossario</strong><small>Le parole dei tuoi referti</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="facilities">
+            <span class="tab-icon" aria-hidden="true">MAP</span>
+            <span><strong>Strutture</strong><small>Specialisti nella tua zona</small></span>
           </button>
         </nav>
 
@@ -361,6 +367,39 @@
           </div>
           <p id="glossary-source" class="glossary-source"></p>
         </section>
+
+        <section id="panel-facilities" class="panel facilities-panel" data-panel="facilities" hidden>
+          <div class="panel-heading">
+            <p class="section-label">STRUTTURE NELLA TUA ZONA</p>
+            <h2>Chi si occupa di questa branca vicino a te</h2>
+            <p>Dopo l’analisi, Referto riconosce la branca del documento. Qui trovi ospedali, ambulatori e studi della tua zona che se ne occupano.</p>
+          </div>
+          <form id="facilities-form" class="facilities-form">
+            <label class="field-label" for="facilities-branch">Branca</label>
+            <select id="facilities-branch" name="branch"></select>
+            <p id="facilities-branch-origin" class="facilities-hint"></p>
+            <label class="field-label" for="facilities-place">La tua zona</label>
+            <div class="facilities-row">
+              <input id="facilities-place" name="place" type="text" placeholder="Città o indirizzo, es. Milano" autocomplete="off">
+              <select id="facilities-radius" name="radius" aria-label="Raggio di ricerca">
+                <option value="5">5 km</option>
+                <option value="10" selected>10 km</option>
+                <option value="20">20 km</option>
+              </select>
+            </div>
+            <div class="facilities-actions">
+              <button class="secondary" id="facilities-gps" type="button">Usa la mia posizione</button>
+              <button class="primary" type="submit">Cerca strutture</button>
+            </div>
+          </form>
+          <p id="facilities-status" class="facilities-status" aria-live="polite"></p>
+          <div id="facilities-map" class="facilities-map" hidden></div>
+          <ol id="facilities-list" class="facilities-list"></ol>
+          <div class="facilities-notice">
+            Elenco informativo da OpenStreetMap: può essere incompleto o non aggiornato e non è un invito a prenotare. Parlane con il tuo medico. Per un’urgenza chiama il 112.
+            A OpenStreetMap vengono inviate solo la zona cercata e le coordinate, mai il referto.
+          </div>
+        </section>
       </div>
     </section>
 
@@ -368,6 +407,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=3" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=4" defer></script>
 </body>
 </html>

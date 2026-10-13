@@ -33,3 +33,6 @@ models/
 # Parole del glossario incontrate nei referti analizzati (dato locale)
 glossario/parole_salvate.json
 glossario/*.tmp
+
+# Risposte di OpenStreetMap salvate per la mappa delle strutture
+strutture_cache/

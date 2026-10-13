@@ -30,6 +30,14 @@ from benchmarking import (
 from decision_model import DEFAULT_DECISION_MODEL
 from performance_metrics import capture_model_calls
 from glossario_medico import build_glossary, glossary_info, saved_terms
+from strutture_sanitarie import (
+    BRANCHES,
+    FacilitiesUnavailable,
+    branch_view,
+    classify_report,
+    find_facilities,
+    geocode,
+)
 from trace_store import (
     TraceRecorder,
     list_trace_summaries,
@@ -159,6 +167,15 @@ def _glossary(report: str, result: str) -> List[Dict[str, Any]]:
         details["terms"] = [term["id"] for term in terms]
         details["simplified"] = sum(1 for term in terms if term.get("simple_it"))
     return terms
+
+
+def _branch(report: str) -> Dict[str, Any]:
+    """Branca specialistica del referto: modello, con parole chiave di riserva."""
+    base_url, model, timeout, _ = _settings()
+    with traced_step("Classificazione della branca") as details:
+        branch = classify_report(report, base_url, model, timeout)
+        details.update(branch)
+    return branch
 
 
 def _save_upload(upload: Any, directory: Path, allowed_suffixes: set[str]) -> Path:
@@ -487,10 +504,18 @@ def analyze_text():
                 acquired = _acquire_model()
             result = _explain_text(report)
             glossary = _glossary(report, result)
+            branch = _branch(report)
             trace.set_artifact("glossary", glossary)
+            trace.set_artifact("branch", branch)
             trace.complete(result)
             return jsonify(
-                {"ok": True, "result": result, "glossary": glossary, "trace_id": trace.trace_id}
+                {
+                    "ok": True,
+                    "result": result,
+                    "glossary": glossary,
+                    "branch": branch,
+                    "trace_id": trace.trace_id,
+                }
             )
         except UserFacingError as exc:
             trace.fail(str(exc))
@@ -532,13 +557,16 @@ def analyze_image():
                 trace.set_artifact("transcription", report)
                 result = _explain_text(report)
                 glossary = _glossary(report, result)
+                branch = _branch(report)
                 trace.set_artifact("glossary", glossary)
+                trace.set_artifact("branch", branch)
                 trace.complete(result)
                 return jsonify(
                     {
                         "ok": True,
                         "result": result,
                         "glossary": glossary,
+                        "branch": branch,
                         "transcription": report,
                         "trace_id": trace.trace_id,
                     }
@@ -592,13 +620,16 @@ def analyze_pdf():
                 )
                 result = _explain_text(report)
                 glossary = _glossary(report, result)
+                branch = _branch(report)
                 trace.set_artifact("glossary", glossary)
+                trace.set_artifact("branch", branch)
                 trace.complete(result)
                 return jsonify(
                     {
                         "ok": True,
                         "result": result,
                         "glossary": glossary,
+                        "branch": branch,
                         "source": "Lettura visiva del PDF scansionato" if used_vision else "Testo del PDF",
                         "trace_id": trace.trace_id,
                     }
@@ -977,6 +1008,39 @@ def benchmark_detail(benchmark_id: str):
 @app.get("/api/glossary")
 def glossary_index():
     return jsonify({"ok": True, "terms": saved_terms(), "source": glossary_info()})
+
+
+@app.get("/api/branches")
+def branches_index():
+    return jsonify({"ok": True, "branches": [branch_view(branch["id"]) for branch in BRANCHES]})
+
+
+@app.get("/api/geocode")
+def geocode_place():
+    try:
+        return jsonify({"ok": True, "place": geocode(request.args.get("q", ""))})
+    except ValueError as exc:
+        return _json_error(str(exc))
+    except FacilitiesUnavailable as exc:
+        return _json_error(str(exc), 503)
+
+
+@app.get("/api/facilities")
+def facilities_near():
+    try:
+        lat = float(request.args["lat"])
+        lon = float(request.args["lon"])
+        radius = int(request.args.get("radius", 10))
+    except (KeyError, ValueError):
+        return _json_error("Posizione o raggio non validi.")
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return _json_error("Posizione non valida.")
+    try:
+        return jsonify(
+            {"ok": True, **find_facilities(lat, lon, request.args.get("branch", ""), radius)}
+        )
+    except FacilitiesUnavailable as exc:
+        return _json_error(str(exc), 503)
 
 
 @app.get("/download/<path:filename>")

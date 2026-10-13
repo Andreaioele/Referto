@@ -32,6 +32,7 @@ chiaramente attribuite alla fonte.
 - Cronologia persistente con data, ora, durata, prompt, risposte e passaggi.
 - Trace salvate anche per le esecuzioni fallite.
 - Glossario delle parole mediche del referto (vedi sotto).
+- Branca del referto e mappa delle strutture nella zona del paziente (vedi sotto).
 
 ## Requisiti
 
@@ -309,6 +310,31 @@ python glossario/build_glossary.py --hp-json hp.json --it-tsv hp-it.babelon.tsv
 
 HPO copre segni, sintomi e reperti, non anatomia né procedure: parole come
 "menisco" o "ecocardiografia" non compaiono nel glossario.
+
+## Branca del referto e strutture nella zona
+
+Dopo l'analisi Referto assegna il documento a una branca (cardiologia,
+radiologia, ortopedia, ...): la sceglie il modello da un elenco chiuso e, se il
+modello non risponde, la ricavano le parole chiave del referto. Dalla scheda del
+risultato, "Trova strutture nella tua zona" apre la sezione **Strutture**: il
+paziente scrive città o indirizzo (oppure usa la posizione del browser) e vede
+su una mappa ospedali, ambulatori e studi da OpenStreetMap, ordinati così:
+
+1. struttura con la specialità indicata in OpenStreetMap (`healthcare:speciality`);
+2. struttura con la branca nel nome (per esempio "Centro Cardiologico");
+3. ospedali, che hanno più reparti.
+
+A OpenStreetMap (Nominatim per l'indirizzo, Overpass per le strutture) vanno
+solo la zona cercata e le coordinate, mai il referto. Le risposte restano in
+`strutture_cache/` (esclusa da Git). Il server pubblico Overpass a volte è
+sovraccarico: prima di una demo conviene precaricare le zone che si useranno:
+
+```bash
+python strutture_sanitarie.py "Milano" --raggio 10
+```
+
+I dati di OpenStreetMap sono incompleti: molte strutture non indicano la
+specialità. L'elenco è informativo e non sostituisce l'indicazione del medico.
 
 ## Uso da terminale
 

@@ -9,6 +9,7 @@ from unittest.mock import patch
 import benchmarking
 import decision_model
 import glossario_medico
+import strutture_sanitarie
 import web_app
 from spiega_referto import (
     dataset_record_to_text,
@@ -721,6 +722,55 @@ class GlossaryTests(unittest.TestCase):
         self.assertEqual(terms[0]["simple_it"], "Aria intorno al polmone.")
         saved = glossario_medico.saved_terms()
         self.assertEqual(saved[0]["count"], 2)
+
+
+class FacilitiesTests(unittest.TestCase):
+    ELEMENTS = {
+        "elements": [
+            {"type": "node", "id": 1, "lat": 45.47, "lon": 9.19,
+             "tags": {"name": "Studio Rossi", "healthcare": "doctor", "healthcare:speciality": "cardiology"}},
+            {"type": "node", "id": 2, "lat": 45.46, "lon": 9.18,
+             "tags": {"name": "Centro Cardiologico Bianchi", "amenity": "clinic"}},
+            {"type": "way", "id": 3, "center": {"lat": 45.50, "lon": 9.20},
+             "tags": {"name": "Ospedale Maggiore", "amenity": "hospital"}},
+            {"type": "node", "id": 4, "lat": 45.465, "lon": 9.191,
+             "tags": {"name": "Studio Verdi", "healthcare": "doctor", "healthcare:speciality": "dermatology"}},
+        ],
+        "fetched_at": "2026-10-13T12:00:00+02:00",
+        "cached": True,
+    }
+
+    def test_keyword_branch_from_report_text(self):
+        branch = strutture_sanitarie.keyword_branch(
+            "Ecocardiogramma: frazione di eiezione 55%, atrio sinistro dilatato."
+        )
+        self.assertEqual(branch["id"], "cardiologia")
+        self.assertEqual(branch["method"], "parole chiave")
+
+    def test_classify_falls_back_to_keywords_when_model_is_offline(self):
+        with patch.object(
+            strutture_sanitarie, "_classify_with_model", side_effect=urllib.error.URLError("offline")
+        ):
+            branch = strutture_sanitarie.classify_report("RX torace: versamento pleurico.", "http://x", "m", 5)
+        self.assertEqual(branch["id"], "radiologia")
+
+    def test_facilities_are_filtered_and_ranked_by_relevance(self):
+        with patch.object(strutture_sanitarie, "_fetch_elements", return_value=self.ELEMENTS):
+            result = strutture_sanitarie.find_facilities(45.4642, 9.19, "cardiologia", 10)
+        names = [facility["name"] for facility in result["facilities"]]
+        self.assertEqual(names, ["Studio Rossi", "Centro Cardiologico Bianchi", "Ospedale Maggiore"])
+        self.assertEqual([f["match"] for f in result["facilities"]], ["specialita", "nome", "ospedale"])
+
+    def test_facilities_endpoint_reports_unavailable_service(self):
+        web_app.app.config.update(TESTING=True)
+        client = web_app.app.test_client()
+        with patch.object(
+            web_app, "find_facilities",
+            side_effect=strutture_sanitarie.FacilitiesUnavailable("OpenStreetMap è sovraccarico"),
+        ):
+            response = client.get("/api/facilities?lat=45.46&lon=9.19&branch=cardiologia")
+        self.assertEqual(response.status_code, 503)
+        self.assertIn("sovraccarico", response.get_json()["error"])
 
 
 if __name__ == "__main__":
