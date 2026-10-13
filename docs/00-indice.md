@@ -61,6 +61,7 @@ graph LR
 | `templates/index.html`, `static/app.js`, `static/app.css` | Interfaccia | [[05-webapp-e-interfaccia]] |
 | `glossario_medico.py`, `glossario/` | Glossario HPO | [[06-glossario-hpo]] |
 | `strutture_sanitarie.py` | Branca del referto e mappa OpenStreetMap | [[07-branca-e-strutture]] |
+| `profilo_utente.py` | Profilo del paziente (città) | [[07-branca-e-strutture]] |
 | `archivio_referti.py` | Storico dei referti (sulle trace) | [[08-referti-e-farmaci-aifa]] |
 | `farmaci_referti.py`, `farmaci/` | Farmaci dei referti e prontuario AIFA | [[08-referti-e-farmaci-aifa]] |
 | `trace_store.py`, `performance_metrics.py` | Trace e metriche delle chiamate | [[09-trace-e-privacy]] |

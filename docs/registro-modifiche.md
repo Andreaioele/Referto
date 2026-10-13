@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-13
 
+- `staging` · "Dove andare" automatico: città dal profilo (Ferrara), specialità dall'ultimo referto, mappa ed elenco a gruppi subito; geocoding sul comune e non sulla provincia; mirror Overpass `maps.mail.ru` · [[07-branca-e-strutture]]
 - `staging` · Farmaci: corrispondenza univoca nome → foglietto. Nome commerciale italiano (escluse le importazioni parallele) o unico farmaco con quel principio attivo; negli altri casi sceglie il paziente, mai l'app · [[08-referti-e-farmaci-aifa]]
 - `staging` · File, Foto e Testo uniti nella sezione "Spiegami un referto": si sceglie la modalità e compare solo lo strumento giusto; la Foto apre la fotocamera dal vivo · [[05-webapp-e-interfaccia]]
 - `staging` · Creata la documentazione `docs/` (vault Obsidian) e `CLAUDE.md`

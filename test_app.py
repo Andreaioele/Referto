@@ -11,6 +11,7 @@ import decision_model
 import glossario_medico
 import strutture_sanitarie
 import farmaci_referti
+import profilo_utente
 import web_app
 from spiega_referto import (
     dataset_record_to_text,
@@ -761,6 +762,32 @@ class FacilitiesTests(unittest.TestCase):
         names = [facility["name"] for facility in result["facilities"]]
         self.assertEqual(names, ["Studio Rossi", "Centro Cardiologico Bianchi", "Ospedale Maggiore"])
         self.assertEqual([f["match"] for f in result["facilities"]], ["specialita", "nome", "ospedale"])
+
+    def test_undeclared_clinics_are_listed_last_as_other(self):
+        elements = {**self.ELEMENTS, "elements": self.ELEMENTS["elements"] + [
+            {"type": "node", "id": 5, "lat": 45.466, "lon": 9.192,
+             "tags": {"name": "Ambulatorio Neri", "healthcare": "clinic"}},
+            {"type": "node", "id": 6, "lat": 45.466, "lon": 9.192,
+             "tags": {"name": "Farmacia Centrale", "amenity": "pharmacy", "healthcare": "pharmacy"}},
+        ]}
+        with patch.object(strutture_sanitarie, "_fetch_elements", return_value=elements):
+            result = strutture_sanitarie.find_facilities(45.4642, 9.19, "cardiologia", 10)
+        last = result["facilities"][-1]
+        self.assertEqual((last["name"], last["match"]), ("Ambulatorio Neri", "altro"))
+        self.assertNotIn("Farmacia Centrale", [f["name"] for f in result["facilities"]])
+        self.assertEqual(result["facilities"][0]["specialita"], ["Cardiologia"])
+
+    def test_profile_city_is_saved_and_returned(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        place = {"lat": 44.837, "lon": 11.619, "label": "Ferrara, Emilia-Romagna"}
+        with patch.object(profilo_utente, "PROFILE_FILE", Path(directory.name) / "profilo.json"), \
+                patch.object(profilo_utente, "geocode", return_value=place):
+            client = web_app.app.test_client()
+            self.assertEqual(client.get("/api/profilo").get_json()["profilo"], {})
+            saved = client.post("/api/profilo", json={"citta": "ferrara"}).get_json()["profilo"]
+            self.assertEqual((saved["citta"], saved["luogo"]), ("Ferrara", place))
+            self.assertEqual(client.get("/api/profilo").get_json()["profilo"]["citta"], "Ferrara")
 
     def test_facilities_endpoint_reports_unavailable_service(self):
         web_app.app.config.update(TESTING=True)

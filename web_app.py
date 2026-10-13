@@ -39,6 +39,7 @@ from strutture_sanitarie import (
     geocode,
 )
 from archivio_referti import list_reports, load_report
+from profilo_utente import load_profile, save_city
 from farmaci_referti import (
     LeafletUnavailable,
     catalog_info,
@@ -1039,6 +1040,22 @@ def benchmark_detail(benchmark_id: str):
 @app.get("/api/glossary")
 def glossary_index():
     return jsonify({"ok": True, "terms": saved_terms(), "source": glossary_info()})
+
+
+@app.get("/api/profilo")
+def profile_get():
+    return jsonify({"ok": True, "profilo": load_profile()})
+
+
+@app.post("/api/profilo")
+def profile_set_city():
+    city = str((request.get_json(silent=True) or {}).get("citta", "")).strip()
+    try:
+        return jsonify({"ok": True, "profilo": save_city(city)})
+    except ValueError as exc:
+        return _json_error(str(exc))
+    except FacilitiesUnavailable as exc:
+        return _json_error(str(exc), 503)
 
 
 @app.get("/api/branches")

@@ -368,33 +368,35 @@ glossarySearch?.addEventListener("input", renderSavedGlossary);
 document.querySelector("#refresh-glossary")?.addEventListener("click", loadGlossary);
 
 const facilitiesBranch = document.querySelector("#facilities-branch");
+const facilitiesRadius = document.querySelector("#facilities-radius");
 const facilitiesStatus = document.querySelector("#facilities-status");
 const facilitiesList = document.querySelector("#facilities-list");
 const facilitiesMapElement = document.querySelector("#facilities-map");
-const matchLabels = {
-  specialita: "Si occupa di questa specialità",
-  nome: "Si occupa di questa specialità",
-  ospedale: "Ospedale",
-};
-const matchColors = { specialita: "#176b58", nome: "#3f8f7a", ospedale: "#8a8f8d" };
+const facilitiesCity = document.querySelector("#facilities-city");
+const matchColors = { specialita: "#176b58", nome: "#176b58", ospedale: "#3b7dd8", altro: "#8a8f8d" };
+const facilityGroups = [
+  { id: "branca", matches: ["specialita", "nome"], title: (branch) => `Si occupano di ${branch.toLowerCase()}`, open: true },
+  { id: "ospedale", matches: ["ospedale"], title: () => "Ospedali, case di cura e poliambulatori", note: (branch) => `Chiedi del reparto o dell’ambulatorio di ${branch.toLowerCase()}.`, open: true },
+  { id: "altro", matches: ["altro"], title: () => "Altri studi medici e ambulatori della zona", note: (branch) => `Non risulta che si occupino di ${branch.toLowerCase()}: chiedi prima di andare.`, open: false },
+];
 let facilitiesMap = null;
 let facilitiesLayer = null;
+let branchesReady = null;
+let branchFromReport = false;   // la specialità arriva da "Cerca specialisti" su un referto
+let facilitiesPlace = null;     // {lat, lon, label}: città del profilo o posizione del momento
 
-async function loadBranches() {
-  if (!facilitiesBranch) return;
-  try {
-    const response = await fetch("/api/branches");
-    const data = await response.json();
-    (data.branches || []).forEach((branch) => {
+function loadBranches() {
+  if (!facilitiesBranch) return Promise.resolve();
+  branchesReady = fetchJson("/api/branches").then((data) => {
+    data.branches.forEach((branch) => {
       const option = document.createElement("option");
       option.value = branch.id;
       option.textContent = branch.label;
       facilitiesBranch.append(option);
     });
     facilitiesBranch.value = "medicina-generale";
-  } catch {
-    facilitiesStatus.textContent = "Impossibile caricare l’elenco delle branche.";
-  }
+  }).catch(() => { facilitiesStatus.textContent = "Impossibile caricare l’elenco delle specialità."; });
+  return branchesReady;
 }
 loadBranches();
 
@@ -403,35 +405,64 @@ function activatePanel(name) {
   tab?.click();
 }
 
+function branchLabel() {
+  return facilitiesBranch.selectedOptions[0]?.textContent || "medicina generale";
+}
+
 function renderResultBranch(branch) {
-  const section = document.createElement("section");
-  section.className = "result-branch";
-  const label = document.createElement("p");
-  label.className = "result-branch-label";
-  label.textContent = "Specialità del referto";
-  const name = document.createElement("strong");
-  name.textContent = branch.label;
-  const how = document.createElement("small");
-  how.textContent = "È la specialità medica che si occupa di questo tipo di esame.";
-  const button = document.createElement("button");
+  const section = el("section", "result-branch");
+  const text = el("div");
+  text.append(el("p", "result-branch-label", "Specialità del referto"), el("strong", "", branch.label), el("small", "", "È la specialità medica che si occupa di questo tipo di esame."));
+  const button = el("button", "secondary", "Cerca specialisti vicino a me");
   button.type = "button";
-  button.className = "secondary";
-  button.textContent = "Cerca specialisti vicino a me";
   button.addEventListener("click", () => {
     facilitiesBranch.value = branch.id;
-    document.querySelector("#facilities-branch-origin").textContent = "Scelta in base al tuo referto. Puoi cambiarla.";
+    branchFromReport = true;
+    document.querySelector("#facilities-branch-origin").textContent = "Scelta in base a questo referto. Puoi cambiarla.";
     activatePanel("facilities");
-    document.querySelector("#facilities-place")?.focus();
   });
-  const text = document.createElement("div");
-  text.append(label, name, how);
   section.append(text, button);
   return section;
 }
 
-function showFacilitiesPanel() {
-  if (!facilitiesMap) return;
-  setTimeout(() => facilitiesMap.invalidateSize(), 50);
+async function showFacilitiesPanel() {
+  // Si apre già pronta: città del profilo + specialità dell'ultimo referto.
+  await branchesReady;
+  if (!branchFromReport) {
+    try {
+      const { reports } = await fetchJson("/api/referti");
+      const latest = reports.find((report) => report.branch);
+      if (latest) {
+        facilitiesBranch.value = latest.branch.id;
+        document.querySelector("#facilities-branch-origin").textContent = `In base al tuo ultimo referto (${formatTraceDate(latest.started_at, { dateOnly: true })}). Puoi cambiarla.`;
+      }
+    } catch { /* resta la specialità già scelta */ }
+  }
+  branchFromReport = false;
+  if (!facilitiesPlace) {
+    try {
+      const { profilo } = await fetchJson("/api/profilo");
+      if (profilo.luogo) facilitiesPlace = { ...profilo.luogo, label: profilo.citta };
+    } catch { /* nessun profilo */ }
+  }
+  updateCitySummary();
+  if (!facilitiesPlace) {
+    facilitiesCity.open = true;
+    facilitiesStatus.className = "facilities-status";
+    facilitiesStatus.textContent = "Scrivi la tua città qui sopra: la ricorderò per le prossime volte.";
+    document.querySelector("#facilities-place").focus();
+    return;
+  }
+  searchFacilities().catch(facilitiesError);
+  if (facilitiesMap) setTimeout(() => facilitiesMap.invalidateSize(), 50);
+}
+
+function updateCitySummary() {
+  const summary = document.querySelector("#facilities-city-summary");
+  summary.textContent = facilitiesPlace ? `La tua città: ${facilitiesPlace.label} · Cambia` : "La tua città";
+  document.querySelector("#facilities-context").textContent = facilitiesPlace
+    ? `Ospedali, ambulatori e studi medici vicino a ${facilitiesPlace.label}.`
+    : "Ospedali, ambulatori e studi medici della tua città.";
 }
 
 function ensureFacilitiesMap() {
@@ -447,102 +478,104 @@ function ensureFacilitiesMap() {
 }
 
 function facilityPopup(facility) {
-  const box = document.createElement("div");
-  const name = document.createElement("strong");
-  name.textContent = facility.name;
-  const detail = document.createElement("div");
-  detail.textContent = `${matchLabels[facility.match]} · ${facility.distance_km} km`;
-  box.append(name, detail);
-  if (facility.address) {
-    const address = document.createElement("div");
-    address.textContent = facility.address;
-    box.append(address);
-  }
+  const box = el("div");
+  box.append(el("strong", "", facility.name), el("div", "", `${facility.kind_label} · ${facility.distance_km} km`));
+  if (facility.address) box.append(el("div", "", facility.address));
   return box;
 }
 
-function renderFacilities(data, placeLabel) {
+function renderFacilityItem(facility, marker, map) {
+  const item = el("li", `facility facility-${facility.match}`);
+  const title = el("button", "facility-name", facility.name);
+  title.type = "button";
+  title.addEventListener("click", () => {
+    if (!map) return;
+    map.setView([facility.lat, facility.lon], 16);
+    marker.openPopup();
+    facilitiesMapElement.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  const facts = [facility.kind_label, `${facility.distance_km} km`, facility.address].filter(Boolean).join(" · ");
+  item.append(title, el("p", "facility-meta", facts));
+  if (facility.specialita?.length) item.append(el("p", "facility-specialities", `Specialità indicate: ${facility.specialita.join(", ")}`));
+  const links = el("p", "facility-links");
+  const addLink = (href, text, advanced = false) => {
+    const link = el("a", advanced ? "advanced-only" : "", text);
+    link.href = href;
+    if (!href.startsWith("tel:")) {
+      link.target = "_blank";
+      link.rel = "noopener";
+    }
+    links.append(link);
+  };
+  if (facility.phone) addLink(`tel:${facility.phone.replace(/\s+/g, "")}`, `Chiama ${facility.phone}`);
+  if (facility.website) addLink(facility.website, "Sito web");
+  addLink(`https://www.openstreetmap.org/directions?to=${facility.lat}%2C${facility.lon}`, "Come arrivare");
+  addLink(facility.osm_url, "Scheda OpenStreetMap", true);
+  item.append(links);
+  return item;
+}
+
+function renderFacilities(data) {
   facilitiesList.replaceChildren();
   const map = ensureFacilitiesMap();
   const center = [data.center.lat, data.center.lon];
-  const markers = {};
   if (map) {
     facilitiesLayer.clearLayers();
     L.circleMarker(center, { radius: 7, color: "#0f5143", fillColor: "#ffffff", fillOpacity: 1, weight: 3 })
-      .bindPopup(placeLabel)
+      .bindPopup(facilitiesPlace.label)
       .addTo(facilitiesLayer);
   }
-  data.facilities.forEach((facility, index) => {
-    if (map) {
-      markers[index] = L.circleMarker([facility.lat, facility.lon], {
-        radius: 8,
-        color: "#ffffff",
-        weight: 2,
-        fillColor: matchColors[facility.match],
-        fillOpacity: 0.95,
-      }).bindPopup(facilityPopup(facility)).addTo(facilitiesLayer);
-    }
-    const item = document.createElement("li");
-    item.className = `facility facility-${facility.match}`;
-    const title = document.createElement("button");
-    title.type = "button";
-    title.className = "facility-name";
-    title.textContent = facility.name;
-    title.addEventListener("click", () => {
-      if (!map) return;
-      map.setView([facility.lat, facility.lon], 16);
-      markers[index].openPopup();
-      facilitiesMapElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-    const meta = document.createElement("p");
-    meta.className = "facility-meta";
-    meta.textContent = [matchLabels[facility.match], `${facility.distance_km} km`, facility.address].filter(Boolean).join(" · ");
-    const links = document.createElement("p");
-    links.className = "facility-links";
-    const addLink = (href, text) => {
-      const link = document.createElement("a");
-      link.href = href;
-      link.textContent = text;
-      if (!href.startsWith("tel:")) {
-        link.target = "_blank";
-        link.rel = "noopener";
-      }
-      links.append(link);
-    };
-    if (facility.phone) addLink(`tel:${facility.phone.replace(/\s+/g, "")}`, facility.phone);
-    if (facility.website) addLink(facility.website, "Sito web");
-    addLink(`https://www.openstreetmap.org/directions?to=${facility.lat}%2C${facility.lon}`, "Come arrivare");
-    addLink(facility.osm_url, "Scheda OpenStreetMap");
-    links.lastChild.classList.add("advanced-only");
-    item.append(title, meta, links);
-    facilitiesList.append(item);
+  const markers = data.facilities.map((facility) => (map
+    ? L.circleMarker([facility.lat, facility.lon], {
+      radius: facility.match === "altro" ? 6 : 8,
+      color: "#ffffff",
+      weight: 2,
+      fillColor: matchColors[facility.match],
+      fillOpacity: 0.95,
+    }).bindPopup(facilityPopup(facility)).addTo(facilitiesLayer)
+    : null));
+
+  const branch = data.branch.label;
+  facilityGroups.forEach((group) => {
+    const members = data.facilities.map((facility, index) => [facility, index]).filter(([facility]) => group.matches.includes(facility.match));
+    if (!members.length) return;
+    const section = el("details", "facility-group");
+    section.open = group.open;
+    section.append(el("summary", "", `${group.title(branch)} (${members.length})`));
+    if (group.note) section.append(el("p", "facility-group-note", group.note(branch)));
+    const list = el("ol", "facilities-list");
+    members.forEach(([facility, index]) => list.append(renderFacilityItem(facility, markers[index], map)));
+    section.append(list);
+    facilitiesList.append(section);
   });
+
   if (map) {
-    const points = [center, ...data.facilities.map((facility) => [facility.lat, facility.lon])];
+    const points = [center, ...data.facilities.filter((f) => f.match !== "altro").map((f) => [f.lat, f.lon])];
     if (points.length > 1) map.fitBounds(points, { padding: [30, 30], maxZoom: 15 });
     else map.setView(center, 13);
     setTimeout(() => map.invalidateSize(), 50);
   }
-  const specific = data.facilities.filter((facility) => facility.match !== "ospedale").length;
+  const specific = data.facilities.filter((facility) => ["specialita", "nome"].includes(facility.match)).length;
   facilitiesStatus.className = "facilities-status";
   facilitiesStatus.textContent = data.facilities.length
-    ? `Ho trovato ${data.facilities.length} posti entro ${data.radius_km} km da ${placeLabel}. ${specific ? `${specific === 1 ? "Il primo si occupa" : `I primi ${specific} si occupano`} di ${data.branch.label.toLowerCase()}, gli altri sono ospedali.` : `Sono ospedali: chiedi lì del reparto di ${data.branch.label.toLowerCase()}.`}`
-    : `Non ho trovato posti entro ${data.radius_km} km. Prova a scegliere una distanza più grande.`;
+    ? `${data.facilities.length} posti entro ${data.radius_km} km. ${specific ? `${specific} ${specific === 1 ? "si occupa" : "si occupano"} di ${branch.toLowerCase()}.` : `Nessuno indica la specialità ${branch.toLowerCase()}: chiedi negli ospedali qui sotto.`}`
+    : `Non ho trovato posti entro ${data.radius_km} km. Prova una distanza più grande.`;
 }
 
-async function searchFacilities(lat, lon, placeLabel) {
+let facilitiesRequest = 0;
+async function searchFacilities() {
+  if (!facilitiesPlace) return;
+  const request = ++facilitiesRequest;
   const params = new URLSearchParams({
-    lat,
-    lon,
+    lat: facilitiesPlace.lat,
+    lon: facilitiesPlace.lon,
     branch: facilitiesBranch.value,
-    radius: document.querySelector("#facilities-radius").value,
+    radius: facilitiesRadius.value,
   });
   facilitiesStatus.className = "facilities-status loading";
-  facilitiesStatus.textContent = "Sto cercando… può volerci un minuto.";
-  const response = await fetch(`/api/facilities?${params}`);
-  const data = await response.json();
-  if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
-  renderFacilities(data, placeLabel);
+  facilitiesStatus.textContent = `Cerco ${branchLabel().toLowerCase()} vicino a ${facilitiesPlace.label}…`;
+  const data = await fetchJson(`/api/facilities?${params}`);
+  if (request === facilitiesRequest) renderFacilities(data);  // ignora risposte superate
 }
 
 function facilitiesError(error) {
@@ -550,22 +583,32 @@ function facilitiesError(error) {
   facilitiesStatus.textContent = error.message || "Errore di connessione.";
 }
 
+[facilitiesBranch, facilitiesRadius].forEach((select) => select?.addEventListener("change", () => {
+  if (select === facilitiesBranch) document.querySelector("#facilities-branch-origin").textContent = "";
+  searchFacilities().catch(facilitiesError);
+}));
+
 document.querySelector("#facilities-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const query = document.querySelector("#facilities-place").value.trim();
-  if (!query) {
-    facilitiesError(new Error("Scrivi la tua città, per esempio Milano. Oppure premi «Usa la mia posizione»."));
+  const city = document.querySelector("#facilities-place").value.trim();
+  if (!city) {
+    facilitiesError(new Error("Scrivi la tua città, per esempio Ferrara."));
     return;
   }
   const button = event.submitter;
   if (button) button.disabled = true;
   try {
     facilitiesStatus.className = "facilities-status loading";
-    facilitiesStatus.textContent = "Sto cercando la tua città…";
-    const response = await fetch(`/api/geocode?${new URLSearchParams({ q: query })}`);
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Zona non trovata.");
-    await searchFacilities(data.place.lat, data.place.lon, data.place.label.split(",")[0]);
+    facilitiesStatus.textContent = "Cerco la tua città…";
+    const { profilo } = await fetchJson("/api/profilo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ citta: city }),
+    });
+    facilitiesPlace = { ...profilo.luogo, label: profilo.citta };
+    facilitiesCity.open = false;
+    updateCitySummary();
+    await searchFacilities();
   } catch (error) {
     facilitiesError(error);
   } finally {
@@ -581,7 +624,13 @@ document.querySelector("#facilities-gps")?.addEventListener("click", () => {
   facilitiesStatus.className = "facilities-status loading";
   facilitiesStatus.textContent = "Chiedo la posizione al browser…";
   navigator.geolocation.getCurrentPosition(
-    (position) => searchFacilities(position.coords.latitude, position.coords.longitude, "la tua posizione").catch(facilitiesError),
+    (position) => {
+      // Solo per questa ricerca: la città del profilo non cambia.
+      facilitiesPlace = { lat: position.coords.latitude, lon: position.coords.longitude, label: "la tua posizione" };
+      facilitiesCity.open = false;
+      updateCitySummary();
+      searchFacilities().catch(facilitiesError);
+    },
     () => facilitiesError(new Error("Posizione non disponibile o permesso negato: scrivi la tua città.")),
     { timeout: 15000, maximumAge: 300000 },
   );

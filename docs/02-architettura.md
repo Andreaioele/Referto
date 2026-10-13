@@ -67,6 +67,7 @@ modello da 7B servono minuti; vedi [[14-problemi-noti-e-prossimi-passi]].
 | `farmaci/aifa_farmaci.json` | Prontuario AIFA (~12.600 farmaci) | Sì |
 | `farmaci_cache/` | PDF dei foglietti già aperti | No |
 | `strutture_cache/` | Risposte di Nominatim e Overpass | No |
+| `profilo/profilo.json` | Profilo del paziente (città) | No |
 | `datasets/` | Dataset di referti per test e valutazione | Sì |
 
 Dettagli in [[09-trace-e-privacy]].

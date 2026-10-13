@@ -7,7 +7,7 @@
   <title>Referto</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=7">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=8">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
@@ -443,31 +443,40 @@
           <div class="panel-heading">
             <p class="section-label">DOVE ANDARE</p>
             <h2>Specialisti vicino a te</h2>
-            <p>Scrivi la tua città e premi «Cerca». Troverai ospedali, ambulatori e studi della tua zona.</p>
+            <p id="facilities-context">Ospedali, ambulatori e studi medici della tua città.</p>
           </div>
-          <form id="facilities-form" class="facilities-form">
-            <label class="field-label" for="facilities-branch">Specialità</label>
-            <select id="facilities-branch" name="branch"></select>
-            <p id="facilities-branch-origin" class="facilities-hint"></p>
-            <label class="field-label" for="facilities-place">La tua città o il tuo indirizzo</label>
-            <div class="facilities-row">
-              <input id="facilities-place" name="place" type="text" placeholder="Per esempio: Milano" autocomplete="off">
-              <select id="facilities-radius" name="radius" aria-label="Distanza massima">
-                <option value="5">5 km</option>
-                <option value="10" selected>10 km</option>
-                <option value="20">20 km</option>
+
+          <div class="facilities-controls">
+            <label class="field-label" for="facilities-branch">Specialità
+              <select id="facilities-branch" name="branch"></select>
+            </label>
+            <label class="field-label" for="facilities-radius">Distanza
+              <select id="facilities-radius" name="radius">
+                <option value="5">fino a 5 km</option>
+                <option value="10" selected>fino a 10 km</option>
+                <option value="20">fino a 20 km</option>
               </select>
-            </div>
-            <div class="facilities-actions">
-              <button class="secondary" id="facilities-gps" type="button">Usa la mia posizione</button>
-              <button class="primary" type="submit">Cerca</button>
-            </div>
-          </form>
+            </label>
+          </div>
+          <p id="facilities-branch-origin" class="facilities-hint"></p>
+
+          <details id="facilities-city" class="facilities-city">
+            <summary id="facilities-city-summary">La tua città</summary>
+            <form id="facilities-form" class="facilities-form">
+              <label class="field-label" for="facilities-place">Scrivi la tua città: la ricorderò per le prossime volte</label>
+              <input id="facilities-place" name="place" type="text" placeholder="Per esempio: Ferrara" autocomplete="address-level2">
+              <div class="facilities-actions">
+                <button class="secondary" id="facilities-gps" type="button">Usa la mia posizione solo per ora</button>
+                <button class="primary" type="submit">Salva la città</button>
+              </div>
+            </form>
+          </details>
+
           <p id="facilities-status" class="facilities-status" aria-live="polite"></p>
           <div id="facilities-map" class="facilities-map" hidden></div>
-          <ol id="facilities-list" class="facilities-list"></ol>
+          <div id="facilities-list" class="facilities-groups"></div>
           <div class="facilities-notice">
-            <strong>Per un’urgenza chiama il 112.</strong> Questo elenco serve solo a orientarti e può essere incompleto: prima di prenotare parlane con il tuo medico di famiglia. Per cercare usiamo la mappa OpenStreetMap: inviamo solo la città, mai il referto.
+            <strong>Per un’urgenza chiama il 112.</strong> Questo elenco serve solo a orientarti e può essere incompleto: prima di prenotare parlane con il tuo medico di famiglia. I dati vengono da OpenStreetMap: inviamo solo la città, mai il referto.
           </div>
         </section>
       </div>
@@ -491,6 +500,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=7" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=8" defer></script>
 </body>
 </html>

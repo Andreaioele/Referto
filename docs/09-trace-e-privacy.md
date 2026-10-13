@@ -25,6 +25,7 @@ fallite: `traces/<data>/<trace_id>.json` con stato, durata, passi
 |---|---|---|
 | Testo del referto, prompt, risposte | `traces/` | No: va solo a Ollama in locale |
 | Parole del glossario incontrate | `glossario/parole_salvate.json` | No |
+| Città del profilo | `profilo/profilo.json` | Solo il nome della città, a Nominatim |
 | Zona cercata e coordinate | `strutture_cache/` | Sì, a Nominatim e Overpass (OpenStreetMap) |
 | Codice del farmaco di cui si apre il foglietto | `farmaci_cache/` | Sì, ad AIFA |
 | Tile della mappa | — | Sì, a OpenStreetMap |

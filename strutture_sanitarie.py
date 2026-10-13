@@ -35,11 +35,13 @@ USER_AGENT = "Referto-hackathon/0.1 (https://github.com/Andreaioele/Referto)"
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 OVERPASS_URLS = (
     "https://overpass-api.de/api/interpreter",
+    # Mirror che il 13/10/2026 rispondeva mentre il server principale dava 504.
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
 )
 OVERPASS_TIMEOUT = 25
-MAX_FACILITIES = 40
+MAX_FACILITIES = 200
 DEFAULT_BRANCH = "medicina-generale"
 
 # id, nome, valori OSM di healthcare:speciality, radici nel nome della
@@ -307,11 +309,16 @@ def geocode(query: str) -> Dict[str, Any]:
     cached = _cache_read("geocode", key)
     if cached:
         return cached
-    params = urllib.parse.urlencode(
-        {"q": query, "format": "jsonv2", "limit": 1, "countrycodes": "it", "accept-language": "it"}
-    )
+    base = {"q": query, "format": "jsonv2", "limit": 1, "countrycodes": "it", "accept-language": "it"}
+    results = []
     try:
-        results = _http_get_json(f"{NOMINATIM_URL}?{params}", timeout=15)
+        # Prima un comune (featureType=city): "Ferrara" altrimenti diventa il centro della
+        # provincia, a 20 km dalla città. Poi la ricerca libera (indirizzi).
+        for extra in ({"featureType": "city"}, {}):
+            params = urllib.parse.urlencode({**base, **extra})
+            results = _http_get_json(f"{NOMINATIM_URL}?{params}", timeout=15)
+            if results:
+                break
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise FacilitiesUnavailable("Il servizio di ricerca degli indirizzi non risponde.") from exc
     if not results:
@@ -374,8 +381,32 @@ def _distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
+# Strutture "di contorno": compaiono nell'elenco completo come altri studi e
+# ambulatori della zona anche se non dichiarano la branca. Farmacie, dentisti,
+# ottici ecc. no, a meno che la branca li indichi esplicitamente.
+GENERAL_KINDS = {"doctor", "doctors", "clinic", "centre"}
+KIND_LABELS = {
+    "hospital": "Ospedale o casa di cura",
+    "clinic": "Poliambulatorio o ambulatorio",
+    "centre": "Centro sanitario",
+    "doctor": "Studio medico",
+    "doctors": "Studio medico",
+    "laboratory": "Laboratorio analisi",
+    "sample_collection": "Punto prelievi",
+    "optometrist": "Ottico o optometrista",
+    "dentist": "Studio dentistico",
+    "physiotherapist": "Fisioterapista",
+    "psychotherapist": "Psicoterapeuta",
+    "pharmacy": "Farmacia",
+}
+
+
+def _kind(tags: Dict[str, str]) -> str:
+    return tags.get("healthcare") or tags.get("amenity") or "struttura"
+
+
 def _match(tags: Dict[str, str], branch: Dict[str, Any]) -> Optional[str]:
-    """Quanto la struttura è pertinente: specialità dichiarata > nome > ospedale."""
+    """Quanto la struttura è pertinente: specialità dichiarata > nome > ospedale > altro."""
     specialities = {s.strip().lower() for s in tags.get("healthcare:speciality", "").split(";") if s.strip()}
     if specialities & set(branch["osm"]) or tags.get("healthcare") in branch.get("healthcare", []):
         return "specialita"
@@ -384,7 +415,36 @@ def _match(tags: Dict[str, str], branch: Dict[str, Any]) -> Optional[str]:
         return "nome"
     if tags.get("amenity") == "hospital" or tags.get("healthcare") == "hospital":
         return "ospedale"
+    # Specialità sconosciuta: forse se ne occupa. Specialità diversa dichiarata: no.
+    if _kind(tags) in GENERAL_KINDS and not specialities:
+        return "altro"
     return None
+
+
+# Specialità OSM frequenti che non sono una branca dell'elenco, in italiano.
+OSM_SPECIALITY_IT = {
+    "vaccination": "vaccinazioni", "dentistry": "odontoiatria", "orthodontics": "ortodonzia",
+    "podiatry": "podologia", "physiotherapy": "fisioterapia", "sports_medicine": "medicina dello sport",
+    "emergency": "pronto soccorso", "geriatrics": "geriatria", "rheumatology": "reumatologia",
+    "allergology": "allergologia", "infectious_diseases": "malattie infettive",
+    "occupational": "medicina del lavoro", "anaesthetics": "anestesia", "plastic_surgery": "chirurgia plastica",
+    "vascular_surgery": "chirurgia vascolare", "rehabilitation": "riabilitazione",
+    "dental_oral_maxillo_facial_surgery": "chirurgia maxillo-facciale", "blood_check": "prelievi",
+    "speech_therapy": "logopedia", "nutrition": "nutrizione", "abortion": "interruzione di gravidanza",
+}
+
+
+def _speciality_labels(tags: Dict[str, str]) -> List[str]:
+    """Specialità dichiarate in OSM, in italiano quando corrispondono a una branca."""
+    labels = []
+    for value in (s.strip().lower() for s in tags.get("healthcare:speciality", "").split(";")):
+        if not value:
+            continue
+        branch = next((b for b in BRANCHES if value in b["osm"]), None)
+        label = branch["label"] if branch else OSM_SPECIALITY_IT.get(value, value.replace("_", " "))
+        if label not in labels:
+            labels.append(label)
+    return labels
 
 
 def _address(tags: Dict[str, str]) -> str:
@@ -397,7 +457,7 @@ def find_facilities(lat: float, lon: float, branch_id: str, radius_km: int = 10)
     branch = BRANCHES_BY_ID.get(branch_id, BRANCHES_BY_ID[DEFAULT_BRANCH])
     radius_km = max(1, min(int(radius_km), 30))
     fetched = _fetch_elements(lat, lon, radius_km)
-    order = {"specialita": 0, "nome": 1, "ospedale": 2}
+    order = {"specialita": 0, "nome": 1, "ospedale": 2, "altro": 3}
     facilities = []
     for element in fetched["elements"]:
         tags = element.get("tags", {})
@@ -412,7 +472,9 @@ def find_facilities(lat: float, lon: float, branch_id: str, radius_km: int = 10)
         facilities.append(
             {
                 "name": tags["name"],
-                "kind": tags.get("healthcare") or tags.get("amenity") or "struttura",
+                "kind": _kind(tags),
+                "kind_label": KIND_LABELS.get(_kind(tags), "Struttura sanitaria"),
+                "specialita": _speciality_labels(tags),
                 "match": match,
                 "lat": point["lat"],
                 "lon": point["lon"],

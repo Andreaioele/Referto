@@ -44,3 +44,6 @@ farmaci_cache/
 docs/.obsidian/*
 !docs/.obsidian/graph.json
 !docs/.obsidian/app.json
+
+# Profilo del paziente (città): dato personale, resta su questo computer
+profilo/
