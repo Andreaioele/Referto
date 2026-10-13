@@ -31,6 +31,7 @@ chiaramente attribuite alla fonte.
 - Risposte in prosa, senza Markdown o elenchi generati dal modello.
 - Cronologia persistente con data, ora, durata, prompt, risposte e passaggi.
 - Trace salvate anche per le esecuzioni fallite.
+- Glossario delle parole mediche del referto (vedi sotto).
 
 ## Requisiti
 
@@ -279,6 +280,35 @@ manualmente al repository perché potrebbero contenere dati sanitari personali.
 Il progetto non invia intenzionalmente i documenti a servizi remoti: usa
 l’endpoint locale di Ollama configurato con `--ollama-url`. Chi modifica tale
 indirizzo è responsabile della destinazione dei dati.
+
+## Glossario delle parole mediche
+
+Dopo ogni analisi, Referto cerca nel referto e nella spiegazione i termini
+della [Human Phenotype Ontology](https://hpo.jax.org) (HPO): segni, sintomi e
+reperti, in inglese e in italiano. Per ognuno mostra:
+
+- una spiegazione in italiano semplice, scritta dal modello riformulando **solo**
+  la definizione HPO;
+- le parole comuni (sinonimi "layperson" di HPO, in inglese);
+- la definizione di riferimento HPO e il link alla scheda del termine.
+
+Il modello non decide quali parole sono mediche né cosa significano: termini e
+definizioni vengono da HPO. Le parole incontrate restano salvate in
+`glossario/parole_salvate.json` (esclusa da Git) e si rileggono una alla volta
+nella sezione **Glossario**; ogni spiegazione si genera una sola volta e poi
+viene riusata. Se il modello non risponde, resta la definizione HPO.
+
+Il glossario (`glossario/hpo_glossario.json`, circa 19.000 termini, di cui circa
+3.500 con nome italiano) si rigenera da una nuova release di HPO con:
+
+```bash
+curl -L -o hp.json https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp.json
+curl -L -o hp-it.babelon.tsv https://raw.githubusercontent.com/obophenotype/hpo-translations/main/babelon/hp-it.babelon.tsv
+python glossario/build_glossary.py --hp-json hp.json --it-tsv hp-it.babelon.tsv
+```
+
+HPO copre segni, sintomi e reperti, non anatomia né procedure: parole come
+"menisco" o "ecocardiografia" non compaiono nel glossario.
 
 ## Uso da terminale
 

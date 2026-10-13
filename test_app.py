@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 import benchmarking
 import decision_model
+import glossario_medico
 import web_app
 from spiega_referto import (
     dataset_record_to_text,
@@ -679,6 +680,47 @@ class ClusterAgentTaskTests(unittest.TestCase):
             lines_after = [json.loads(line) for line in output_file.read_text(encoding="utf-8").splitlines() if line.strip()]
             self.assertEqual(len(lines_after), 3)
             self.assertEqual({l["doc_key"] for l in lines_after}, {"test-doc-1", "test-doc-2", "test-doc-3"})
+
+
+class GlossaryTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        saved_patch = patch.object(
+            glossario_medico, "SAVED_FILE", Path(self.directory.name) / "parole.json"
+        )
+        saved_patch.start()
+        self.addCleanup(saved_patch.stop)
+
+    def test_find_terms_prefers_longest_match_in_both_languages(self):
+        terms = glossario_medico.find_terms(
+            ["Nessun versamento pleurico. Atelettasia basale.", "Mild mitral regurgitation."]
+        )
+        ids = [term["id"] for term in terms]
+        self.assertEqual(ids, ["HP:0002202", "HP:0100750", "HP:0001653"])
+        self.assertEqual(terms[0]["it"], "Versamento pleurico")
+
+    def test_find_terms_ignores_ambiguous_words(self):
+        self.assertEqual(glossario_medico.find_terms(["Aspiration and cutting were performed."]), [])
+
+    def test_glossary_falls_back_to_hpo_definition_when_model_fails(self):
+        with patch.object(
+            glossario_medico, "_simplify_with_model", side_effect=urllib.error.URLError("offline")
+        ):
+            terms = glossario_medico.build_glossary("Pneumotorace.", "", "http://x", "m", 5)
+        self.assertEqual(terms[0]["id"], "HP:0002107")
+        self.assertIsNone(terms[0]["simple_it"])
+        self.assertTrue(terms[0]["definition_en"])
+
+    def test_simplifications_are_saved_and_reused(self):
+        generated = {"HP:0002107": {"simple_it": "Aria intorno al polmone.", "name_it": "Pneumotorace"}}
+        with patch.object(glossario_medico, "_simplify_with_model", return_value=generated) as model:
+            glossario_medico.build_glossary("Pneumotorace.", "", "http://x", "m", 5)
+            terms = glossario_medico.build_glossary("Pneumotorace.", "", "http://x", "m", 5)
+        self.assertEqual(model.call_count, 1)
+        self.assertEqual(terms[0]["simple_it"], "Aria intorno al polmone.")
+        saved = glossario_medico.saved_terms()
+        self.assertEqual(saved[0]["count"], 2)
 
 
 if __name__ == "__main__":

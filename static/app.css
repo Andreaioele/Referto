@@ -369,3 +369,31 @@ footer { max-width: 750px; margin: 0 auto; padding: 24px 10px 0; color: var(--mu
   .comparison-row { grid-template-columns: 1fr; }
   .comparison-bar-item { grid-template-columns: 75px minmax(70px, 1fr) 65px; }
 }
+
+/* Glossario dei termini medici */
+.result-glossary { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.result-glossary > h3 { margin: 0 0 6px; color: var(--green-dark); font-size: 11px; letter-spacing: .09em; font-weight: 800; text-transform: uppercase; }
+.glossary-intro { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.glossary-viewer { display: grid; gap: 16px; }
+.glossary-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.glossary-chip { padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.glossary-chip:hover { border-color: var(--green); }
+.glossary-chip.active { border-color: var(--green); background: var(--mint); color: var(--green-dark); font-weight: 650; }
+.glossary-detail { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.glossary-detail-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.glossary-counter { color: var(--muted); font-size: 12px; font-weight: 650; }
+.glossary-nav { display: flex; gap: 8px; }
+.glossary-nav button { padding: 6px 12px; font-size: 13px; }
+.glossary-detail h4 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+.glossary-english { margin: 4px 0 14px; color: var(--muted); font-size: 13px; }
+.glossary-block { padding: 12px 0; border-top: 1px solid var(--line); }
+.glossary-block h5 { margin: 0 0 6px; color: var(--green-dark); font-size: 11px; letter-spacing: .08em; font-weight: 800; text-transform: uppercase; }
+.glossary-block p { margin: 0; color: #34423e; font-size: 14px; line-height: 1.65; }
+.glossary-block.simple p { font-size: 16px; color: var(--ink); }
+.glossary-block.pending p { color: var(--muted); font-size: 14px; }
+.glossary-note { margin: 0 0 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.glossary-meta { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+.glossary-meta a { color: var(--green); }
+.glossary-search { width: 100%; margin-bottom: 18px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 12px; font: inherit; font-size: 14px; background: var(--paper); }
+.glossary-source { margin: 18px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.glossary-nav button:disabled { opacity: .4; cursor: default; }

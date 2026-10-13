@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
 from PIL import Image, UnidentifiedImageError
@@ -29,6 +29,7 @@ from benchmarking import (
 )
 from decision_model import DEFAULT_DECISION_MODEL
 from performance_metrics import capture_model_calls
+from glossario_medico import build_glossary, glossary_info, saved_terms
 from trace_store import (
     TraceRecorder,
     list_trace_summaries,
@@ -144,6 +145,20 @@ def _explain_text(report: str, use_decision_model: Optional[bool] = None) -> str
             decision_model=str(app.config["DECISION_MODEL_NAME"]),
         )
     )
+
+
+def _glossary(report: str, result: str) -> List[Dict[str, Any]]:
+    """Parole mediche del referto con spiegazione semplice; mai bloccante."""
+    base_url, model, timeout, _ = _settings()
+    with traced_step("Glossario dei termini medici") as details:
+        try:
+            terms = build_glossary(report, result, base_url, model, timeout)
+        except Exception as exc:  # il glossario è un extra: la spiegazione resta valida
+            details["error"] = f"{type(exc).__name__}: {exc}"
+            return []
+        details["terms"] = [term["id"] for term in terms]
+        details["simplified"] = sum(1 for term in terms if term.get("simple_it"))
+    return terms
 
 
 def _save_upload(upload: Any, directory: Path, allowed_suffixes: set[str]) -> Path:
@@ -471,8 +486,12 @@ def analyze_text():
             with traced_step("Accesso al modello locale"):
                 acquired = _acquire_model()
             result = _explain_text(report)
+            glossary = _glossary(report, result)
+            trace.set_artifact("glossary", glossary)
             trace.complete(result)
-            return jsonify({"ok": True, "result": result, "trace_id": trace.trace_id})
+            return jsonify(
+                {"ok": True, "result": result, "glossary": glossary, "trace_id": trace.trace_id}
+            )
         except UserFacingError as exc:
             trace.fail(str(exc))
             return _json_error(str(exc), trace_id=trace.trace_id)
@@ -512,11 +531,14 @@ def analyze_image():
                 report = transcribe_report_images([image_path], base_url, model, timeout)
                 trace.set_artifact("transcription", report)
                 result = _explain_text(report)
+                glossary = _glossary(report, result)
+                trace.set_artifact("glossary", glossary)
                 trace.complete(result)
                 return jsonify(
                     {
                         "ok": True,
                         "result": result,
+                        "glossary": glossary,
                         "transcription": report,
                         "trace_id": trace.trace_id,
                     }
@@ -569,11 +591,14 @@ def analyze_pdf():
                     "vision" if used_vision else "pdf_text_extraction",
                 )
                 result = _explain_text(report)
+                glossary = _glossary(report, result)
+                trace.set_artifact("glossary", glossary)
                 trace.complete(result)
                 return jsonify(
                     {
                         "ok": True,
                         "result": result,
+                        "glossary": glossary,
                         "source": "Lettura visiva del PDF scansionato" if used_vision else "Testo del PDF",
                         "trace_id": trace.trace_id,
                     }
@@ -947,6 +972,11 @@ def benchmark_detail(benchmark_id: str):
     if benchmark is None:
         return _json_error("Benchmark non trovato.", 404)
     return jsonify({"ok": True, "benchmark": benchmark})
+
+
+@app.get("/api/glossary")
+def glossary_index():
+    return jsonify({"ok": True, "terms": saved_terms(), "source": glossary_info()})
 
 
 @app.get("/download/<path:filename>")

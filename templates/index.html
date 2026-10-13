@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>Referto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=3">
 </head>
 <body>
   <main class="shell">
@@ -57,6 +57,10 @@
           <button class="tab" type="button" data-tab="traces">
             <span class="tab-icon" aria-hidden="true">LOG</span>
             <span><strong>Cronologia</strong><small>Date, orari e passaggi</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="glossary">
+            <span class="tab-icon" aria-hidden="true">ABC</span>
+            <span><strong>Glossario</strong><small>Le parole dei tuoi referti</small></span>
           </button>
         </nav>
 
@@ -341,6 +345,22 @@
           </div>
           <div id="trace-detail" class="trace-detail" hidden></div>
         </section>
+
+        <section id="panel-glossary" class="panel glossary-panel" data-panel="glossary" hidden>
+          <div class="panel-heading trace-heading">
+            <div>
+              <p class="section-label">GLOSSARIO</p>
+              <h2>Le parole mediche dei tuoi referti</h2>
+              <p>Ogni volta che analizzi un referto, le parole mediche che contiene vengono salvate qui con una spiegazione semplice. Puoi rileggerle una alla volta.</p>
+            </div>
+            <button id="refresh-glossary" class="secondary" type="button">Aggiorna</button>
+          </div>
+          <input id="glossary-search" class="glossary-search" type="search" placeholder="Cerca una parola…" aria-label="Cerca nel glossario">
+          <div id="glossary-saved" aria-live="polite">
+            <p class="empty-state">Caricamento del glossario…</p>
+          </div>
+          <p id="glossary-source" class="glossary-source"></p>
+        </section>
       </div>
     </section>
 
@@ -348,6 +368,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=2" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=3" defer></script>
 </body>
 </html>

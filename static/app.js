@@ -12,6 +12,7 @@ tabs.forEach((tab) => {
     });
     if (name === "traces") loadTraces();
     if (name === "performance") loadBenchmarks();
+    if (name === "glossary") loadGlossary();
   });
 });
 
@@ -158,13 +159,167 @@ function renderExplanation(result) {
   return article;
 }
 
-function showSingleResult(target, result, traceId) {
+function glossaryTermName(term) {
+  return term.name_it || term.it || term.en;
+}
+
+function glossaryDetail(term, position, total, onMove, showHistory) {
+  const card = document.createElement("article");
+  card.className = "glossary-detail";
+
+  const header = document.createElement("div");
+  header.className = "glossary-detail-header";
+  const counter = document.createElement("span");
+  counter.className = "glossary-counter";
+  counter.textContent = `${position + 1} di ${total}`;
+  const nav = document.createElement("div");
+  nav.className = "glossary-nav";
+  [["‹ Precedente", -1], ["Successiva ›", 1]].forEach(([label, step]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary";
+    button.textContent = label;
+    button.disabled = position + step < 0 || position + step >= total;
+    button.addEventListener("click", () => onMove(position + step));
+    nav.append(button);
+  });
+  header.append(counter, nav);
+
+  const title = document.createElement("h4");
+  title.textContent = glossaryTermName(term);
+  const english = document.createElement("p");
+  english.className = "glossary-english";
+  english.textContent = `In inglese: ${term.en}`;
+  card.append(header, title, english);
+
+  const block = (label, text, className = "") => {
+    if (!text) return;
+    const section = document.createElement("section");
+    section.className = `glossary-block ${className}`.trim();
+    const heading = document.createElement("h5");
+    heading.textContent = label;
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+    section.append(heading, paragraph);
+    card.append(section);
+  };
+  if (term.simple_it) {
+    block("In parole semplici", term.simple_it, "simple");
+    const note = document.createElement("p");
+    note.className = "glossary-note";
+    note.textContent = `Riformulazione scritta da ${term.simple_model || "il modello"} a partire dalla definizione HPO qui sotto. In caso di dubbio chiedi al tuo medico.`;
+    card.append(note);
+  } else {
+    block("In parole semplici", "Spiegazione semplice non ancora disponibile: qui sotto trovi la definizione di riferimento.", "simple pending");
+  }
+  block("Parole comuni (inglese)", (term.lay_en || []).join(" · "));
+  block("Definizione di riferimento (HPO, inglese)", term.definition_en);
+
+  const footer = document.createElement("p");
+  footer.className = "glossary-meta";
+  if (showHistory && term.count) {
+    footer.append(`Trovata in ${term.count} analisi · ultima volta ${formatTraceDate(term.last_seen)} · `);
+  }
+  const link = document.createElement("a");
+  link.href = term.source_url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = `Scheda ${term.id} su HPO ↗`;
+  footer.append(link);
+  card.append(footer);
+  return card;
+}
+
+function renderGlossaryViewer(terms, { showHistory = false } = {}) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "glossary-viewer";
+  const chips = document.createElement("div");
+  chips.className = "glossary-chips";
+  const detailSlot = document.createElement("div");
+  let current = 0;
+
+  const select = (index) => {
+    current = index;
+    [...chips.children].forEach((chip, i) => chip.classList.toggle("active", i === index));
+    detailSlot.replaceChildren(glossaryDetail(terms[index], index, terms.length, select, showHistory));
+  };
+  terms.forEach((term, index) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "glossary-chip";
+    chip.textContent = glossaryTermName(term);
+    chip.addEventListener("click", () => select(index));
+    chips.append(chip);
+  });
+  wrapper.append(chips, detailSlot);
+  if (terms.length) select(current);
+  return wrapper;
+}
+
+function renderResultGlossary(terms) {
+  const section = document.createElement("section");
+  section.className = "result-glossary";
+  const heading = document.createElement("h3");
+  heading.textContent = "Le parole mediche di questo referto";
+  const intro = document.createElement("p");
+  intro.className = "glossary-intro";
+  intro.textContent = "Tocca una parola per leggerne il significato. Restano salvate nella sezione Glossario. Una parola in questo elenco non significa che tu abbia quella condizione: il referto può nominarla anche per escluderla.";
+  section.append(heading, intro, renderGlossaryViewer(terms));
+  return section;
+}
+
+const glossarySaved = document.querySelector("#glossary-saved");
+const glossarySearch = document.querySelector("#glossary-search");
+let glossaryTerms = [];
+
+function renderSavedGlossary() {
+  if (!glossarySaved) return;
+  const query = (glossarySearch?.value || "").trim().toLowerCase();
+  const terms = glossaryTerms.filter((term) => !query
+    || [glossaryTermName(term), term.en, term.it || ""].some((name) => name.toLowerCase().includes(query)));
+  if (!glossaryTerms.length) {
+    glossarySaved.innerHTML = '<p class="empty-state">Non ci sono ancora parole salvate. Analizza un referto per iniziare.</p>';
+    return;
+  }
+  if (!terms.length) {
+    glossarySaved.innerHTML = '<p class="empty-state">Nessuna parola corrisponde alla ricerca.</p>';
+    return;
+  }
+  glossarySaved.replaceChildren(renderGlossaryViewer(terms, { showHistory: true }));
+}
+
+async function loadGlossary() {
+  if (!glossarySaved) return;
+  try {
+    const response = await fetch("/api/glossary");
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
+    glossaryTerms = data.terms || [];
+    const source = document.querySelector("#glossary-source");
+    if (source && data.source) {
+      source.textContent = `Termini e definizioni: ${data.source.source}${data.source.hpo_version ? `, versione ${data.source.hpo_version.split("/").slice(-2, -1)[0]}` : ""}. Le spiegazioni semplici sono riformulazioni automatiche delle definizioni HPO.`;
+    }
+    renderSavedGlossary();
+  } catch (error) {
+    glossarySaved.innerHTML = "";
+    const message = document.createElement("p");
+    message.className = "empty-state";
+    message.textContent = error.message || "Impossibile caricare il glossario.";
+    glossarySaved.append(message);
+  }
+}
+
+glossarySearch?.addEventListener("input", renderSavedGlossary);
+document.querySelector("#refresh-glossary")?.addEventListener("click", loadGlossary);
+
+function showSingleResult(target, result, traceId, glossary) {
   target.hidden = false;
   target.className = "result";
   target.replaceChildren();
   const title = document.createElement("h3");
   title.textContent = "Spiegazione del referto";
   target.append(title, renderExplanation(result));
+  if (glossary?.length) target.append(renderResultGlossary(glossary));
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);
 }
@@ -386,7 +541,7 @@ document.querySelectorAll(".analysis-form").forEach((form) => {
         requestError.traceId = data.trace_id;
         throw requestError;
       }
-      showSingleResult(target, data.result, data.trace_id);
+      showSingleResult(target, data.result, data.trace_id, data.glossary);
     } catch (error) {
       showError(target, error.message || "Errore di connessione.", error.traceId);
     } finally {

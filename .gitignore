@@ -29,3 +29,7 @@ models/
 .DS_Store
 .idea/
 .vscode/
+
+# Parole del glossario incontrate nei referti analizzati (dato locale)
+glossario/parole_salvate.json
+glossario/*.tmp
