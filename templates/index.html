@@ -7,7 +7,7 @@
   <title>Referto</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=5">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=6">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
@@ -28,26 +28,54 @@
 
     <section class="intro">
       <p class="eyebrow">ASSISTENTE ALLA COMPRENSIONE</p>
-      <h2>Comprendi le informazioni importanti del tuo referto.</h2>
-      <p>Carica un documento oppure incolla il testo. Referto lo sintetizza in modo fedele, chiaro e senza fornire consigli medici.</p>
+      <h2>Capisci il tuo referto, con parole semplici.</h2>
+      <ol class="steps" aria-label="Come funziona">
+        <li><span>1</span>Scegli come caricare il referto</li>
+        <li><span>2</span>Premi «Spiega il referto»</li>
+        <li><span>3</span>Leggi la spiegazione</li>
+      </ol>
     </section>
 
     <section class="workspace">
       <aside class="sidebar">
-        <p class="nav-label">Scegli il formato</p>
-        <nav class="tabs" aria-label="Tipo di input">
+        <p class="nav-label">Spiega un referto</p>
+        <nav class="tabs" aria-label="Spiega un referto">
           <button class="tab active" type="button" data-tab="pdf">
             <span class="tab-icon" aria-hidden="true">PDF</span>
-            <span><strong>Documento PDF</strong><small>Carica un referto</small></span>
+            <span><strong>File PDF</strong><small>Il referto sul computer</small></span>
           </button>
           <button class="tab" type="button" data-tab="image">
-            <span class="tab-icon" aria-hidden="true">IMG</span>
-            <span><strong>Immagine</strong><small>Foto o scansione</small></span>
+            <span class="tab-icon" aria-hidden="true">FOTO</span>
+            <span><strong>Foto</strong><small>Una foto del foglio</small></span>
           </button>
           <button class="tab" type="button" data-tab="text">
-            <span class="tab-icon" aria-hidden="true">TXT</span>
+            <span class="tab-icon" aria-hidden="true">TESTO</span>
             <span><strong>Testo</strong><small>Scrivi o incolla</small></span>
           </button>
+        </nav>
+
+        <p class="nav-label nav-label-group">Il tuo archivio</p>
+        <nav class="tabs" aria-label="Il tuo archivio">
+          <button class="tab" type="button" data-tab="reports">
+            <span class="tab-icon" aria-hidden="true">DOC</span>
+            <span><strong>I miei referti</strong><small>Tutti quelli spiegati</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="medications">
+            <span class="tab-icon" aria-hidden="true">Rx</span>
+            <span><strong>I miei farmaci</strong><small>Con il foglietto illustrativo</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="glossary">
+            <span class="tab-icon" aria-hidden="true">ABC</span>
+            <span><strong>Terminologie</strong><small>Le parole mediche, spiegate</small></span>
+          </button>
+          <button class="tab" type="button" data-tab="facilities">
+            <span class="tab-icon" aria-hidden="true">MAP</span>
+            <span><strong>Dove andare</strong><small>Specialisti vicino a te</small></span>
+          </button>
+        </nav>
+
+        <p class="nav-label nav-label-group advanced-only">Strumenti per il team</p>
+        <nav class="tabs advanced-only" aria-label="Strumenti per il team">
           <button class="tab" type="button" data-tab="dataset">
             <span class="tab-icon" aria-hidden="true">DATA</span>
             <span><strong>Dataset</strong><small>Elabora un JSONL</small></span>
@@ -62,44 +90,25 @@
           </button>
         </nav>
 
-        <p class="nav-label nav-label-group">Il tuo archivio</p>
-        <nav class="tabs" aria-label="Il tuo archivio">
-          <button class="tab" type="button" data-tab="reports">
-            <span class="tab-icon" aria-hidden="true">DOC</span>
-            <span><strong>Referti</strong><small>Il tuo storico e le analisi</small></span>
-          </button>
-          <button class="tab" type="button" data-tab="medications">
-            <span class="tab-icon" aria-hidden="true">Rx</span>
-            <span><strong>Farmaci</strong><small>Dai tuoi referti, con foglietto</small></span>
-          </button>
-          <button class="tab" type="button" data-tab="glossary">
-            <span class="tab-icon" aria-hidden="true">ABC</span>
-            <span><strong>Glossario</strong><small>Le parole dei tuoi referti</small></span>
-          </button>
-          <button class="tab" type="button" data-tab="facilities">
-            <span class="tab-icon" aria-hidden="true">MAP</span>
-            <span><strong>Strutture</strong><small>Specialisti nella tua zona</small></span>
-          </button>
-        </nav>
-
         <div class="privacy-note">
           <span class="privacy-icon" aria-hidden="true">✓</span>
-          <div><strong>I dati restano locali</strong><p>Il documento viene elaborato sul tuo computer con {{ model_name }}.</p></div>
+          <div><strong>I tuoi dati restano qui</strong><p>Il referto viene letto su questo computer e non viene inviato a nessuno.<span class="advanced-only"> Modello: {{ model_name }}.</span></p></div>
         </div>
+        <button id="advanced-toggle" class="advanced-toggle" type="button" aria-pressed="false">Mostra strumenti per il team</button>
       </aside>
 
       <div class="content">
         <section id="panel-pdf" class="panel active" data-panel="pdf">
           <div class="panel-heading">
-            <p class="section-label">DOCUMENTO PDF</p>
-            <h2>Carica il tuo referto</h2>
-            <p>Puoi usare PDF testuali e scansioni fino a 12 pagine.</p>
+            <p class="section-label">FILE PDF</p>
+            <h2>Carica il referto in PDF</h2>
+            <p>Premi il riquadro qui sotto e scegli il file del referto. Poi premi «Spiega il referto».</p>
           </div>
           <form class="analysis-form" data-endpoint="/api/analyze/pdf" data-result="result-pdf">
             <label class="dropzone">
               <span class="upload-icon" aria-hidden="true">↑</span>
-              <strong>Scegli un file PDF</strong>
-              <span class="file-name">oppure trascinalo in quest’area</span>
+              <strong>Premi qui per scegliere il file</strong>
+              <span class="file-name">oppure trascinalo in questo riquadro</span>
               <input type="file" name="pdf" accept="application/pdf,.pdf" required>
             </label>
             <button class="primary" type="submit">Spiega il referto</button>
@@ -109,18 +118,18 @@
 
         <section id="panel-image" class="panel" data-panel="image" hidden>
           <div class="panel-heading">
-            <p class="section-label">IMMAGINE</p>
-            <h2>Carica una foto o scansione</h2>
-            <p>L’immagine deve contenere il testo leggibile di un referto.</p>
+            <p class="section-label">FOTO</p>
+            <h2>Carica una foto del referto</h2>
+            <p>Fotografa il foglio dritto, con buona luce, in modo che si legga tutto il testo.</p>
           </div>
           <form class="analysis-form" data-endpoint="/api/analyze/image" data-result="result-image">
             <label class="dropzone">
               <span class="upload-icon" aria-hidden="true">↑</span>
-              <strong>Scegli un’immagine</strong>
-              <span class="file-name">PNG, JPG, WEBP, BMP o TIFF</span>
+              <strong>Premi qui per scegliere la foto</strong>
+              <span class="file-name">oppure trascinala in questo riquadro</span>
               <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/bmp,image/tiff" required>
             </label>
-            <button class="primary" type="submit">Leggi e spiega</button>
+            <button class="primary" type="submit">Spiega il referto</button>
           </form>
           <div id="result-image" class="result" hidden></div>
         </section>
@@ -128,13 +137,13 @@
         <section id="panel-text" class="panel" data-panel="text" hidden>
           <div class="panel-heading">
             <p class="section-label">TESTO</p>
-            <h2>Incolla il testo del referto</h2>
-            <p>Rimuovi i dati identificativi se non sono necessari.</p>
+            <h2>Scrivi o incolla il testo</h2>
+            <p>Copia il testo del referto nel riquadro qui sotto. Non servono nome e cognome: puoi toglierli.</p>
           </div>
           <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-text">
             <label class="field-label" for="report-text">Testo del referto</label>
             <textarea id="report-text" name="text" rows="13" placeholder="Incolla qui il contenuto del referto…" required></textarea>
-            <div class="form-footer"><span id="text-count">0 caratteri</span><button class="primary" type="submit">Spiega il testo</button></div>
+            <div class="form-footer"><span id="text-count" class="advanced-only">0 caratteri</span><button class="primary" type="submit">Spiega il referto</button></div>
           </form>
           <div id="result-text" class="result" hidden></div>
         </section>
@@ -367,13 +376,13 @@
         <section id="panel-reports" class="panel reports-panel" data-panel="reports" hidden>
           <div class="panel-heading trace-heading">
             <div>
-              <p class="section-label">I TUOI REFERTI</p>
-              <h2>Storico dei referti e delle analisi</h2>
-              <p>Ogni referto che fai spiegare resta qui, con la spiegazione, le parole del glossario, la branca e i farmaci citati.</p>
+              <p class="section-label">I MIEI REFERTI</p>
+              <h2>Tutti i referti che hai fatto spiegare</h2>
+              <p>Premi su un referto per rileggere la sua spiegazione.</p>
             </div>
             <button id="refresh-reports" class="secondary" type="button">Aggiorna</button>
           </div>
-          <div class="trace-privacy">I referti sono salvati solo su questo computer. Puoi eliminarli quando vuoi.</div>
+          <div class="trace-privacy">Sono salvati solo su questo computer.</div>
           <div id="reports-list" class="reports-list" aria-live="polite">
             <p class="empty-state">Caricamento dei referti…</p>
           </div>
@@ -383,34 +392,34 @@
         <section id="panel-medications" class="panel medications-panel" data-panel="medications" hidden>
           <div class="panel-heading trace-heading">
             <div>
-              <p class="section-label">FARMACI</p>
-              <h2>I farmaci citati nei tuoi referti</h2>
-              <p>Per ogni farmaco: quantità e motivo come scritti nel referto, il referto da cui viene e il foglietto illustrativo ufficiale AIFA.</p>
+              <p class="section-label">I MIEI FARMACI</p>
+              <h2>I farmaci scritti nei tuoi referti</h2>
+              <p>Per ogni farmaco trovi quanto prenderne e perché, come scritto nel referto, e il foglietto illustrativo.</p>
             </div>
             <button id="refresh-medications" class="secondary" type="button">Aggiorna</button>
           </div>
           <div class="facilities-notice">
-            Referto non suggerisce farmaci né dosi: qui trovi solo i farmaci scritti nei tuoi referti, con dose e motivo copiati dal documento. Non cambiare una terapia senza parlarne con il medico; per dubbi sui farmaci chiedi anche al farmacista.
+            Qui ci sono solo i farmaci scritti dal medico nei tuoi referti: Referto non consiglia farmaci. Non cambiare una cura senza parlarne con il tuo medico o con il farmacista.
           </div>
           <div id="medications-pending" class="medications-pending" hidden></div>
           <div id="medications-list" class="medications-list" aria-live="polite">
             <p class="empty-state">Caricamento dei farmaci…</p>
           </div>
-          <div class="catalog">
-            <h3>Cerca un farmaco nel prontuario AIFA</h3>
-            <p>Tutti i farmaci autorizzati in Italia, con il foglietto illustrativo ufficiale.</p>
+          <details class="catalog">
+            <summary>Cerca il foglietto di un altro farmaco</summary>
+            <p>Tutti i farmaci in commercio in Italia, con il foglietto illustrativo ufficiale AIFA.</p>
             <input id="catalog-search" class="glossary-search" type="search" placeholder="Nome commerciale o principio attivo, es. Tachipirina o metformina" aria-label="Cerca nel prontuario AIFA">
             <div id="catalog-results" class="catalog-results"></div>
-          </div>
+          </details>
           <p id="medications-source" class="glossary-source"></p>
         </section>
 
         <section id="panel-glossary" class="panel glossary-panel" data-panel="glossary" hidden>
           <div class="panel-heading trace-heading">
             <div>
-              <p class="section-label">GLOSSARIO</p>
+              <p class="section-label">TERMINOLOGIE</p>
               <h2>Le parole mediche dei tuoi referti</h2>
-              <p>Ogni volta che analizzi un referto, le parole mediche che contiene vengono salvate qui con una spiegazione semplice. Puoi rileggerle una alla volta.</p>
+              <p>Premi su una parola per leggere cosa significa.</p>
             </div>
             <button id="refresh-glossary" class="secondary" type="button">Aggiorna</button>
           </div>
@@ -423,18 +432,18 @@
 
         <section id="panel-facilities" class="panel facilities-panel" data-panel="facilities" hidden>
           <div class="panel-heading">
-            <p class="section-label">STRUTTURE NELLA TUA ZONA</p>
-            <h2>Chi si occupa di questa branca vicino a te</h2>
-            <p>Dopo l’analisi, Referto riconosce la branca del documento. Qui trovi ospedali, ambulatori e studi della tua zona che se ne occupano.</p>
+            <p class="section-label">DOVE ANDARE</p>
+            <h2>Specialisti vicino a te</h2>
+            <p>Scrivi la tua città e premi «Cerca». Troverai ospedali, ambulatori e studi della tua zona.</p>
           </div>
           <form id="facilities-form" class="facilities-form">
-            <label class="field-label" for="facilities-branch">Branca</label>
+            <label class="field-label" for="facilities-branch">Specialità</label>
             <select id="facilities-branch" name="branch"></select>
             <p id="facilities-branch-origin" class="facilities-hint"></p>
-            <label class="field-label" for="facilities-place">La tua zona</label>
+            <label class="field-label" for="facilities-place">La tua città o il tuo indirizzo</label>
             <div class="facilities-row">
-              <input id="facilities-place" name="place" type="text" placeholder="Città o indirizzo, es. Milano" autocomplete="off">
-              <select id="facilities-radius" name="radius" aria-label="Raggio di ricerca">
+              <input id="facilities-place" name="place" type="text" placeholder="Per esempio: Milano" autocomplete="off">
+              <select id="facilities-radius" name="radius" aria-label="Distanza massima">
                 <option value="5">5 km</option>
                 <option value="10" selected>10 km</option>
                 <option value="20">20 km</option>
@@ -442,15 +451,14 @@
             </div>
             <div class="facilities-actions">
               <button class="secondary" id="facilities-gps" type="button">Usa la mia posizione</button>
-              <button class="primary" type="submit">Cerca strutture</button>
+              <button class="primary" type="submit">Cerca</button>
             </div>
           </form>
           <p id="facilities-status" class="facilities-status" aria-live="polite"></p>
           <div id="facilities-map" class="facilities-map" hidden></div>
           <ol id="facilities-list" class="facilities-list"></ol>
           <div class="facilities-notice">
-            Elenco informativo da OpenStreetMap: può essere incompleto o non aggiornato e non è un invito a prenotare. Parlane con il tuo medico. Per un’urgenza chiama il 112.
-            A OpenStreetMap vengono inviate solo la zona cercata e le coordinate, mai il referto.
+            <strong>Per un’urgenza chiama il 112.</strong> Questo elenco serve solo a orientarti e può essere incompleto: prima di prenotare parlane con il tuo medico di famiglia. Per cercare usiamo la mappa OpenStreetMap: inviamo solo la città, mai il referto.
           </div>
         </section>
       </div>
@@ -474,6 +482,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=5" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=6" defer></script>
 </body>
 </html>

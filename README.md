@@ -297,7 +297,7 @@ reperti, in inglese e in italiano. Per ognuno mostra:
 Il modello non decide quali parole sono mediche né cosa significano: termini e
 definizioni vengono da HPO. Le parole incontrate restano salvate in
 `glossario/parole_salvate.json` (esclusa da Git) e si rileggono una alla volta
-nella sezione **Glossario**; ogni spiegazione si genera una sola volta e poi
+nella sezione **Terminologie**; ogni spiegazione si genera una sola volta e poi
 viene riusata. Se il modello non risponde, resta la definizione HPO.
 
 Il glossario (`glossario/hpo_glossario.json`, circa 19.000 termini, di cui circa
@@ -317,7 +317,7 @@ HPO copre segni, sintomi e reperti, non anatomia né procedure: parole come
 Dopo l'analisi Referto assegna il documento a una branca (cardiologia,
 radiologia, ortopedia, ...): la sceglie il modello da un elenco chiuso e, se il
 modello non risponde, la ricavano le parole chiave del referto. Dalla scheda del
-risultato, "Trova strutture nella tua zona" apre la sezione **Strutture**: il
+risultato, "Cerca specialisti vicino a me" apre la sezione **Dove andare**: il
 paziente scrive città o indirizzo (oppure usa la posizione del browser) e vede
 su una mappa ospedali, ambulatori e studi da OpenStreetMap, ordinati così:
 
@@ -339,12 +339,12 @@ specialità. L'elenco è informativo e non sostituisce l'indicazione del medico.
 
 ## Storico dei referti e farmaci
 
-La sezione **Referti** raccoglie ogni referto spiegato (testo, PDF o foto) con
+La sezione **I miei referti** raccoglie ogni referto spiegato (testo, PDF o foto) con
 testo originale, spiegazione, glossario, branca e farmaci. Lo storico è
 costruito sulle trace in `traces/`: nessun secondo salvataggio, tutto resta su
 questo computer e ogni referto si può eliminare.
 
-La sezione **Farmaci** raggruppa per principio attivo i farmaci **scritti nei
+La sezione **I miei farmaci** raggruppa per principio attivo i farmaci **scritti nei
 referti**: Referto non suggerisce farmaci né dosi. Per ogni farmaco mostra
 quantità, frequenza, via e motivo come scritti nel referto, la citazione, il
 referto di origine e i farmaci autorizzati in Italia con lo stesso principio

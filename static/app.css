@@ -483,3 +483,97 @@ button.small { padding: 7px 12px; font-size: 12px; }
 .leaflet-source { margin: 0; color: var(--muted); font-size: 12px; }
 body.modal-open { overflow: hidden; }
 .link-button { margin-top: 8px; padding: 0; border: 0; background: none; color: var(--green); font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+
+/* ===== Leggibilità: stessa grafica, testi e pulsanti più grandi, meno cose insieme ===== */
+.advanced-only { display: none !important; }
+body.advanced .advanced-only { display: revert !important; }
+body.advanced nav.advanced-only { display: grid !important; }
+
+.steps { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 18px 0 0; padding: 0; list-style: none; color: var(--ink); font-size: 18px; }
+.steps li { display: flex; align-items: center; gap: 10px; }
+.steps span { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--mint); color: var(--green-dark); font-weight: 800; font-size: 16px; }
+
+.brand p { font-size: 15px; }
+.local-status { font-size: 14px; }
+.nav-label { font-size: 12px; }
+.tab { padding: 12px 10px; }
+.tab strong { font-size: 16px; }
+.tab small { font-size: 13px; }
+.tab-icon { font-size: 9.5px; }
+.privacy-note strong { font-size: 14px; }
+.privacy-note p { font-size: 13px; }
+.advanced-toggle { margin: 12px 10px 0; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; text-align: left; text-decoration: underline; cursor: pointer; }
+
+.panel-heading > p:last-child { font-size: 18px; }
+.dropzone strong { font-size: 19px; }
+.file-name { font-size: 15px; }
+.upload-icon { width: 54px; height: 54px; font-size: 26px; }
+.field-label { font-size: 16px; }
+textarea { font-size: 17px; }
+.primary { padding: 16px 28px; font-size: 18px; border-radius: 14px; }
+.secondary, .back-button { padding: 11px 16px; font-size: 15px; }
+.trace-privacy, .facilities-notice { font-size: 15px; line-height: 1.6; }
+
+.result > h3 { font-size: 26px; }
+.result.loading h3 { font-size: 24px; }
+.result.loading p, .result.error p { font-size: 18px; line-height: 1.6; }
+.explanation-section h3 { font-size: 14px; letter-spacing: .06em; }
+.explanation-section p { font-size: 18px; line-height: 1.75; }
+.explanation-section.note p { font-size: 15px; }
+
+.more { margin-top: 30px; display: grid; gap: 12px; }
+.more-title { margin: 0 0 4px; font-size: 20px; letter-spacing: -.01em; }
+.more-item { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.more-item > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; cursor: pointer; list-style: none; font-size: 18px; font-weight: 700; color: var(--green-dark); }
+.more-item > summary::-webkit-details-marker { display: none; }
+.more-item > summary::after { content: "Apri ▾"; flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; background: var(--mint); font-size: 13px; }
+.more-item[open] > summary::after { content: "Chiudi ▴"; }
+.more-item[open] > summary { border-bottom: 1px solid var(--line); }
+.more-body, .more-item > .result-branch, .more-item > .report-original-text { margin: 0; padding: 18px 20px; }
+.more-item > .result-branch { border: 0; border-radius: 0 0 14px 14px; }
+.report-original-text { white-space: pre-wrap; font: inherit; font-size: 15px; line-height: 1.65; color: #34423e; }
+.glossary-intro { font-size: 16px; }
+.result-branch strong { font-size: 20px; }
+.result-branch small { font-size: 15px; }
+
+.glossary-chip { padding: 10px 16px; font-size: 16px; }
+.glossary-detail h4 { font-size: 26px; margin-bottom: 8px; }
+.glossary-counter { font-size: 14px; }
+.glossary-nav button { padding: 10px 16px; font-size: 15px; }
+.glossary-block.simple p { font-size: 19px; line-height: 1.6; }
+.glossary-note { font-size: 14px; }
+.glossary-technical { margin-top: 10px; }
+.glossary-technical > summary, .med-details > summary, .catalog > summary { cursor: pointer; color: var(--green); font-size: 15px; font-weight: 700; padding: 6px 0; }
+.glossary-search { font-size: 17px; padding: 14px 16px; }
+
+.med-card h4 { font-size: 22px; text-transform: none; }
+.med-facts { font-size: 17px; gap: 6px 16px; }
+.med-written, .med-source { font-size: 15px; }
+.med-label { margin: 12px 0 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.med-quote { font-size: 15px; }
+.leaflet-button { justify-self: start; }
+.med-details { border-top: 1px solid var(--line); padding-top: 8px; }
+.med-others { display: grid; gap: 6px; }
+.product-info strong { font-size: 16px; }
+.product-info small { font-size: 13px; }
+button.small { padding: 9px 14px; font-size: 14px; }
+.catalog > summary { font-size: 17px; }
+.catalog > p { margin-top: 8px; font-size: 15px; }
+
+.report-card { padding: 20px 22px; }
+.report-card strong { font-size: 18px; }
+.report-summary { font-size: 16px; }
+.report-date, .report-counts { font-size: 14px; }
+.report-branch { font-size: 13px; }
+.report-detail-header h3 { font-size: 26px; }
+.danger-button { font-size: 15px; padding: 11px 16px; }
+
+.facilities-form select, .facilities-form input { font-size: 17px; padding: 14px 16px; }
+.facilities-hint { font-size: 14px; }
+.facilities-status { font-size: 17px; }
+.facility-name { font-size: 18px; }
+.facility-meta, .facility-links { font-size: 15px; }
+.leaflet-header strong { font-size: 18px; }
+.leaflet-source { font-size: 14px; }
+.long-advice > summary { cursor: pointer; color: #786332; font-size: 16px; font-weight: 700; }
+.long-advice[open] > summary { margin-bottom: 10px; }

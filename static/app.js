@@ -88,14 +88,14 @@ if (datasetFileInput) {
 function showLoading(target, datasetMode) {
   target.hidden = false;
   target.className = "result loading";
-  target.innerHTML = `<h3>Elaborazione in corso</h3><p>${datasetMode ? "Il dataset può richiedere diversi minuti. Non chiudere questa pagina." : "MedGemma sta leggendo e verificando il referto…"}</p>`;
+  target.innerHTML = `<h3>Sto leggendo il tuo referto…</h3><p>${datasetMode ? "Il dataset può richiedere diversi minuti. Non chiudere questa pagina." : "Può volerci qualche minuto. Non chiudere questa pagina: la spiegazione comparirà qui sotto."}</p>`;
 }
 
 function traceShortcut(traceId) {
   if (!traceId) return null;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "trace-shortcut";
+  button.className = "trace-shortcut advanced-only";
   button.textContent = "Apri la trace di questa esecuzione";
   button.addEventListener("click", async () => {
     activateTracePanel();
@@ -109,7 +109,7 @@ function showError(target, message, traceId) {
   target.className = "result error";
   target.replaceChildren();
   const title = document.createElement("h3");
-  title.textContent = "Non è stato possibile completare l’analisi";
+  title.textContent = "Non sono riuscito a spiegare il referto";
   const text = document.createElement("p");
   text.textContent = message;
   target.append(title, text);
@@ -124,6 +124,15 @@ const explanationHeadings = new Set([
   "INDICAZIONI RIPORTATE NEL DOCUMENTO",
   "NOTA INFORMATIVA",
 ]);
+
+// Titoli più diretti per chi legge; il testo del modello resta invariato.
+const explanationLabels = {
+  "SINTESI": "In breve",
+  "SPIEGAZIONE IN PAROLE SEMPLICI": "Cosa dice il referto",
+  "INCERTEZZE O LIMITI DEL REFERTO": "Cosa non è sicuro",
+  "INDICAZIONI RIPORTATE NEL DOCUMENTO": "Cosa scrive di fare il medico",
+  "NOTA INFORMATIVA": "Da sapere",
+};
 
 function renderExplanation(result) {
   const article = document.createElement("article");
@@ -151,12 +160,23 @@ function renderExplanation(result) {
     block.className = `explanation-section${sectionType}`;
     if (section.heading) {
       const heading = document.createElement("h3");
-      heading.textContent = section.heading;
+      heading.textContent = explanationLabels[section.heading] || section.heading;
       block.append(heading);
     }
     const paragraph = document.createElement("p");
     paragraph.textContent = section.lines.join(" ");
-    block.append(paragraph);
+    // Indicazioni copiate dal documento molto lunghe (spesso in inglese): a
+    // scomparsa, per non sommergere chi legge.
+    if (section.heading === "INDICAZIONI RIPORTATE NEL DOCUMENTO" && paragraph.textContent.length > 450) {
+      const fold = document.createElement("details");
+      fold.className = "long-advice";
+      const summary = document.createElement("summary");
+      summary.textContent = "Il documento contiene indicazioni lunghe: premi qui per leggerle così come sono scritte";
+      fold.append(summary, paragraph);
+      block.append(fold);
+    } else {
+      block.append(paragraph);
+    }
     article.append(block);
   });
   return article;
@@ -177,7 +197,7 @@ function glossaryDetail(term, position, total, onMove, showHistory) {
   counter.textContent = `${position + 1} di ${total}`;
   const nav = document.createElement("div");
   nav.className = "glossary-nav";
-  [["‹ Precedente", -1], ["Successiva ›", 1]].forEach(([label, step]) => {
+  [["‹ Indietro", -1], ["Avanti ›", 1]].forEach(([label, step]) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "secondary";
@@ -190,10 +210,7 @@ function glossaryDetail(term, position, total, onMove, showHistory) {
 
   const title = document.createElement("h4");
   title.textContent = glossaryTermName(term);
-  const english = document.createElement("p");
-  english.className = "glossary-english";
-  english.textContent = `In inglese: ${term.en}`;
-  card.append(header, title, english);
+  card.append(header, title);
 
   const block = (label, text, className = "") => {
     if (!text) return;
@@ -210,13 +227,28 @@ function glossaryDetail(term, position, total, onMove, showHistory) {
     block("In parole semplici", term.simple_it, "simple");
     const note = document.createElement("p");
     note.className = "glossary-note";
-    note.textContent = `Riformulazione scritta da ${term.simple_model || "il modello"} a partire dalla definizione HPO qui sotto. In caso di dubbio chiedi al tuo medico.`;
+    note.textContent = "In caso di dubbio chiedi al tuo medico.";
     card.append(note);
   } else {
-    block("In parole semplici", "Spiegazione semplice non ancora disponibile: qui sotto trovi la definizione di riferimento.", "simple pending");
+    block("In parole semplici", "Spiegazione semplice non ancora disponibile: apri «Dettagli per chi vuole approfondire».", "simple pending");
   }
-  block("Parole comuni (inglese)", (term.lay_en || []).join(" · "));
-  block("Definizione di riferimento (HPO, inglese)", term.definition_en);
+  const technical = document.createElement("details");
+  technical.className = "glossary-technical";
+  const technicalSummary = document.createElement("summary");
+  technicalSummary.textContent = "Dettagli per chi vuole approfondire";
+  technical.append(technicalSummary);
+  [["Nome inglese", term.en !== glossaryTermName(term) ? term.en : ""], ["Parole comuni (inglese)", (term.lay_en || []).join(" · ")], ["Definizione di riferimento (HPO, inglese)", term.definition_en]].forEach(([label, text]) => {
+    if (!text) return;
+    const section = document.createElement("section");
+    section.className = "glossary-block";
+    const heading = document.createElement("h5");
+    heading.textContent = label;
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+    section.append(heading, paragraph);
+    technical.append(section);
+  });
+  card.append(technical);
 
   const footer = document.createElement("p");
   footer.className = "glossary-meta";
@@ -229,7 +261,7 @@ function glossaryDetail(term, position, total, onMove, showHistory) {
   link.rel = "noopener";
   link.textContent = `Scheda ${term.id} su HPO ↗`;
   footer.append(link);
-  card.append(footer);
+  technical.append(footer);
   return card;
 }
 
@@ -260,15 +292,33 @@ function renderGlossaryViewer(terms, { showHistory = false } = {}) {
 }
 
 function renderResultGlossary(terms) {
-  const section = document.createElement("section");
-  section.className = "result-glossary";
-  const heading = document.createElement("h3");
-  heading.textContent = "Le parole mediche di questo referto";
-  const intro = document.createElement("p");
-  intro.className = "glossary-intro";
-  intro.textContent = "Tocca una parola per leggerne il significato. Restano salvate nella sezione Glossario. Una parola in questo elenco non significa che tu abbia quella condizione: il referto può nominarla anche per escluderla.";
-  section.append(heading, intro, renderGlossaryViewer(terms));
-  return section;
+  const box = el("div", "more-body");
+  box.append(el("p", "glossary-intro", "Premi su una parola per leggere cosa significa. Se una parola è nell’elenco non vuol dire che tu abbia quel problema: il referto può nominarla anche per escluderlo."));
+  box.append(renderGlossaryViewer(terms));
+  return box;
+}
+
+function moreItem(title, content, open = false) {
+  const item = el("details", "more-item");
+  item.open = open;
+  item.append(el("summary", "", title), content);
+  return item;
+}
+
+function renderMoreSections({ glossary, medications, branch }) {
+  const section = el("section", "more");
+  section.append(el("h3", "more-title", "Per saperne di più"));
+  if (glossary?.length) {
+    section.append(moreItem(`Terminologie (${glossary.length})`, renderResultGlossary(glossary)));
+  }
+  if (medications) {
+    const count = medications.items?.length || 0;
+    section.append(moreItem(count ? `Farmaci scritti nel referto (${count})` : "Farmaci scritti nel referto", renderReportMedications(medications)));
+  }
+  if (branch) {
+    section.append(moreItem(`Chi se ne occupa: ${branch.label}`, renderResultBranch(branch)));
+  }
+  return section.children.length > 1 ? section : null;
 }
 
 const glossarySaved = document.querySelector("#glossary-saved");
@@ -320,9 +370,9 @@ const facilitiesStatus = document.querySelector("#facilities-status");
 const facilitiesList = document.querySelector("#facilities-list");
 const facilitiesMapElement = document.querySelector("#facilities-map");
 const matchLabels = {
-  specialita: "Specialità indicata",
-  nome: "Dal nome della struttura",
-  ospedale: "Ospedale con più reparti",
+  specialita: "Si occupa di questa specialità",
+  nome: "Si occupa di questa specialità",
+  ospedale: "Ospedale",
 };
 const matchColors = { specialita: "#176b58", nome: "#3f8f7a", ospedale: "#8a8f8d" };
 let facilitiesMap = null;
@@ -356,20 +406,18 @@ function renderResultBranch(branch) {
   section.className = "result-branch";
   const label = document.createElement("p");
   label.className = "result-branch-label";
-  label.textContent = "Branca del documento";
+  label.textContent = "Specialità del referto";
   const name = document.createElement("strong");
   name.textContent = branch.label;
   const how = document.createElement("small");
-  how.textContent = branch.method === "modello"
-    ? `Riconosciuta dal modello${branch.reason ? `: ${branch.reason}` : ""}`
-    : "Riconosciuta dalle parole del referto";
+  how.textContent = "È la specialità medica che si occupa di questo tipo di esame.";
   const button = document.createElement("button");
   button.type = "button";
   button.className = "secondary";
-  button.textContent = "Trova strutture nella tua zona";
+  button.textContent = "Cerca specialisti vicino a me";
   button.addEventListener("click", () => {
     facilitiesBranch.value = branch.id;
-    document.querySelector("#facilities-branch-origin").textContent = `Proposta dall’analisi del referto (${how.textContent.toLowerCase()}). Puoi cambiarla.`;
+    document.querySelector("#facilities-branch-origin").textContent = "Scelta in base al tuo referto. Puoi cambiarla.";
     activatePanel("facilities");
     document.querySelector("#facilities-place")?.focus();
   });
@@ -461,8 +509,9 @@ function renderFacilities(data, placeLabel) {
     };
     if (facility.phone) addLink(`tel:${facility.phone.replace(/\s+/g, "")}`, facility.phone);
     if (facility.website) addLink(facility.website, "Sito web");
-    addLink(`https://www.openstreetmap.org/directions?to=${facility.lat}%2C${facility.lon}`, "Indicazioni");
+    addLink(`https://www.openstreetmap.org/directions?to=${facility.lat}%2C${facility.lon}`, "Come arrivare");
     addLink(facility.osm_url, "Scheda OpenStreetMap");
+    links.lastChild.classList.add("advanced-only");
     item.append(title, meta, links);
     facilitiesList.append(item);
   });
@@ -475,8 +524,8 @@ function renderFacilities(data, placeLabel) {
   const specific = data.facilities.filter((facility) => facility.match !== "ospedale").length;
   facilitiesStatus.className = "facilities-status";
   facilitiesStatus.textContent = data.facilities.length
-    ? `${data.facilities.length} strutture entro ${data.radius_km} km da ${placeLabel}: ${specific} specifiche per ${data.branch.label.toLowerCase()}, le altre sono ospedali con più reparti.${data.cached ? " Dati dalla copia salvata." : ""}`
-    : `Nessuna struttura per ${data.branch.label.toLowerCase()} trovata su OpenStreetMap entro ${data.radius_km} km. Prova ad allargare il raggio.`;
+    ? `Ho trovato ${data.facilities.length} posti entro ${data.radius_km} km da ${placeLabel}. ${specific ? `${specific === 1 ? "Il primo si occupa" : `I primi ${specific} si occupano`} di ${data.branch.label.toLowerCase()}, gli altri sono ospedali.` : `Sono ospedali: chiedi lì del reparto di ${data.branch.label.toLowerCase()}.`}`
+    : `Non ho trovato posti entro ${data.radius_km} km. Prova a scegliere una distanza più grande.`;
 }
 
 async function searchFacilities(lat, lon, placeLabel) {
@@ -487,7 +536,7 @@ async function searchFacilities(lat, lon, placeLabel) {
     radius: document.querySelector("#facilities-radius").value,
   });
   facilitiesStatus.className = "facilities-status loading";
-  facilitiesStatus.textContent = "Cerco le strutture su OpenStreetMap… può richiedere fino a un paio di minuti.";
+  facilitiesStatus.textContent = "Sto cercando… può volerci un minuto.";
   const response = await fetch(`/api/facilities?${params}`);
   const data = await response.json();
   if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
@@ -503,14 +552,14 @@ document.querySelector("#facilities-form")?.addEventListener("submit", async (ev
   event.preventDefault();
   const query = document.querySelector("#facilities-place").value.trim();
   if (!query) {
-    facilitiesError(new Error("Scrivi una città o un indirizzo, oppure usa la tua posizione."));
+    facilitiesError(new Error("Scrivi la tua città, per esempio Milano. Oppure premi «Usa la mia posizione»."));
     return;
   }
   const button = event.submitter;
   if (button) button.disabled = true;
   try {
     facilitiesStatus.className = "facilities-status loading";
-    facilitiesStatus.textContent = "Cerco la zona…";
+    facilitiesStatus.textContent = "Sto cercando la tua città…";
     const response = await fetch(`/api/geocode?${new URLSearchParams({ q: query })}`);
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Zona non trovata.");
@@ -615,28 +664,59 @@ function renderAifa(aifa) {
 
 function medicationFacts(item) {
   const facts = el("dl", "med-facts");
-  [["Quantità", [item.dose, item.frequenza, item.via].filter(Boolean).join(" · ")], ["Motivo", item.motivo], ["Uso", item.uso]].forEach(([label, value]) => {
-    facts.append(el("dt", "", label), el("dd", value ? "" : "missing", value || "Non indicato nel referto"));
+  [["Quanto", [item.dose, item.frequenza, item.via].filter(Boolean).join(" · ")], ["Perché", item.motivo]].forEach(([label, value]) => {
+    facts.append(el("dt", "", label), el("dd", value ? "" : "missing", value || "Non scritto nel referto"));
   });
   return facts;
 }
 
-function renderReportMedications(medications) {
-  const section = el("section", "result-medications");
-  section.append(el("h3", "", "Farmaci citati nel referto"));
-  if (!medications?.items?.length) {
-    section.append(el("p", "glossary-intro", "Nel referto non sono citati farmaci."));
-    return section;
+function leafletButton(aifa) {
+  if (!aifa?.prodotti?.length) return el("p", "aifa-missing", "Foglietto non trovato: questo farmaco potrebbe non essere in commercio in Italia con questo nome.");
+  const button = el("button", "primary leaflet-button", "Leggi il foglietto illustrativo");
+  button.type = "button";
+  button.addEventListener("click", () => openLeaflet(aifa.prodotti[0], "FI"));
+  return button;
+}
+
+function medicationDetails(item, aifa, extra) {
+  const details = el("details", "med-details");
+  details.append(el("summary", "", "Altre informazioni"));
+  if (item?.citazione) details.append(el("p", "med-label", "Frase del referto"), el("blockquote", "med-quote", item.citazione));
+  if (item?.uso) details.append(el("p", "med-written", `Nel referto risulta: ${item.uso}`));
+  if (extra) details.append(extra);
+  if (aifa) details.append(el("p", "med-label", "Farmaci in commercio con questo principio attivo"));
+  details.append(renderAifa(aifa));
+  return details;
+}
+
+function medicationTitle(item, aifa) {
+  const name = aifa?.principio_attivo || item.nome;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function renderMedicationItem(item) {
+  const card = el("article", "med-card");
+  card.append(el("h4", "", medicationTitle(item, item.aifa)));
+  if (item.aifa && normalizeName(item.nome) !== normalizeName(item.aifa.principio_attivo)) {
+    card.append(el("p", "med-written", `Nel referto è scritto: ${item.nome}`));
   }
-  section.append(el("p", "glossary-intro", "Copiati dal referto, non suggeriti da Referto. Trovi lo storico completo nella sezione Farmaci."));
-  medications.items.forEach((item) => {
-    const card = el("article", "med-card");
-    card.append(el("h4", "", item.nome), medicationFacts(item));
-    if (item.citazione) card.append(el("blockquote", "med-quote", item.citazione));
-    card.append(renderAifa(item.aifa));
-    section.append(card);
-  });
-  return section;
+  card.append(medicationFacts(item), leafletButton(item.aifa), medicationDetails(item, item.aifa));
+  return card;
+}
+
+function normalizeName(text) {
+  return (text || "").toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
+}
+
+function renderReportMedications(medications) {
+  const box = el("div", "more-body");
+  if (!medications?.items?.length) {
+    box.append(el("p", "glossary-intro", "Nel referto non sono scritti farmaci."));
+    return box;
+  }
+  box.append(el("p", "glossary-intro", "Sono i farmaci scritti nel referto, non consigli di Referto."));
+  medications.items.forEach((item) => box.append(renderMedicationItem(item)));
+  return box;
 }
 
 /* ---------- Referti ---------- */
@@ -658,20 +738,20 @@ async function loadReports() {
     const data = await fetchJson("/api/referti");
     reportsList.replaceChildren();
     if (!data.reports.length) {
-      reportsList.append(el("p", "empty-state", "Non ci sono ancora referti. Spiegane uno da PDF, immagine o testo per iniziare."));
+      reportsList.append(el("p", "empty-state", "Non ci sono ancora referti. Scegli «File PDF», «Foto» o «Testo» a sinistra per spiegarne uno."));
       return;
     }
     data.reports.forEach((report) => {
       const card = el("button", "report-card");
       card.type = "button";
       const top = el("div", "report-card-top");
-      top.append(el("span", "report-date", formatTraceDate(report.started_at)));
+      top.append(el("span", "report-date", formatTraceDate(report.started_at, { dateOnly: true })));
       if (report.branch) top.append(el("span", "report-branch", report.branch.label));
       card.append(top, el("strong", "", report.title));
       card.append(el("p", "report-summary", report.summary || report.excerpt));
-      const counts = [`${report.glossary_count} parole nel glossario`];
-      counts.push(report.medications_count === null ? "farmaci non ancora cercati" : `${report.medications_count} farmaci`);
-      card.append(el("small", "report-counts", `${report.source_label} · ${counts.join(" · ")}`));
+      const counts = [`${report.glossary_count} ${report.glossary_count === 1 ? "parola spiegata" : "parole spiegate"}`];
+      if (report.medications_count) counts.push(`${report.medications_count} ${report.medications_count === 1 ? "farmaco" : "farmaci"}`);
+      card.append(el("small", "report-counts", counts.join(" · ")));
       card.addEventListener("click", () => showReportDetail(report.id));
       reportsList.append(card);
     });
@@ -686,29 +766,23 @@ async function showReportDetail(id) {
     reportsList.hidden = true;
     reportDetail.hidden = false;
     reportDetail.replaceChildren();
-    const back = el("button", "back-button", "← Tutti i referti");
+    const back = el("button", "back-button", "← Torna a tutti i referti");
     back.type = "button";
     back.addEventListener("click", loadReports);
     const header = el("div", "report-detail-header");
     header.append(el("p", "section-label", `${report.source_label.toUpperCase()} · ${formatTraceDate(report.started_at)}`), el("h3", "", report.title));
     reportDetail.append(back, header);
-    if (report.branch) reportDetail.append(renderResultBranch(report.branch));
+    reportDetail.append(renderExplanation(report.explanation));
 
-    const original = el("details", "report-original");
-    original.append(el("summary", "", "Testo originale del referto"), el("pre", "", report.report_text));
-    reportDetail.append(original, renderExplanation(report.explanation));
-    if (report.glossary.length) reportDetail.append(renderResultGlossary(report.glossary));
-
-    if (report.medications) {
-      reportDetail.append(renderReportMedications(report.medications));
-    } else {
-      const pending = el("section", "result-medications");
-      pending.append(el("h3", "", "Farmaci citati nel referto"));
+    const more = renderMoreSections({ glossary: report.glossary, medications: report.medications, branch: report.branch })
+      || (() => { const section = el("section", "more"); section.append(el("h3", "more-title", "Per saperne di più")); return section; })();
+    if (!report.medications) {
+      const pending = el("div", "more-body");
       const button = el("button", "secondary", "Cerca i farmaci in questo referto");
       button.type = "button";
       button.addEventListener("click", async () => {
         button.disabled = true;
-        button.textContent = "Ricerca in corso…";
+        button.textContent = "Sto cercando… può volerci un minuto";
         try {
           await fetchJson(`/api/referti/${id}/farmaci`, { method: "POST" });
           showReportDetail(id);
@@ -719,13 +793,16 @@ async function showReportDetail(id) {
         }
       });
       pending.append(button);
-      reportDetail.append(pending);
+      more.append(moreItem("Farmaci scritti nel referto", pending));
     }
+    const original = el("pre", "report-original-text", report.report_text);
+    more.append(moreItem("Il testo originale del referto", original));
+    reportDetail.append(more);
 
-    const remove = el("button", "danger-button", "Elimina questo referto dallo storico");
+    const remove = el("button", "danger-button", "Elimina questo referto");
     remove.type = "button";
     remove.addEventListener("click", async () => {
-      if (!window.confirm("Eliminare definitivamente il referto, la sua spiegazione e i farmaci estratti?")) return;
+      if (!window.confirm("Vuoi davvero eliminare questo referto? Non potrai recuperarlo.")) return;
       try {
         await fetchJson(`/api/referti/${id}`, { method: "DELETE" });
         loadReports();
@@ -746,31 +823,43 @@ const medicationsList = document.querySelector("#medications-list");
 const medicationsPending = document.querySelector("#medications-pending");
 
 function renderMedicationGroup(group) {
+  const [latest, ...others] = group.menzioni;
   const card = el("article", "med-card");
-  const title = el("div", "med-card-title");
-  title.append(el("h4", "", group.nome), el("span", "report-branch", `${group.menzioni.length} ${group.menzioni.length === 1 ? "referto" : "referti"}`));
-  card.append(title);
-  group.menzioni.forEach((mention) => {
-    const block = el("div", "med-mention");
-    const source = el("button", "med-source", `${formatTraceDate(mention.data)} · ${mention.referto || "Referto"}${mention.branca ? ` · ${mention.branca}` : ""}`);
-    source.type = "button";
-    source.title = "Apri il referto";
-    source.addEventListener("click", () => {
-      activatePanel("reports");
-      showReportDetail(mention.trace_id);
-    });
-    block.append(source, el("p", "med-written", `Scritto nel referto: ${mention.nome}`), medicationFacts(mention));
-    if (mention.citazione) block.append(el("blockquote", "med-quote", mention.citazione));
-    card.append(block);
+  card.append(el("h4", "", medicationTitle(latest, group.aifa)));
+  const source = el("button", "med-source", `Dal referto del ${formatTraceDate(latest.data, { dateOnly: true })}`);
+  source.type = "button";
+  source.title = "Apri il referto";
+  source.addEventListener("click", () => {
+    activatePanel("reports");
+    showReportDetail(latest.trace_id);
   });
-  card.append(renderAifa(group.aifa));
+  card.append(source);
+  if (group.aifa && normalizeName(latest.nome) !== normalizeName(group.aifa.principio_attivo)) {
+    card.append(el("p", "med-written", `Nel referto è scritto: ${latest.nome}`));
+  }
+  card.append(medicationFacts(latest), leafletButton(group.aifa));
+  let extra = null;
+  if (others.length) {
+    extra = el("div", "med-others");
+    extra.append(el("p", "med-label", `Compare anche in altri ${others.length === 1 ? "un referto" : `${others.length} referti`}`));
+    others.forEach((mention) => {
+      const row = el("button", "med-source", `${formatTraceDate(mention.data, { dateOnly: true })} · ${[mention.dose, mention.frequenza].filter(Boolean).join(" ") || "dose non scritta"}`);
+      row.type = "button";
+      row.addEventListener("click", () => {
+        activatePanel("reports");
+        showReportDetail(mention.trace_id);
+      });
+      extra.append(row);
+    });
+  }
+  card.append(medicationDetails(latest, group.aifa, extra));
   return card;
 }
 
 async function analyzePendingReports(ids, button) {
   button.disabled = true;
   for (let index = 0; index < ids.length; index += 1) {
-    button.textContent = `Cerco i farmaci… ${index + 1} di ${ids.length}`;
+    button.textContent = `Sto cercando… ${index + 1} di ${ids.length}`;
     try {
       await fetchJson(`/api/referti/${ids[index]}/farmaci`, { method: "POST" });
     } catch (error) {
@@ -790,15 +879,15 @@ async function loadMedications() {
     medicationsPending.hidden = !data.referti_da_analizzare.length;
     if (data.referti_da_analizzare.length) {
       const count = data.referti_da_analizzare.length;
-      medicationsPending.append(el("p", "", `${count} ${count === 1 ? "referto dello storico non è ancora stato analizzato" : "referti dello storico non sono ancora stati analizzati"} per i farmaci.`));
-      const button = el("button", "primary", "Cerca i farmaci nei referti precedenti");
+      medicationsPending.append(el("p", "", `Ci sono ${count === 1 ? "un referto" : `${count} referti`} in cui non ho ancora cercato i farmaci.`));
+      const button = el("button", "primary", "Cerca adesso");
       button.type = "button";
       button.addEventListener("click", () => analyzePendingReports(data.referti_da_analizzare, button));
       medicationsPending.append(button);
     }
     medicationsList.replaceChildren();
     if (!data.farmaci.length) {
-      medicationsList.append(el("p", "empty-state", data.referti_totali ? "Nei referti analizzati non sono citati farmaci." : "Non ci sono ancora referti. Spiegane uno per iniziare."));
+      medicationsList.append(el("p", "empty-state", data.referti_totali ? "Nei tuoi referti non sono scritti farmaci." : "Non ci sono ancora referti. Spiegane uno per iniziare."));
       return;
     }
     data.farmaci.forEach((group) => medicationsList.append(renderMedicationGroup(group)));
@@ -838,14 +927,13 @@ function showSingleResult(target, result, traceId, glossary, branch, medications
   target.className = "result";
   target.replaceChildren();
   const title = document.createElement("h3");
-  title.textContent = "Spiegazione del referto";
-  target.append(title);
-  if (branch) target.append(renderResultBranch(branch));
-  target.append(renderExplanation(result));
-  if (glossary?.length) target.append(renderResultGlossary(glossary));
-  if (medications) target.append(renderReportMedications(medications));
+  title.textContent = "Ecco la spiegazione del tuo referto";
+  target.append(title, renderExplanation(result));
+  const more = renderMoreSections({ glossary, medications, branch });
+  if (more) target.append(more);
   const shortcut = traceShortcut(traceId);
   if (shortcut) target.append(shortcut);
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderDatasetProgress(job) {
@@ -1890,3 +1978,22 @@ benchmarkForm?.addEventListener("submit", async (event) => {
 
 document.querySelector("#refresh-benchmarks")?.addEventListener("click", loadBenchmarks);
 updateBenchmarkEstimate();
+
+/* ---------- Strumenti per il team ---------- */
+const advancedToggle = document.querySelector("#advanced-toggle");
+
+function setAdvanced(enabled) {
+  document.body.classList.toggle("advanced", enabled);
+  if (advancedToggle) {
+    advancedToggle.textContent = enabled ? "Nascondi strumenti per il team" : "Mostra strumenti per il team";
+    advancedToggle.setAttribute("aria-pressed", String(enabled));
+  }
+  try { localStorage.setItem("referto-advanced", enabled ? "1" : "0"); } catch { /* storage non disponibile */ }
+  const active = document.querySelector(".tab.active");
+  if (!enabled && active?.closest(".advanced-only")) activatePanel("pdf");
+}
+
+let advancedStored = false;
+try { advancedStored = localStorage.getItem("referto-advanced") === "1"; } catch { /* storage non disponibile */ }
+setAdvanced(advancedStored);
+advancedToggle?.addEventListener("click", () => setAdvanced(!document.body.classList.contains("advanced")));

@@ -34,9 +34,13 @@ def _summary_line(explanation: str) -> str:
 
 
 def _title(trace: Dict[str, Any]) -> str:
-    """Nome del file per PDF e immagini; per il testo incollato, il suo inizio."""
+    """Nome del file per PDF e immagini; per il testo incollato, la specialità
+    (es. "Referto di neurologia") o, se manca, il suo inizio."""
     if trace.get("source_type") != "text":
         return str(trace.get("source_name") or SOURCE_LABELS.get(trace.get("source_type"), "Referto"))
+    branch = (trace.get("artifacts") or {}).get("branch") or {}
+    if branch.get("label") and branch.get("id") != "medicina-generale":
+        return f"Referto di {branch['label'].lower()}"
     words = _report_text(trace).split()
     title = " ".join(words[:9])
     return title + ("…" if len(words) > 9 else "") if title else "Testo incollato"
