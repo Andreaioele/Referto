@@ -20,7 +20,7 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 
 ## Test (`test_app.py`)
 
-49 test, nessuno chiama un modello vero (le chiamate sono sostituite con
+50 test, nessuno chiama un modello vero (le chiamate sono sostituite con
 `unittest.mock.patch`). Classi:
 
 | Classe | Copre |

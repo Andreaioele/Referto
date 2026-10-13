@@ -867,10 +867,10 @@ class ArchiveTests(unittest.TestCase):
         web_app.app.config.update(TESTING=True, TRACE_DIR=Path(self.trace_directory.name))
         self.client = web_app.app.test_client()
 
-    def _analyze(self):
+    def _analyze(self, glossary=None):
         medications = {"method": "modello", "items": []}
         with patch("web_app._explain_text", return_value="SINTESI\nTutto nella norma."), \
-                patch("web_app._glossary", return_value=[]), \
+                patch("web_app._glossary", return_value=glossary or []), \
                 patch("web_app._branch", return_value={"id": "radiologia", "label": "Radiologia"}), \
                 patch("web_app._medications", return_value=medications):
             response = self.client.post(
@@ -898,6 +898,12 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(overview["farmaci"][0]["menzioni"][0]["trace_id"], trace_id)
         self.assertEqual(self.client.delete(f"/api/referti/{trace_id}").status_code, 200)
         self.assertEqual(self.client.get("/api/referti").get_json()["reports"], [])
+
+    def test_vocabulary_lists_the_reports_where_a_word_appears(self):
+        trace_id = self._analyze(glossary=[{"id": "HP:0002107", "en": "Pneumothorax"}])
+        with patch("web_app.saved_terms", return_value=[{"id": "HP:0002107", "en": "Pneumothorax"}]):
+            term = self.client.get("/api/glossary").get_json()["terms"][0]
+        self.assertEqual([r["id"] for r in term["referti"]], [trace_id])
 
     def test_choice_endpoint_accepts_only_matching_products(self):
         trace_id = self._analyze()

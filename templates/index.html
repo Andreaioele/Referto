@@ -7,7 +7,7 @@
   <title>Referto</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=9">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
@@ -427,12 +427,11 @@
           <div class="panel-heading trace-heading">
             <div>
               <p class="section-label">TERMINOLOGIE</p>
-              <h2>Le parole mediche dei tuoi referti</h2>
-              <p>Premi su una parola per leggere cosa significa.</p>
+              <h2>Il vocabolario dei tuoi referti</h2>
+              <p>Scegli una parola dall’elenco: qui sotto trovi tutto quello che c’è da sapere.</p>
             </div>
             <button id="refresh-glossary" class="secondary" type="button">Aggiorna</button>
           </div>
-          <input id="glossary-search" class="glossary-search" type="search" placeholder="Cerca una parola…" aria-label="Cerca nel glossario">
           <div id="glossary-saved" aria-live="polite">
             <p class="empty-state">Caricamento del glossario…</p>
           </div>
@@ -500,6 +499,6 @@
       <p>Referto aiuta a comprendere un documento medico. Non interpreta immagini radiologiche, non formula diagnosi e non fornisce consigli medici.</p>
     </footer>
   </main>
-  <script src="{{ url_for('static', filename='app.js') }}?v=8" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=9" defer></script>
 </body>
 </html>

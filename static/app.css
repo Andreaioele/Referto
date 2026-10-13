@@ -618,3 +618,22 @@ button.small { padding: 9px 14px; font-size: 14px; }
 .facility-altro { border-left-color: #c4ccc9; }
 .facility-specialities { margin: 0 0 6px; color: var(--green-dark); font-size: 14px; }
 @media (max-width: 520px) { .facilities-controls { grid-template-columns: 1fr; } }
+
+/* Terminologie: vista vocabolario */
+.vocab-picker { display: grid; gap: 10px; margin-bottom: 20px; }
+.vocab-select { width: 100%; padding: 15px 16px; border: 1.5px solid #a9c5ba; border-radius: 14px; background: var(--paper); color: var(--ink); font: inherit; font-size: 19px; font-weight: 650; }
+.vocab-select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(23,107,88,.09); }
+.vocab-nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+.vocab-nav button:disabled { opacity: .4; cursor: default; }
+.vocab-entry { display: grid; gap: 4px; padding: clamp(20px, 3vw, 28px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
+.vocab-header { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.vocab-header h3 { margin: 0; font-size: clamp(28px, 4vw, 36px); letter-spacing: -.03em; }
+.vocab-english { margin: 6px 0 0; color: var(--muted); font-size: 16px; }
+.vocab-section { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.vocab-section h4 { margin: 0 0 8px; color: var(--green-dark); font-size: 13px; letter-spacing: .08em; font-weight: 800; text-transform: uppercase; }
+.vocab-section p { margin: 0; color: #34423e; font-size: 16px; line-height: 1.65; }
+.vocab-meaning > p:first-of-type { color: var(--ink); font-size: 20px; line-height: 1.6; }
+.vocab-note { margin-top: 8px !important; color: var(--muted) !important; font-size: 14px !important; }
+.vocab-reports { display: grid; gap: 6px; }
+.vocab-source { margin: 12px 0 0; font-size: 14px; }
+.vocab-source a { color: var(--green); }

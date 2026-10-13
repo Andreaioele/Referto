@@ -73,6 +73,7 @@ def list_reports(root: Path) -> List[Dict[str, Any]]:
                 "model": trace.get("model"),
                 "branch": artifacts.get("branch"),
                 "glossary_count": len(artifacts.get("glossary") or []),
+                "glossary_ids": [term.get("id") for term in artifacts.get("glossary") or []],
                 "medications": medications,
                 "medications_count": len(medications["items"]) if medications else None,
                 "excerpt": _report_text(trace)[:EXCERPT_CHARS],

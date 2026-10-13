@@ -324,47 +324,136 @@ function renderMoreSections({ glossary, medications, branch, traceId }) {
 }
 
 const glossarySaved = document.querySelector("#glossary-saved");
-const glossarySearch = document.querySelector("#glossary-search");
 let glossaryTerms = [];
+let glossarySelected = null;  // id HPO della parola aperta
+
+function sortedTerms(terms) {
+  return [...terms].sort((a, b) => glossaryTermName(a).localeCompare(glossaryTermName(b), "it", { sensitivity: "base" }));
+}
+
+function initialOf(term) {
+  return glossaryTermName(term).normalize("NFD").charAt(0).toUpperCase();
+}
+
+function vocabularySection(title, content) {
+  const section = el("section", "vocab-section");
+  section.append(el("h4", "", title));
+  if (typeof content === "string") section.append(el("p", "", content));
+  else section.append(content);
+  return section;
+}
+
+function renderVocabularyEntry(term) {
+  const entry = el("article", "vocab-entry");
+  const header = el("header", "vocab-header");
+  header.append(el("h3", "", glossaryTermName(term)));
+  if (term.en && normalizeName(term.en) !== normalizeName(glossaryTermName(term))) {
+    header.append(el("p", "vocab-english", `In inglese: ${term.en}`));
+  }
+  entry.append(header);
+
+  if (term.simple_it) {
+    const meaning = vocabularySection("Cosa significa", term.simple_it);
+    meaning.classList.add("vocab-meaning");
+    meaning.append(el("p", "vocab-note", "Spiegazione semplice ricavata dalla definizione ufficiale qui sotto. In caso di dubbio chiedi al tuo medico."));
+    entry.append(meaning);
+  } else {
+    entry.append(vocabularySection("Cosa significa", "La spiegazione semplice non è ancora pronta: leggi la definizione ufficiale qui sotto."));
+  }
+  if (term.lay_en?.length) entry.append(vocabularySection("Altri modi di dirlo (in inglese)", term.lay_en.join(" · ")));
+  if (term.definition_en) entry.append(vocabularySection("Definizione ufficiale (HPO, in inglese)", term.definition_en));
+
+  const reports = el("div", "vocab-reports");
+  if (term.referti?.length) {
+    term.referti.forEach((report) => {
+      const button = el("button", "med-source", `${formatTraceDate(report.started_at, { dateOnly: true })} · ${report.title}`);
+      button.type = "button";
+      button.addEventListener("click", () => {
+        activatePanel("reports");
+        showReportDetail(report.id);
+      });
+      reports.append(button);
+    });
+  } else {
+    reports.append(el("p", "", "Il referto in cui l’hai trovata non è più nello storico."));
+  }
+  reports.append(el("p", "vocab-note", "Se una parola compare in un referto non vuol dire che tu abbia quel problema: il referto può nominarla anche per escluderlo."));
+  entry.append(vocabularySection(term.referti?.length === 1 ? "Nel tuo referto" : "Nei tuoi referti", reports));
+
+  const source = el("p", "vocab-source");
+  const link = el("a", "", `Scheda ${term.id} sulla Human Phenotype Ontology ↗`);
+  link.href = term.source_url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  source.append(link);
+  entry.append(source);
+  return entry;
+}
 
 function renderSavedGlossary() {
   if (!glossarySaved) return;
-  const query = (glossarySearch?.value || "").trim().toLowerCase();
-  const terms = glossaryTerms.filter((term) => !query
-    || [glossaryTermName(term), term.en, term.it || ""].some((name) => name.toLowerCase().includes(query)));
   if (!glossaryTerms.length) {
-    glossarySaved.innerHTML = '<p class="empty-state">Non ci sono ancora parole salvate. Analizza un referto per iniziare.</p>';
+    glossarySaved.innerHTML = '<p class="empty-state">Il vocabolario è vuoto: si riempie da solo quando fai spiegare un referto.</p>';
     return;
   }
-  if (!terms.length) {
-    glossarySaved.innerHTML = '<p class="empty-state">Nessuna parola corrisponde alla ricerca.</p>';
-    return;
-  }
-  glossarySaved.replaceChildren(renderGlossaryViewer(terms, { showHistory: true }));
+  const terms = sortedTerms(glossaryTerms);
+  if (!terms.some((term) => term.id === glossarySelected)) glossarySelected = terms[0].id;
+
+  const picker = el("div", "vocab-picker");
+  const label = el("label", "field-label", `Scegli una parola (${terms.length} in ordine alfabetico)`);
+  label.htmlFor = "vocab-select";
+  const select = el("select", "vocab-select");
+  select.id = "vocab-select";
+  let group = null;
+  terms.forEach((term) => {
+    const letter = initialOf(term);
+    if (!group || group.label !== letter) {
+      group = document.createElement("optgroup");
+      group.label = letter;
+      select.append(group);
+    }
+    const option = el("option", "", glossaryTermName(term));
+    option.value = term.id;
+    group.append(option);
+  });
+  select.value = glossarySelected;
+
+  const index = terms.findIndex((term) => term.id === glossarySelected);
+  const nav = el("div", "vocab-nav");
+  [["‹ Parola precedente", index - 1], ["Parola successiva ›", index + 1]].forEach(([text, target]) => {
+    const button = el("button", "secondary", text);
+    button.type = "button";
+    button.disabled = target < 0 || target >= terms.length;
+    button.addEventListener("click", () => {
+      glossarySelected = terms[target].id;
+      renderSavedGlossary();
+    });
+    nav.append(button);
+  });
+  select.addEventListener("change", () => {
+    glossarySelected = select.value;
+    renderSavedGlossary();
+    document.querySelector("#vocab-select")?.focus();
+  });
+  picker.append(label, select, nav);
+  glossarySaved.replaceChildren(picker, renderVocabularyEntry(terms[index]));
 }
 
 async function loadGlossary() {
   if (!glossarySaved) return;
   try {
-    const response = await fetch("/api/glossary");
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Errore inatteso del server.");
+    const data = await fetchJson("/api/glossary");
     glossaryTerms = data.terms || [];
     const source = document.querySelector("#glossary-source");
     if (source && data.source) {
-      source.textContent = `Termini e definizioni: ${data.source.source}${data.source.hpo_version ? `, versione ${data.source.hpo_version.split("/").slice(-2, -1)[0]}` : ""}. Le spiegazioni semplici sono riformulazioni automatiche delle definizioni HPO.`;
+      source.textContent = `Parole e definizioni ufficiali: ${data.source.source}${data.source.hpo_version ? `, versione ${data.source.hpo_version.split("/").slice(-2, -1)[0]}` : ""}.`;
     }
     renderSavedGlossary();
   } catch (error) {
-    glossarySaved.innerHTML = "";
-    const message = document.createElement("p");
-    message.className = "empty-state";
-    message.textContent = error.message || "Impossibile caricare il glossario.";
-    glossarySaved.append(message);
+    glossarySaved.replaceChildren(el("p", "empty-state", error.message || "Impossibile caricare il vocabolario."));
   }
 }
 
-glossarySearch?.addEventListener("input", renderSavedGlossary);
 document.querySelector("#refresh-glossary")?.addEventListener("click", loadGlossary);
 
 const facilitiesBranch = document.querySelector("#facilities-branch");

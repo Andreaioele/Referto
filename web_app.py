@@ -1039,7 +1039,15 @@ def benchmark_detail(benchmark_id: str):
 
 @app.get("/api/glossary")
 def glossary_index():
-    return jsonify({"ok": True, "terms": saved_terms(), "source": glossary_info()})
+    """Le parole salvate, ognuna con i referti in cui compare (vista vocabolario)."""
+    seen_in: Dict[str, List[Dict[str, Any]]] = {}
+    for report in list_reports(Path(app.config["TRACE_DIR"])):
+        for term_id in report["glossary_ids"]:
+            seen_in.setdefault(term_id, []).append(
+                {"id": report["id"], "title": report["title"], "started_at": report["started_at"]}
+            )
+    terms = [{**term, "referti": seen_in.get(term["id"], [])} for term in saved_terms()]
+    return jsonify({"ok": True, "terms": terms, "source": glossary_info()})
 
 
 @app.get("/api/profilo")

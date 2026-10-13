@@ -36,10 +36,23 @@ Terminologie.
    spiegazione si genera una volta e poi si riusa, con conteggio e date.
 4. **Riserva:** se il modello non risponde resta la definizione HPO.
 
-Nella UI la parola mostra solo la spiegazione semplice; nome inglese,
-definizione HPO e link sono in "Dettagli per chi vuole approfondire". Una nota
-avverte che una parola può comparire anche perché il referto la esclude
-("nessun pneumotorace").
+## Interfaccia
+
+- **Sezione Terminologie (vocabolario):** un menu a tendina con tutte le parole
+  salvate in **ordine alfabetico** (`localeCompare` in italiano), raggruppate
+  per iniziale (`<optgroup>`), più "Parola precedente / successiva". Scelta una
+  parola, sotto compare la scheda completa, tutta aperta
+  (`renderVocabularyEntry` in `static/app.js`): nome italiano e inglese, cosa
+  significa (spiegazione semplice), altri modi di dirlo, definizione ufficiale
+  HPO, i referti in cui compare (cliccabili, da `GET /api/glossary` che
+  aggiunge `referti` a ogni parola usando `glossary_ids` dello storico) e il
+  link alla scheda HPO.
+- **Nel risultato di un referto** ("Per saperne di più" → Terminologie): le
+  parole di quel referto in pulsanti, una alla volta, con i dettagli tecnici
+  in "Dettagli per chi vuole approfondire".
+
+Una nota avverte sempre che una parola può comparire anche perché il referto
+la esclude ("nessun pneumotorace").
 
 Attenzione: la cache non dipende dal modello. Se si cambia modello e si vogliono
 spiegazioni nuove, va cancellato `glossario/parole_salvate.json`.

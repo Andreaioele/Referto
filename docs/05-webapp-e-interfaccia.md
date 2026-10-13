@@ -28,8 +28,8 @@ ricaricano, grazie al parametro `?v=` negli URL: alzalo quando li cambi).
 | `GET /api/datasets/predefined` | Dataset del repo | [[10-dataset-e-valutazione]] |
 | `GET /api/traces`, `/api/traces/<id>` | Cronologia tecnica | [[09-trace-e-privacy]] |
 | `POST /api/benchmark`, `/api/benchmark/dataset`, `GET /api/benchmarks...` | Benchmark A/B | [[04-decision-model]] |
-| `GET /api/glossary` | Parole salvate | [[06-glossario-hpo]] |
-| `GET /api/branches`, `/api/geocode`, `/api/facilities` | Specialità e mappa | [[07-branca-e-strutture]] |
+| `GET /api/glossary` | Parole salvate, con i referti in cui compaiono | [[06-glossario-hpo]] |
+| `GET /api/branches`, `/api/geocode`, `/api/facilities`, `GET/POST /api/profilo` | Specialità, mappa e città del profilo | [[07-branca-e-strutture]] |
 | `GET/DELETE /api/referti/<id>`, `GET /api/referti`, `POST /api/referti/<id>/farmaci` | Storico | [[08-referti-e-farmaci-aifa]] |
 | `GET /api/farmaci`, `/api/farmaci/cerca`, `/api/farmaci/<cod>/foglietto` | Farmaci e foglietti | [[08-referti-e-farmaci-aifa]] |
 
