@@ -42,7 +42,9 @@ Convenzioni delle note in `docs/come-usare-questa-documentazione.md`.
 - Interfaccia usabile da una persona di 70 anni: stesso tema, poche
   informazioni alla volta, dettagli tecnici a scomparsa
   (`docs/05-webapp-e-interfaccia.md`).
-- Il referto non lascia il computer: mai dati sanitari in Git o verso servizi esterni.
+- Mai dati sanitari in Git: traces, risultati, profilo e `.env` restano fuori
+  (`.gitignore`). Il testo dei referti può andare ai servizi esterni del
+  prodotto (Evolus, Vercel); nei log solo esiti tecnici, mai il contenuto.
 
 ## Comandi
 

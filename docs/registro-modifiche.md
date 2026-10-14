@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-14
 
+- `chat-frontend` · `CLAUDE.md`: tolto il vincolo "il referto non lascia il computer"; resta il divieto di dati sanitari in Git e di contenuti nei log · [[14-problemi-noti-e-prossimi-passi]]
 - `chat-frontend` · Chat "Spiegami un referto" nel frontend collegata al Mother agent: `POST /api/chat` nel backend inoltra a Evolus `/ask-stream` e ritrasmette la risposta in streaming; credenziali Evolus solo lato server, 10 messaggi al minuto per IP · [[15-backend]] · [[16-frontend]]
 - `vercel-services` · Backend su Vercel Services: `src/percorsi-moduli.ts` rende trovabili le librerie in `backend/node_modules/` (il primo deploy falliva con "Cannot find module 'reflect-metadata'") · [[15-backend]]
 - `vercel-services` · Un solo progetto Vercel con Services (`vercel.json` nella radice): `/api/*` al backend, il resto al frontend; `resources/` esclusa. Il backend trova i dati anche in `backend/data/`, come li monta la funzione di Services · [[15-backend]] · [[16-frontend]]

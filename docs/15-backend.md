@@ -50,8 +50,8 @@ tiene aperta la connessione mentre il modello lavora.
   minuto per IP (`@nestjs/throttler`, IP da `x-real-ip` su Vercel) e al massimo
   30.000 caratteri per messaggio.
 - Nei log solo esiti tecnici (stato HTTP, codice d'errore, durata), mai il testo.
-- Il messaggio arriva a Evolus: è il testo del referto. Vedi
-  [[14-problemi-noti-e-prossimi-passi]] sul vincolo "il referto non lascia il computer".
+- Il messaggio, cioè il testo del referto, arriva a Evolus: è ammesso (`CLAUDE.md`),
+  purché nei log del backend resti solo l'esito tecnico.
 
 ## Privacy
 

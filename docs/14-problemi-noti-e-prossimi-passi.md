@@ -25,7 +25,6 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |
-| La chat (`/api/chat`) manda il testo del referto a Evolus: va deciso con il team se e come conciliarlo con "il referto non lascia il computer" | `backend/src/chat/` | [[15-backend]] |
 | Il Mother agent (DeepSeek-V4.1 su Token Factory) risponde in 1-3 minuti e con più richieste insieme va oltre il limite (HTTP 422 "sovraccarico") | Evolus | [[15-backend]] |
 | Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `backend/` | [[15-backend]] |
 
@@ -35,8 +34,7 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
   backend come Web API all'agente Referto su Evolus, al posto del sotto-agente
   "Referto Farmaci" ([[15-backend]], [[16-frontend]]).
 - Portare l'app Python (`resources/`) in backend e frontend, una funzione alla
-  volta. Prima di pubblicare in cloud l'analisi dei referti va rivisto il vincolo
-  "il referto non lascia il computer" (`CLAUDE.md`, [[09-trace-e-privacy]]).
+  volta.
 - Correggere la sezione Indicazioni dividendo il testo sulle intestazioni
   (`PLAN:`, `RECOMMENDATIONS:`, `CONCLUSIONI:`).
 - Portare su `main` (via `staging`) le modifiche di `output-test`.
