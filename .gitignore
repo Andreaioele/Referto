@@ -47,3 +47,7 @@ docs/.obsidian/*
 
 # Profilo del paziente (città): dato personale, resta su questo computer
 profilo/
+
+# Servizio farmaci (NestJS): dipendenze e build
+servizio-farmaci/node_modules/
+servizio-farmaci/dist/

@@ -1,6 +1,6 @@
 ---
 tags: [area/funzioni]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # I miei referti e I miei farmaci (AIFA)
@@ -59,7 +59,9 @@ Nessun secondo salvataggio: lo storico è una vista sulle trace
      alternative) e diventa `corrispondenza = "scelto da te"`, annullabile.
    - Per riconoscere i principi attivi: `inn_key()` avvicina inglese e italiano
      (metformin → metformina), `SALT_WORDS` toglie i sali, `ALIASES` copre nomi
-     inglesi e marchi USA (Motrin → ibuprofene).
+     inglesi e marchi USA (Motrin → ibuprofene). Sali e alias stanno in
+     `farmaci/normalizzazione.json`, condiviso con [[15-servizio-farmaci]]: la
+     stessa logica di `lookup()` è portata in TypeScript per gli agenti Evolus.
    - `resolve_medication()` **ricalcola la corrispondenza a ogni lettura** (storico,
      dettaglio, sezione Farmaci): le regole valgono anche per i referti vecchi.
 5. **Storico** (`history_overview`): raggruppa per farmaco AIFA quando è univoco

@@ -1,0 +1,684 @@
+[
+ {
+  "nome": "Cardioaspirin 100 mg",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acido acetilsalicilico",
+  "atc": "B01AC06",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "024840",
+  "alternative": [
+   "024840"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Cardioaspirin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acido acetilsalicilico",
+  "atc": "B01AC06",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "024840",
+  "alternative": [
+   "024840"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Triatec 5 mg/die",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "ramipril",
+  "atc": "C09AA05",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "027161",
+  "alternative": [
+   "027161"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Lasix 25 mg",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "furosemide",
+  "atc": "C03CA01",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "023993",
+  "alternative": [
+   "023993"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Eutirox 75 mcg",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "levotiroxina",
+  "atc": "H03AA01",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "024402",
+  "alternative": [
+   "024402"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Coumadin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "warfarin",
+  "atc": "B01AA03",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "016366",
+  "alternative": [
+   "016366"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Iomeron 350",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "iomeprolo",
+  "atc": "V08AB10",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "028282",
+  "alternative": [
+   "028282"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Brufen 600 mg",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "ibuprofene",
+  "atc": "M01AE01",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "022593",
+  "alternative": [
+   "022593"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Tachipirina",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "paracetamolo",
+  "atc": "N02BE01",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "012745",
+  "alternative": [
+   "012745"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Sintrom",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acenocumarolo",
+  "atc": "B01AA07",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "011782",
+  "alternative": [
+   "011782"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Pantorc",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "pantoprazolo sesquidrato",
+  "atc": "A02BC02",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "031981",
+  "alternative": [
+   "031981"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Torvast",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "atorvastatina calcio",
+  "atc": "C10AA05",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "033007",
+  "alternative": [
+   "033007"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Diflucan",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "fluconazolo",
+  "atc": "J02AC01",
+  "corrispondenza": "da scegliere",
+  "perche": "In Italia ci sono 2 farmaci di ditte diverse che si chiamano così: scegli quello della tua confezione (la ditta è scritta sulla scatola).",
+  "farmaco": null,
+  "alternative": [
+   "027267",
+   "043489"
+  ],
+  "alternative_totali": 2
+ },
+ {
+  "nome": "Augmentin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "amoxicillina + acido clavulanico",
+  "atc": "J01CR02",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "026089",
+  "alternative": [
+   "026089"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Zytiga",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "abiraterone",
+  "atc": "L02BX03",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "041427",
+  "alternative": [
+   "041427"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Verzenios",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "abemaciclib",
+  "atc": "L01EF03",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "047091",
+  "alternative": [
+   "047091"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Glucophage",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "metformina",
+  "atc": "A10BA02",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "017758",
+  "alternative": [
+   "017758"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Lorazepam",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "lorazepam",
+  "atc": "N05BA06",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (lorazepam), non il nome del farmaco. In Italia ci sono 22 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "022959",
+   "023001",
+   "035931",
+   "035540",
+   "036467"
+  ],
+  "alternative_totali": 22
+ },
+ {
+  "nome": "ramipril",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "ramipril",
+  "atc": "C09AA05",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (ramipril), non il nome del farmaco. In Italia ci sono 23 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "038214",
+   "038273",
+   "038240",
+   "027162",
+   "038272"
+  ],
+  "alternative_totali": 23
+ },
+ {
+  "nome": "warfarin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "warfarin",
+  "atc": "B01AA03",
+  "corrispondenza": "unico con questo principio attivo",
+  "perche": "",
+  "farmaco": "016366",
+  "alternative": [
+   "016366"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "paracetamolo",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "paracetamolo",
+  "atc": "N02BE01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (paracetamolo), non il nome del farmaco. In Italia ci sono 50 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "023475",
+   "036450",
+   "041640",
+   "050294",
+   "051118"
+  ],
+  "alternative_totali": 50
+ },
+ {
+  "nome": "acido acetilsalicilico",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acido acetilsalicilico",
+  "atc": "B01AC06",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (acido acetilsalicilico), non il nome del farmaco. In Italia ci sono 16 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "047065",
+   "048150",
+   "042179",
+   "042180",
+   "044822"
+  ],
+  "alternative_totali": 16
+ },
+ {
+  "nome": "metformina cloridrato",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "metformina",
+  "atc": "A10BA02",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (metformina), non il nome del farmaco. In Italia ci sono 35 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "017758",
+   "040628",
+   "051175",
+   "045357",
+   "041689"
+  ],
+  "alternative_totali": 35
+ },
+ {
+  "nome": "abemaciclib",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "abemaciclib",
+  "atc": "L01EF03",
+  "corrispondenza": "unico con questo principio attivo",
+  "perche": "",
+  "farmaco": "047091",
+  "alternative": [
+   "047091"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "glipizide",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "glipizide",
+  "atc": "A10BB07",
+  "corrispondenza": "unico con questo principio attivo",
+  "perche": "",
+  "farmaco": "022410",
+  "alternative": [
+   "022410"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "furosemide",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "furosemide",
+  "atc": "C03CA01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (furosemide), non il nome del farmaco. In Italia ci sono 16 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "053110",
+   "046015",
+   "052191",
+   "035213",
+   "031422"
+  ],
+  "alternative_totali": 16
+ },
+ {
+  "nome": "metformin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "metformina",
+  "atc": "A10BA02",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (metformina), non il nome del farmaco. In Italia ci sono 35 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "017758",
+   "040628",
+   "051175",
+   "045357",
+   "041689"
+  ],
+  "alternative_totali": 35
+ },
+ {
+  "nome": "ibuprofen",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "ibuprofene",
+  "atc": "M01AE01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (ibuprofene), non il nome del farmaco. In Italia ci sono 94 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "049108",
+   "023766",
+   "042178",
+   "043521",
+   "027432"
+  ],
+  "alternative_totali": 94
+ },
+ {
+  "nome": "levothyroxine",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "levotiroxina",
+  "atc": "H03AA01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (levotiroxina), non il nome del farmaco. In Italia ci sono 6 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "024402",
+   "049815",
+   "046021",
+   "042508",
+   "045995"
+  ],
+  "alternative_totali": 6
+ },
+ {
+  "nome": "insulin glargine",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "insulina glargine",
+  "atc": "A10AE04",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (insulina glargine), non il nome del farmaco. In Italia ci sono 5 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "043658",
+   "035724",
+   "052804",
+   "046350",
+   "043192"
+  ],
+  "alternative_totali": 5
+ },
+ {
+  "nome": "hydrochlorothiazide",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "idroclorotiazide",
+  "atc": "C09BA07",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (idroclorotiazide), non il nome del farmaco. In Italia ci sono 16 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "028037",
+   "027135",
+   "038012",
+   "037486",
+   "037382"
+  ],
+  "alternative_totali": 16
+ },
+ {
+  "nome": "naproxen",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "naproxene",
+  "atc": "M01AE02",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (naproxene), non il nome del farmaco. In Italia ci sono 11 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "049748",
+   "035784",
+   "023886",
+   "032790",
+   "025829"
+  ],
+  "alternative_totali": 11
+ },
+ {
+  "nome": "Motrin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "ibuprofene",
+  "atc": "M01AE01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto è scritto «Motrin», un nome (inglese o estero) che non indica un farmaco preciso in Italia. Il principio attivo è ibuprofene: scegli il farmaco che usi per leggere il suo foglietto.",
+  "farmaco": null,
+  "alternative": [
+   "049108",
+   "023766",
+   "042178",
+   "043521",
+   "027432"
+  ],
+  "alternative_totali": 94
+ },
+ {
+  "nome": "Tylenol",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "paracetamolo",
+  "atc": "N02BE01",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto è scritto «Tylenol», un nome (inglese o estero) che non indica un farmaco preciso in Italia. Il principio attivo è paracetamolo: scegli il farmaco che usi per leggere il suo foglietto.",
+  "farmaco": null,
+  "alternative": [
+   "023475",
+   "036450",
+   "041640",
+   "050294",
+   "051118"
+  ],
+  "alternative_totali": 50
+ },
+ {
+  "nome": "Plavix",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "clopidogrel idrogeno",
+  "atc": "B01AC04",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "034128",
+  "alternative": [
+   "034128"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Lipitor 40 mg",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "aspirin",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acido acetilsalicilico",
+  "atc": "B01AC06",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto è scritto «aspirin», un nome (inglese o estero) che non indica un farmaco preciso in Italia. Il principio attivo è acido acetilsalicilico: scegli il farmaco che usi per leggere il suo foglietto.",
+  "farmaco": null,
+  "alternative": [
+   "047065",
+   "048150",
+   "042179",
+   "042180",
+   "044822"
+  ],
+  "alternative_totali": 16
+ },
+ {
+  "nome": "vitamin D",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "colecalciferolo",
+  "atc": "A11CC05",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto è scritto «vitamin D», un nome (inglese o estero) che non indica un farmaco preciso in Italia. Il principio attivo è colecalciferolo: scegli il farmaco che usi per leggere il suo foglietto.",
+  "farmaco": null,
+  "alternative": [
+   "050788",
+   "042223",
+   "046282",
+   "051135",
+   "047252"
+  ],
+  "alternative_totali": 49
+ },
+ {
+  "nome": "Solu-Medrol",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "metilprednisolone emisuccinato",
+  "atc": "H02AB04",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "023202",
+  "alternative": [
+   "023202"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Zentrolax",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "farmaco inesistente xyz",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "mezzo di contrasto",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "terapia anticoagulante",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "Xyz",
+  "principio_attivo_richiesto": "ramipril",
+  "trovato": true,
+  "principio_attivo": "ramipril",
+  "atc": "C09AA05",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (ramipril), non il nome del farmaco. In Italia ci sono 23 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "038214",
+   "038273",
+   "038240",
+   "027162",
+   "038272"
+  ],
+  "alternative_totali": 23
+ },
+ {
+  "nome": "Pressotec",
+  "principio_attivo_richiesto": "ramipril",
+  "trovato": true,
+  "principio_attivo": "ramipril",
+  "atc": "C09AA05",
+  "corrispondenza": "da scegliere",
+  "perche": "Nel referto c'è il principio attivo (ramipril), non il nome del farmaco. In Italia ci sono 23 farmaci con questo principio attivo: scegli quello che usi.",
+  "farmaco": null,
+  "alternative": [
+   "038214",
+   "038273",
+   "038240",
+   "027162",
+   "038272"
+  ],
+  "alternative_totali": 23
+ },
+ {
+  "nome": "ACIDO ACETILSALICILICO   MYLAN",
+  "principio_attivo_richiesto": "",
+  "trovato": true,
+  "principio_attivo": "acido acetilsalicilico",
+  "atc": "B01AC06",
+  "corrispondenza": "nome commerciale",
+  "perche": "",
+  "farmaco": "047065",
+  "alternative": [
+   "047065"
+  ],
+  "alternative_totali": 1
+ },
+ {
+  "nome": "Cardioaspirina",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ },
+ {
+  "nome": "Sintron",
+  "principio_attivo_richiesto": "",
+  "trovato": false
+ }
+]

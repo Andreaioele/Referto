@@ -1,6 +1,6 @@
 ---
 tags: [area/sviluppo]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Test e sviluppo locale
@@ -33,6 +33,9 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 | `GlossaryTests` | [[06-glossario-hpo]] |
 | `FacilitiesTests` | [[07-branca-e-strutture]] |
 | `MedicationTests`, `UnivocalMedicationTests`, `ArchiveTests` | [[08-referti-e-farmaci-aifa]] |
+
+Il servizio NestJS in `servizio-farmaci/` ha test propri (Jest): `cd servizio-farmaci && npm test`,
+più il confronto con Python `npm run parita:tutti` ([[15-servizio-farmaci]]).
 
 Ogni nuova funzione arriva con i suoi test, nello stile esistente
 (`patch.object` sulle chiamate al modello e ai servizi esterni, cartelle temporanee).

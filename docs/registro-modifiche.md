@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Registro delle modifiche
@@ -9,6 +9,10 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 (la più recente in alto) e aggiorna la nota dell'area toccata.
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
+
+## 2026-10-14
+
+- `servizio-farmaci` · Nuovo servizio NestJS (TypeScript) per gli agenti Evolus: collega i nomi dei farmaci al prontuario AIFA con la stessa logica di `lookup()`, più categoria ATC e frase pronta; riceve solo nomi, mai il referto. Sali e alias spostati in `farmaci/normalizzazione.json`, condiviso con `farmaci_referti.py` · [[15-servizio-farmaci]]
 
 ## 2026-10-13
 
