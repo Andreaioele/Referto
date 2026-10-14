@@ -237,6 +237,38 @@ Per disattivare il routing e forzare sempre l’audit MedGemma:
 python3 web_app.py --senza-decision-model
 ```
 
+### Usare un modello remoto di AMD Token Factory
+
+Un nome di modello che inizia con `tokenfactory/` viene inviato all’API
+compatibile OpenAI di AMD Token Factory invece che a Ollama. La chiave viene
+letta dal file `.env` nella cartella del progetto (escluso da Git):
+
+```text
+RADEON_API_KEY=rc-...
+# opzionale, questo è il valore predefinito
+RADEON_BASE_URL=https://developer.amd.com.cn/radeon/api/v1
+```
+
+Lo stesso `--model` funziona con tutti gli script:
+
+```bash
+python3 web_app.py --model tokenfactory/DeepSeek-V4-Flash
+python3 spiega_referto.py referto.pdf --model tokenfactory/DeepSeek-V4-Flash
+python3 cluster_agent_task.py --model tokenfactory/DeepSeek-V4-Flash
+```
+
+Il decision model resta su Ollama: se Ollama non è in esecuzione, il routing
+ricade sul percorso standard, oppure si può usare `--senza-decision-model`.
+`DeepSeek-V4-Flash` accetta solo testo: per trascrivere immagini o PDF
+scansionati serve un modello con visione, ad esempio `tokenfactory/DeepSeek-V4.1-Flash`.
+Il client ritenta automaticamente le risposte 429 rispettando `Retry-After`.
+La chiave è condivisa dal team (30 richieste al minuto, 8 concorrenti), quindi
+sul cluster conviene usare pochi worker.
+
+**Attenzione:** i termini d’uso di Token Factory vietano l’invio di dati
+sanitari o personali sensibili e conservano prompt e risposte per circa 2 giorni.
+Usalo solo con referti sintetici o anonimizzati.
+
 ## Utilizzo
 
 L’interfaccia contiene sei sezioni:
@@ -288,7 +320,8 @@ manualmente al repository perché potrebbero contenere dati sanitari personali.
 
 Il progetto non invia intenzionalmente i documenti a servizi remoti: usa
 l’endpoint locale di Ollama configurato con `--ollama-url`. Chi modifica tale
-indirizzo è responsabile della destinazione dei dati.
+indirizzo, o sceglie un modello `tokenfactory/...`, è responsabile della
+destinazione dei dati.
 
 ## Glossario delle parole mediche
 

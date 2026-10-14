@@ -146,7 +146,11 @@
           </div>
 
           <div class="mode-panel" data-mode-panel="text" hidden>
+            {% if text_model_remote %}
+            <p class="mode-hint"><strong>Il testo viene inviato a un servizio remoto ({{ text_model_name }}).</strong> Incolla solo referti anonimizzati, senza dati identificativi.</p>
+            {% else %}
             <p class="mode-hint">Copia il testo del referto nel riquadro. Non servono nome e cognome: puoi toglierli.</p>
+            {% endif %}
             <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-explain">
               <label class="field-label" for="report-text">Testo del referto</label>
               <textarea id="report-text" name="text" rows="13" placeholder="Incolla qui il contenuto del referto…" required></textarea>

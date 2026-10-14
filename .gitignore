@@ -47,3 +47,8 @@ docs/.obsidian/*
 
 # Profilo del paziente (città): dato personale, resta su questo computer
 profilo/
+
+# Schede farmaci generate dagli open data AIFA (evolus/costruisci_schede_farmaci.py)
+evolus/farmaci/*
+!evolus/farmaci/.gitkeep
+

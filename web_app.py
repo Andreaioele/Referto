@@ -59,6 +59,7 @@ from trace_store import (
     update_trace_artifact,
 )
 
+import tokenfactory
 from spiega_referto import (
     DEFAULT_MODEL,
     DEFAULT_OLLAMA_URL,
@@ -118,10 +119,13 @@ BENCHMARK_JOBS_LOCK = threading.RLock()
 DATASET_JOBS: Dict[str, Dict[str, Any]] = {}
 DATASET_JOBS_LOCK = threading.RLock()
 
+DEFAULT_TEXT_MODEL = "tokenfactory/DeepSeek-V4-Flash"
+
 app = Flask(__name__)
 app.config.update(
     MAX_CONTENT_LENGTH=25 * 1024 * 1024,
     MODEL_NAME=DEFAULT_MODEL,
+    TEXT_MODEL_NAME=DEFAULT_TEXT_MODEL,
     OLLAMA_URL=DEFAULT_OLLAMA_URL,
     MODEL_TIMEOUT=600,
     MAX_CHUNK_CHARS=9000,
@@ -145,11 +149,16 @@ def _complete_output(explanation: str) -> str:
     return explanation.rstrip() + DISCLAIMER
 
 
-def _explain_text(report: str, use_decision_model: Optional[bool] = None) -> str:
+def _explain_text(
+    report: str,
+    use_decision_model: Optional[bool] = None,
+    model: Optional[str] = None,
+) -> str:
     report = report.strip()
     if len(re.sub(r"\s+", "", report)) < 40:
         raise UserFacingError("Il testo e' troppo breve per contenere un referto completo.")
-    base_url, model, timeout, max_chars = _settings()
+    base_url, default_model, timeout, max_chars = _settings()
+    model = model or default_model
     enabled = (
         bool(app.config["DECISION_MODEL_ENABLED"])
         if use_decision_model is None
@@ -234,12 +243,14 @@ def _json_error(message: str, status: int = 400, trace_id: Optional[str] = None)
     return jsonify(payload), status
 
 
-def _new_trace(source_type: str, source_name: str) -> TraceRecorder:
+def _new_trace(
+    source_type: str, source_name: str, model: Optional[str] = None
+) -> TraceRecorder:
     return TraceRecorder(
         Path(app.config["TRACE_DIR"]),
         source_type,
         source_name,
-        str(app.config["MODEL_NAME"]),
+        model or str(app.config["MODEL_NAME"]),
     )
 
 
@@ -512,20 +523,29 @@ def handle_large_file(_: RequestEntityTooLarge):
 
 @app.get("/")
 def index():
-    return render_template("index.html", model_name=app.config["MODEL_NAME"])
+    text_model = str(app.config["TEXT_MODEL_NAME"])
+    return render_template(
+        "index.html",
+        model_name=app.config["MODEL_NAME"],
+        text_model_name=text_model,
+        text_model_remote=tokenfactory.is_tokenfactory_model(text_model),
+    )
 
 
 @app.post("/api/analyze/text")
 def analyze_text():
     report = request.form.get("text", "")
-    trace = _new_trace("text", "Testo incollato")
+    text_model = str(app.config["TEXT_MODEL_NAME"])
+    trace = _new_trace("text", "Testo incollato", text_model)
     acquired = False
     with trace_scope(trace):
         trace.set_artifact("input_text", report)
         try:
-            with traced_step("Accesso al modello locale"):
-                acquired = _acquire_model()
-            result = _explain_text(report)
+            # Il modello remoto non occupa il modello locale: niente lock.
+            if not tokenfactory.is_tokenfactory_model(text_model):
+                with traced_step("Accesso al modello locale"):
+                    acquired = _acquire_model()
+            result = _explain_text(report, model=text_model)
             glossary = _glossary(report, result)
             branch = _branch(report)
             medications = _medications(report)
@@ -1217,6 +1237,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=positive_int, default=7860)
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--text-model",
+        default=DEFAULT_TEXT_MODEL,
+        help=f"modello per l'input di testo (default: {DEFAULT_TEXT_MODEL})",
+    )
     parser.add_argument("--ollama-url", default=DEFAULT_OLLAMA_URL)
     parser.add_argument("--timeout", type=positive_int, default=600)
     parser.add_argument("--decision-model", default=DEFAULT_DECISION_MODEL)
@@ -1229,6 +1254,7 @@ def main() -> None:
     args = parse_args()
     app.config.update(
         MODEL_NAME=args.model,
+        TEXT_MODEL_NAME=args.text_model,
         OLLAMA_URL=args.ollama_url,
         MODEL_TIMEOUT=args.timeout,
         DECISION_MODEL_NAME=args.decision_model,
