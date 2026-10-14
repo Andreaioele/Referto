@@ -53,6 +53,23 @@ tiene aperta la connessione mentre il modello lavora.
 - Il messaggio, cioè il testo del referto, arriva a Evolus: è ammesso (`CLAUDE.md`),
   purché nei log del backend resti solo l'esito tecnico.
 
+## Agenti su Evolus (`resources/evolus/`)
+
+Su Evolus restano due agenti: **Referto Mother agent** (risponde alla chat,
+cerca i farmaci con la Web API `cercaFarmaci` → `POST /api/farmaci/cerca`) e
+**Referto Farmaci** (RAG sulle schede AIFA, oggi non collegato al Mother).
+
+- `agenti/*.md`: prompt di ogni agente, con `agentId` e configurazione
+  nell'intestazione; `sincronizza_prompt.py <file>` carica il prompt su Evolus
+  senza toccare gli altri campi. In `agenti/archivio/` i prompt di Lettore,
+  Spiegatore, Valutatore e Revisore, non più presenti su Evolus.
+- `farmaci/`, `costruisci_schede_farmaci.py`, `carica_farmaci.py`,
+  `prova_farmaci.py`: schede AIFA in Markdown e caricamento nella Conoscenza
+  dell'agente Farmaci.
+- `openapi-referto-farmaci.json`: la Web API importata nel Mother.
+- Credenziali da `EVOLUS_API_KEY`/`EVOLUS_APPLICATION_ID` o dalla configurazione
+  MCP locale, mai nel repository.
+
 ## Privacy
 
 Il modulo farmaci riceve **solo nomi di farmaci**, mai il testo del referto

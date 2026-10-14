@@ -1,0 +1,274 @@
+{
+ "openapi": "3.0.0",
+ "info": {
+  "title": "Referto - farmaci",
+  "version": "1.0",
+  "description": "Ricerca deterministica dei farmaci nel prontuario AIFA. Riceve solo nomi di farmaci, mai il testo del referto."
+ },
+ "servers": [
+  {
+   "url": "https://referto-phi.vercel.app"
+  }
+ ],
+ "paths": {
+  "/api/farmaci/cerca": {
+   "post": {
+    "description": "Passa SOLO i nomi dei farmaci esattamente come sono scritti nel referto (anche con il dosaggio), mai il testo del referto. Chiamala una sola volta con tutti i nomi insieme e con limite_alternative uguale a 0. Per ogni nome restituisce trovato e, se trovato, una descrizione pronta (che cos'è il farmaco e la sua categoria ATC) da riportare così com'è.",
+    "operationId": "cercaFarmaci",
+    "parameters": [],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CercaFarmaciDto"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RispostaCercaDto"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "chiave-api": []
+     }
+    ],
+    "summary": "Collega al prontuario AIFA i farmaci nominati in un referto"
+   }
+  }
+ },
+ "components": {
+  "securitySchemes": {
+   "chiave-api": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "x-api-key"
+   }
+  },
+  "schemas": {
+   "CercaFarmaciDto": {
+    "type": "object",
+    "properties": {
+     "farmaci": {
+      "description": "Solo i nomi dei farmaci trovati nel referto, mai il testo del referto: il servizio non riceve dati sanitari.",
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/FarmacoRichiestoDto"
+      }
+     },
+     "limite_alternative": {
+      "type": "integer",
+      "description": "Quante alternative restituire quando il nome non identifica un solo farmaco.",
+      "default": 5,
+      "minimum": 0,
+      "maximum": 50
+     }
+    },
+    "required": [
+     "farmaci"
+    ]
+   },
+   "FarmacoRichiestoDto": {
+    "type": "object",
+    "properties": {
+     "nome": {
+      "type": "string",
+      "description": "Nome del farmaco esattamente come è scritto nel referto, anche con il dosaggio.",
+      "example": "Cardioaspirin 100 mg"
+     },
+     "principio_attivo": {
+      "type": "string",
+      "description": "Principio attivo, se l'agente lo conosce. Serve per i nomi esteri non presenti in Italia.",
+      "example": "acido acetilsalicilico"
+     }
+    },
+    "required": [
+     "nome"
+    ]
+   },
+   "FonteDto": {
+    "type": "object",
+    "properties": {
+     "fonte": {
+      "type": "string"
+     },
+     "aggiornato": {
+      "type": "string",
+      "example": "2026-10-13"
+     }
+    },
+    "required": [
+     "fonte",
+     "aggiornato"
+    ]
+   },
+   "ProdottoDto": {
+    "type": "object",
+    "properties": {
+     "cod": {
+      "type": "string",
+      "example": "024840",
+      "description": "Codice del farmaco AIFA (COD_FARMACO)"
+     },
+     "nome": {
+      "type": "string",
+      "example": "CARDIOASPIRIN"
+     },
+     "ditta": {
+      "type": "string",
+      "example": "BAYER S.P.A."
+     },
+     "principio_attivo": {
+      "type": "string",
+      "example": "acido acetilsalicilico"
+     },
+     "atc": {
+      "type": "string",
+      "example": "B01AC06"
+     },
+     "forme": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "fornitura": {
+      "type": "string"
+     },
+     "confezioni": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "n_confezioni": {
+      "type": "number"
+     },
+     "foglietto_url": {
+      "type": "string",
+      "description": "Foglietto illustrativo ufficiale (Banca Dati Farmaci AIFA)"
+     },
+     "rcp_url": {
+      "type": "string",
+      "description": "Riassunto delle caratteristiche del prodotto (AIFA)"
+     }
+    },
+    "required": [
+     "cod",
+     "nome",
+     "ditta",
+     "principio_attivo",
+     "atc",
+     "forme",
+     "fornitura",
+     "confezioni",
+     "n_confezioni",
+     "foglietto_url",
+     "rcp_url"
+    ]
+   },
+   "RispostaCercaDto": {
+    "type": "object",
+    "properties": {
+     "fonte": {
+      "$ref": "#/components/schemas/FonteDto"
+     },
+     "risultati": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/RisultatoDto"
+      }
+     }
+    },
+    "required": [
+     "fonte",
+     "risultati"
+    ]
+   },
+   "RisultatoDto": {
+    "type": "object",
+    "properties": {
+     "nome": {
+      "type": "string",
+      "example": "Cardioaspirin 100 mg",
+      "description": "Il nome ricevuto nella richiesta"
+     },
+     "trovato": {
+      "type": "boolean",
+      "description": "false se il nome non corrisponde a nessun farmaco del prontuario AIFA"
+     },
+     "principio_attivo": {
+      "type": "string",
+      "example": "acido acetilsalicilico"
+     },
+     "atc": {
+      "type": "string",
+      "example": "B01AC06"
+     },
+     "categoria": {
+      "description": "Classificazione ATC dal gruppo anatomico al farmacologico",
+      "example": [
+       "sangue e organi emopoietici",
+       "antitrombotici",
+       "antiaggreganti piastrinici, esclusa l'eparina"
+      ],
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "descrizione": {
+      "type": "string",
+      "description": "Frase pronta con i soli dati AIFA (che cos'è e categoria), senza dosi né consigli"
+     },
+     "corrispondenza": {
+      "type": "string",
+      "enum": [
+       "nome commerciale",
+       "unico con questo principio attivo",
+       "da scegliere"
+      ],
+      "description": "\"da scegliere\": il nome non identifica un solo farmaco e il servizio non sceglie"
+     },
+     "farmaco": {
+      "nullable": true,
+      "description": "Il farmaco, solo se univoco",
+      "type": "object",
+      "allOf": [
+       {
+        "$ref": "#/components/schemas/ProdottoDto"
+       }
+      ]
+     },
+     "perche": {
+      "type": "string",
+      "description": "Perché il farmaco non è univoco"
+     },
+     "alternative": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/ProdottoDto"
+      }
+     },
+     "alternative_totali": {
+      "type": "number"
+     }
+    },
+    "required": [
+     "nome",
+     "trovato"
+    ]
+   }
+  }
+ }
+}
