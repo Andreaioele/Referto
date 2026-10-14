@@ -85,19 +85,17 @@ Da rilanciare dopo ogni modifica a `resources/farmaci_referti.py`, a `data/` o a
 
 ### Vercel
 
-Vercel riconosce NestJS da `src/main.ts` e pubblica il backend come una sola
-funzione, senza configurazione:
+Il backend è il servizio `backend` del progetto Vercel con Services definito nel
+`vercel.json` della radice (`/api/*` → backend). Variabile d'ambiente del
+progetto: `CHIAVE_API`. Il servizio dichiara `framework: nestjs` ed
+`entrypoint: src/main.ts` perché nella cartella c'è anche il `Dockerfile`.
 
-| Campo | Valore |
-|---|---|
-| Root Directory | `backend` |
-| Application Preset | NestJS |
-| Variabili d'ambiente | `CHIAVE_API` |
+`src/config.ts` trova i dati sia in `data/` (avvio da questa cartella) sia in
+`backend/data/` (la funzione di Services ricrea i percorsi dalla radice del
+repository). Provato in locale con `vercel build` (CLI 64).
 
-La funzione include `data/` perché `src/config.ts` legge i file da
-`process.cwd()/data`. Provato in locale con `vercel build` (CLI 64): la funzione
-contiene i tre file di dati, pesa 14 MB e risponde anche copiata fuori dal
-repository. Il piano Hobby di Vercel è gratuito solo per uso personale e non
+Funziona anche come progetto Vercel a sé: Root Directory `backend`, preset
+NestJS, nessuna configurazione. Il piano Hobby di Vercel è gratuito solo per uso personale e non
 commerciale.
 
 ### Docker

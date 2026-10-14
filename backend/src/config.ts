@@ -2,13 +2,18 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * File in backend/data/. process.cwd() è la cartella del backend sia in locale
- * sia nella funzione Vercel (Vercel include i file letti da lì); __dirname copre
- * l'avvio da un'altra cartella (src/ o dist/ -> ..).
+ * File in backend/data/, cercato dove lo mettono i vari modi di avvio:
+ * - process.cwd()/data: avvio dalla cartella backend/ (npm, Docker, progetto Vercel con Root Directory backend);
+ * - process.cwd()/backend/data: funzione di Vercel Services, che ricrea i percorsi dalla radice del repository;
+ * - __dirname/../data: avvio da un'altra cartella (src/ o dist/ -> ..).
  */
 function fileDati(nome: string): string {
-  const candidati = [join(process.cwd(), 'data', nome), join(__dirname, '..', 'data', nome)];
-  return candidati.find((percorso) => existsSync(percorso)) ?? candidati[1];
+  const candidati = [
+    join(process.cwd(), 'data', nome),
+    join(process.cwd(), 'backend', 'data', nome),
+    join(__dirname, '..', 'data', nome),
+  ];
+  return candidati.find((percorso) => existsSync(percorso)) ?? candidati[candidati.length - 1];
 }
 
 /** Percorsi dei dati e impostazioni, sovrascrivibili con variabili d'ambiente. */

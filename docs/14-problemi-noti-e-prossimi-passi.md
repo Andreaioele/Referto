@@ -29,7 +29,7 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 
 ## Prossimi passi proposti
 
-- Pubblicare `backend/` e `frontend/` come due progetti Vercel e collegare il
+- Pubblicare il progetto Vercel con Services (backend + frontend) e collegare il
   backend come Web API all'agente Referto su Evolus, al posto del sotto-agente
   "Referto Farmaci" ([[15-backend]], [[16-frontend]]).
 - Portare l'app Python (`resources/`) in backend e frontend, una funzione alla

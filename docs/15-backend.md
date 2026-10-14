@@ -78,9 +78,13 @@ Da rilanciare dopo ogni modifica a `resources/farmaci_referti.py`, a
 cd backend && npm install && npm test && npm run start:dev   # porta 3000
 ```
 
-- **Vercel** (progetto "backend"): Root Directory `backend`, preset NestJS,
-  variabile `CHIAVE_API`. Nessuna configurazione: Vercel trova `src/main.ts` e
-  include `data/` nella funzione (provato con `vercel build`).
+- **Vercel**: servizio `backend` del progetto Services definito in `vercel.json`
+  (radice), raggiungibile su `/api/*`; variabile `CHIAVE_API`. Il servizio
+  dichiara `framework: nestjs` ed `entrypoint: src/main.ts`, perché nella cartella
+  c'è anche il `Dockerfile` e Vercel altrimenti non sa quale usare. Nella funzione
+  i dati stanno in `backend/data/` (percorsi dalla radice del repository):
+  `src/config.ts` li cerca anche lì. Provato con `vercel build`.
+  Funziona anche come progetto a sé (Root Directory `backend`, preset NestJS).
 - **Docker**: `docker build -t referto-backend backend`.
 
 Nest 11 (CommonJS) e non 12: Nest 12 è solo ESM e complica Jest. Dettagli in

@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-14
 
+- `vercel-services` · Un solo progetto Vercel con Services (`vercel.json` nella radice): `/api/*` al backend, il resto al frontend; `resources/` esclusa. Il backend trova i dati anche in `backend/data/`, come li monta la funzione di Services · [[15-backend]] · [[16-frontend]]
 - `riorganizzazione` · Nuova struttura: `backend/` (ex `servizio-farmaci/`, rotte sotto `/api`, dati AIFA in `backend/data/`), `frontend/` (React + Vite, inoltro `/api` al backend), `resources/` (app Python, dataset, script). Due progetti Vercel · [[15-backend]] · [[16-frontend]]
 - `servizio-farmaci` · Pubblicazione su Vercel: `vercel.json` e `npm run copia-dati` portano i dati di `farmaci/` nella funzione; il servizio li cerca prima in `servizio-farmaci/data/` · [[15-backend]]
 - `servizio-farmaci` · Nuovo servizio NestJS (TypeScript) per gli agenti Evolus: collega i nomi dei farmaci al prontuario AIFA con la stessa logica di `lookup()`, più categoria ATC e frase pronta; riceve solo nomi, mai il referto. Sali e alias spostati in `farmaci/normalizzazione.json`, condiviso con `farmaci_referti.py` · [[15-backend]]

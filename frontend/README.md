@@ -21,15 +21,13 @@ Il frontend chiama sempre `/api/...` sul proprio dominio:
 
 - in sviluppo Vite inoltra `/api` a `http://localhost:3000` (`vite.config.ts`;
   un altro indirizzo con `BACKEND_URL=... npm run dev`);
-- su Vercel lo fa `vercel.json`, verso `https://referto-backend.vercel.app`.
-  **Se il progetto backend su Vercel ha un altro indirizzo, va cambiato lì.**
+- su Vercel lo fa il `vercel.json` nella radice del repository (progetto con
+  Services): `/api/*` va al servizio backend, il resto a questo frontend.
 
 ## Pubblicazione su Vercel
 
-| Campo | Valore |
-|---|---|
-| Root Directory | `frontend` |
-| Application Preset | Vite |
+Il frontend è il servizio `frontend` del progetto Vercel con Services definito
+nel `vercel.json` della radice: non serve configurarlo a parte.
 
 Le rotte protette da chiave del backend (farmaci, per gli agenti) non vanno
 chiamate dal frontend: la chiave finirebbe nel browser.

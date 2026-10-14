@@ -29,15 +29,17 @@ App Python: istruzioni in [`resources/README.md`](resources/README.md).
 
 ## Pubblicazione su Vercel
 
-Due progetti Vercel collegati a questo repository:
+Un solo progetto Vercel con **Services** (beta, disponibile anche sul piano Hobby),
+configurato da `vercel.json` nella radice:
 
-| Progetto | Root Directory | Preset | Variabili |
-|---|---|---|---|
-| backend | `backend` | NestJS | `CHIAVE_API` |
-| frontend | `frontend` | Vite | — |
+| Percorso | Servizio | Cartella |
+|---|---|---|
+| `/api/*` | backend (NestJS) | `backend/` |
+| tutto il resto | frontend (Vite) | `frontend/` |
 
-Il frontend inoltra `/api/*` al backend (`frontend/vercel.json`): per il
-browser c'è un solo dominio. Dettagli in `docs/15-backend.md` e
+Un solo dominio, niente CORS. `resources/` (l'app Flask) **non** è un servizio e
+non viene pubblicata. Impostazioni del progetto: Root Directory `./`, preset
+**Services**, variabile `CHIAVE_API`. Dettagli in `docs/15-backend.md` e
 `docs/16-frontend.md`.
 
 > Il risultato è generato automaticamente e può contenere errori. Referto non

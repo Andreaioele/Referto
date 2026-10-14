@@ -16,7 +16,9 @@ Leggi `docs/00-indice.md` e poi le note dell'area che tocchi. La cartella
 - `resources/`: app Python di riferimento (Flask), dataset, script e prove. Le
   sue funzioni vanno portate in backend e frontend una alla volta.
 - Nella radice restano solo `backend/`, `frontend/`, `resources/`, `docs/` e i
-  file del repository (`README.md`, `CLAUDE.md`, `.gitignore`): niente file sparsi.
+  file del repository (`README.md`, `CLAUDE.md`, `.gitignore`, `vercel.json`): niente file sparsi.
+- `vercel.json` (radice) pubblica backend e frontend come un unico progetto
+  Vercel con Services; `resources/` non va mai aggiunta ai servizi.
 
 ## Regola: documentazione sempre allineata
 

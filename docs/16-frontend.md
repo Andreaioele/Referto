@@ -22,10 +22,9 @@ Il frontend chiama sempre `/api/...` sul proprio dominio:
 
 - **sviluppo**: Vite inoltra `/api` a `http://localhost:3000` (`vite.config.ts`,
   sovrascrivibile con `BACKEND_URL`);
-- **Vercel**: `vercel.json` inoltra `/api/:percorso*` al progetto backend
-  (`https://referto-backend.vercel.app` finché il progetto si chiama così: se il
-  backend ha un altro indirizzo va cambiato lì). Le altre rotte tornano a
-  `index.html` (navigazione lato client).
+- **Vercel**: il progetto usa Services (`vercel.json` nella radice): `/api/*`
+  va al servizio backend, il resto al servizio frontend, che rimanda a
+  `index.html` le rotte che non sono file (navigazione lato client).
 
 Per il browser c'è un solo dominio: niente CORS. Le rotte del backend protette da
 chiave (farmaci, per gli agenti) non vanno chiamate dal frontend, perché la chiave
@@ -38,7 +37,6 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/App.tsx` | Pagina iniziale |
 | `src/api.ts` | Chiamate al backend |
 | `src/index.css` | Tema (colori e caratteri di `resources/static/app.css`) |
-| `vercel.json` | Inoltro `/api` e navigazione lato client |
 
 ## Comandi
 
@@ -49,4 +47,4 @@ npm run build   # controllo dei tipi e build in dist/
 npm run lint    # oxlint
 ```
 
-Vercel (progetto "frontend"): Root Directory `frontend`, preset Vite.
+Su Vercel è il servizio `frontend` del progetto Services (`vercel.json` nella radice).

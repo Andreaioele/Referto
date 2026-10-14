@@ -10,8 +10,8 @@ Torna a [[00-indice]] · Contesto in [[01-panoramica]].
 ## Struttura del repository
 
 `backend/` (NestJS, [[15-backend]]) e `frontend/` (React + Vite, [[16-frontend]])
-sono il prodotto, pubblicati come due progetti Vercel: il frontend inoltra
-`/api/*` al backend. L'app Python descritta qui sotto è in `resources/` (tutti i
+sono il prodotto, pubblicati come un unico progetto Vercel con Services
+(`vercel.json` nella radice): `/api/*` va al backend, il resto al frontend. L'app Python descritta qui sotto è in `resources/` (tutti i
 percorsi di questa nota sono relativi a quella cartella) ed è il riferimento
 da cui portare le funzioni.
 
