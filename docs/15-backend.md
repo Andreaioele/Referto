@@ -65,7 +65,8 @@ cerca i farmaci con la Web API `cercaFarmaci` → `POST /api/farmaci/cerca`) e
   Spiegatore, Valutatore e Revisore, non più presenti su Evolus.
 - `farmaci/`, `costruisci_schede_farmaci.py`, `carica_farmaci.py`,
   `prova_farmaci.py`: schede AIFA in Markdown e caricamento nella Conoscenza
-  dell'agente Farmaci.
+  dell'agente Farmaci. Le schede si rigenerano con lo script e sono escluse
+  da Git (`.gitignore`).
 - `openapi-referto-farmaci.json`: la Web API importata nel Mother.
 - Credenziali da `EVOLUS_API_KEY`/`EVOLUS_APPLICATION_ID` o dalla configurazione
   MCP locale, mai nel repository.
