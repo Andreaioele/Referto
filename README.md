@@ -39,7 +39,8 @@ configurato da `vercel.json` nella radice:
 
 Un solo dominio, niente CORS. `resources/` (l'app Flask) **non** è un servizio e
 non viene pubblicata. Impostazioni del progetto: Root Directory `./`, preset
-**Services**, variabile `CHIAVE_API`. Dettagli in `docs/15-backend.md` e
+**Services**, variabili `CHIAVE_API` (rotte dei farmaci per gli agenti),
+`EVOLUS_API_KEY` ed `EVOLUS_APPLICATION_ID` (chat con il Mother agent). Dettagli in `docs/15-backend.md` e
 `docs/16-frontend.md`.
 
 > Il risultato è generato automaticamente e può contenere errori. Referto non

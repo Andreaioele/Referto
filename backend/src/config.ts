@@ -24,4 +24,11 @@ export const config = {
   prontuario: process.env.PRONTUARIO_FILE ?? fileDati('aifa_farmaci.json'),
   normalizzazione: process.env.NORMALIZZAZIONE_FILE ?? fileDati('normalizzazione.json'),
   atc: process.env.ATC_FILE ?? fileDati('atc.json'),
+  /** Mother agent di Evolus a cui il backend inoltra i messaggi della chat. Credenziali solo lato server. */
+  evolus: {
+    apiBase: process.env.EVOLUS_API_BASE ?? 'https://api.evolus.ai/api/v1',
+    apiKey: process.env.EVOLUS_API_KEY ?? '',
+    applicationId: process.env.EVOLUS_APPLICATION_ID ?? '',
+    agentId: process.env.EVOLUS_AGENT_ID ?? '85b39c17-6e3e-46a6-9f1c-c4c13c68cc77',
+  },
 };

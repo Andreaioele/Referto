@@ -8,6 +8,15 @@ Referto su Evolus.
 
 Documentazione di progetto: `docs/15-backend.md`.
 
+## Chat con il Mother agent
+
+`POST /api/chat` con `{"messaggio": "...", "conversazione": "<id facoltativo>"}`
+inoltra il messaggio al Mother agent di Evolus e ritrasmette la risposta come
+Server-Sent Events (`data: {"tipo":"testo"|"fine"|"errore", ...}`).
+Variabili d'ambiente: `EVOLUS_API_KEY`, `EVOLUS_APPLICATION_ID` (obbligatorie),
+`EVOLUS_AGENT_ID` (facoltativa). Senza credenziali risponde 503. Dettagli in
+`docs/15-backend.md`.
+
 ## Privacy
 
 Il modulo farmaci riceve **solo i nomi dei farmaci**, mai il testo del referto
@@ -21,6 +30,7 @@ Il modulo farmaci riceve **solo i nomi dei farmaci**, mai il testo del referto
 | `POST` | `/api/farmaci/cerca` | Collega fino a 20 nomi al prontuario |
 | `GET` | `/api/farmaci/:cod` | Un farmaco per codice AIFA (`COD_FARMACO`) |
 | `GET` | `/api/salute` | Stato e data del prontuario (senza chiave) |
+| `POST` | `/api/chat` | Messaggio al Mother agent di Evolus, risposta in streaming (senza chiave, 10 al minuto per IP) |
 | `GET` | `/api/docs`, `/api/docs-json` | Documentazione OpenAPI |
 
 Le rotte dei farmaci richiedono l'intestazione `x-api-key` uguale alla

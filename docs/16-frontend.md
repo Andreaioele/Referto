@@ -10,8 +10,13 @@ Torna a [[00-indice]] · Backend in [[15-backend]] · Interfaccia attuale in [[0
 ## A cosa serve
 
 `frontend/` è la nuova interfaccia di Referto: React 19 + Vite + TypeScript,
-pubblicata come sito statico. Per ora ha la pagina iniziale con il marchio e un
-riquadro che controlla il collegamento con il backend (`GET /api/salute`). Le
+pubblicata come sito statico. La pagina iniziale ha la chat "Spiegami un
+referto" (`src/Chat.tsx`): si incolla il referto o si fa una domanda e la
+risposta del Mother agent compare mentre viene scritta (`POST /api/chat`,
+[[15-backend]]). Le domande successive continuano la stessa conversazione;
+"Nuovo referto" la azzera. Se arriva un errore dopo una parte della risposta,
+la parte già scritta resta e l'errore la segue. Lo stato del collegamento con il
+backend (`GET /api/salute`) è nei dettagli a scomparsa in fondo. Le
 schermate dell'app Python (`resources/templates/`, `resources/static/`) vanno
 portate qui una alla volta, con gli stessi principi: poche informazioni alla
 volta, testi grandi, stesso tema ([[05-webapp-e-interfaccia]]).
@@ -35,7 +40,9 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | File | Ruolo |
 |---|---|
 | `src/App.tsx` | Pagina iniziale |
-| `src/api.ts` | Chiamate al backend |
+| `src/Chat.tsx` | Chat con il Mother agent |
+| `src/servizio-chat.ts` | Invio del messaggio e lettura dello streaming |
+| `src/api.ts` | Stato del backend |
 | `src/index.css` | Tema (colori e caratteri di `resources/static/app.css`) |
 
 ## Comandi

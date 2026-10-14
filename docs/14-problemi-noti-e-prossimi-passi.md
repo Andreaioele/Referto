@@ -25,6 +25,8 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |
+| La chat (`/api/chat`) manda il testo del referto a Evolus: va deciso con il team se e come conciliarlo con "il referto non lascia il computer" | `backend/src/chat/` | [[15-backend]] |
+| Il Mother agent (DeepSeek-V4.1 su Token Factory) risponde in 1-3 minuti e con più richieste insieme va oltre il limite (HTTP 422 "sovraccarico") | Evolus | [[15-backend]] |
 | Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `backend/` | [[15-backend]] |
 
 ## Prossimi passi proposti

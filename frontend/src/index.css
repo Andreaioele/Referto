@@ -101,3 +101,127 @@ footer {
   color: var(--muted);
   font-size: 16px;
 }
+
+/* Chat */
+.avviso {
+  color: var(--muted);
+  margin-bottom: 16px !important;
+}
+
+.messaggi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.messaggio {
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+
+.messaggio-persona {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--canvas);
+}
+
+.messaggio-referto {
+  background: var(--mint);
+  border-color: transparent;
+}
+
+.messaggio-errore {
+  background: #f8e9e9;
+  color: var(--danger);
+}
+
+.messaggio-autore {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.messaggio-testo {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.messaggio-persona .messaggio-testo {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.chat-modulo textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  resize: vertical;
+}
+
+.chat-modulo textarea:focus {
+  outline: 3px solid rgba(23, 107, 88, 0.25);
+  border-color: var(--green);
+}
+
+.chat-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+button {
+  min-height: 52px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--green-dark);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+button.secondario {
+  background: var(--paper);
+  color: var(--green-dark);
+  border: 1px solid var(--line);
+}
+
+.dettagli-tecnici {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.dettagli-tecnici summary {
+  cursor: pointer;
+}
+
+.dettagli-tecnici p {
+  margin: 10px 0 0;
+}
+
+.nascosto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

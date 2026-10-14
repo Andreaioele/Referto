@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { statoBackend, type StatoBackend } from './api'
+import { Chat } from './Chat'
 
 type Collegamento =
   | { tipo: 'in corso' }
@@ -31,16 +32,10 @@ function App() {
       </header>
 
       <main>
-        <section className="scheda">
-          <h2>Nuova interfaccia in costruzione</h2>
-          <p>
-            Qui arriveranno, una alla volta, le funzioni dell'app attuale: la spiegazione del referto,
-            le parole difficili, i farmaci e dove andare.
-          </p>
-        </section>
+        <Chat />
 
-        <section className="scheda" aria-live="polite">
-          <h2>Collegamento con il backend</h2>
+        <details className="dettagli-tecnici">
+          <summary>Stato del servizio</summary>
           {collegamento.tipo === 'in corso' && <p>Controllo in corso…</p>}
           {collegamento.tipo === 'ok' && (
             <p className="esito esito-ok">
@@ -51,7 +46,7 @@ function App() {
           {collegamento.tipo === 'errore' && (
             <p className="esito esito-errore">Il backend non risponde ({collegamento.messaggio}).</p>
           )}
-        </section>
+        </details>
       </main>
 
       <footer>

@@ -27,10 +27,31 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 | `POST /api/farmaci/cerca` | Collega fino a 20 nomi al prontuario AIFA | sì |
 | `GET /api/farmaci/:cod` | Un farmaco per codice AIFA, con categoria e link a foglietto e RCP | sì |
 | `GET /api/salute` | Stato e data del prontuario | no |
+| `POST /api/chat` | Inoltra un messaggio al Mother agent di Evolus e ritrasmette la risposta in streaming | no (limite per IP) |
 | `GET /api/docs`, `/api/docs-json` | Documentazione OpenAPI (da importare come Web API in Evolus) | no |
 
 Chiave: intestazione `x-api-key` uguale alla variabile `CHIAVE_API`. Se non è
 impostata il controllo è spento (solo sviluppo locale).
+
+## Chat con il Mother agent (`src/chat/`)
+
+`POST /api/chat` con `{ messaggio, conversazione? }` inoltra il messaggio al
+Mother agent di Evolus (`/agents/{id}/ask-stream`, campo `content`; per
+continuare la conversazione si rimanda il suo `conversationId`, non il
+`threadId`, che Evolus ignora). La risposta arriva al browser come Server-Sent
+Events: righe `data:` con `tipo` `testo`, poi `fine` (con `conversazione`) o
+`errore` (messaggio già in italiano). Ogni 15 secondi un commento `: attesa`
+tiene aperta la connessione mentre il modello lavora.
+
+- Credenziali solo sul server: `EVOLUS_API_KEY`, `EVOLUS_APPLICATION_ID`
+  (variabili d'ambiente; `EVOLUS_AGENT_ID` facoltativa, predefinito il Mother
+  agent). Senza credenziali la rotta risponde 503.
+- Aperta al browser (senza `CHIAVE_API`), quindi limitata: 10 messaggi al
+  minuto per IP (`@nestjs/throttler`, IP da `x-real-ip` su Vercel) e al massimo
+  30.000 caratteri per messaggio.
+- Nei log solo esiti tecnici (stato HTTP, codice d'errore, durata), mai il testo.
+- Il messaggio arriva a Evolus: è il testo del referto. Vedi
+  [[14-problemi-noti-e-prossimi-passi]] sul vincolo "il referto non lascia il computer".
 
 ## Privacy
 
