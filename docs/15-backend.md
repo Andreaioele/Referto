@@ -59,6 +59,15 @@ Su Evolus restano due agenti: **Referto Mother agent** (risponde alla chat,
 cerca i farmaci con la Web API `cercaFarmaci` → `POST /api/farmaci/cerca`) e
 **Referto Farmaci** (RAG sulle schede AIFA, oggi non collegato al Mother).
 
+La risposta del Mother a un referto si apre con la riga
+`ARGOMENTO: <esame> · <area>` (es. `ARGOMENTO: Ecografia della tiroide ·
+Endocrinologia e diabetologia`), poi le sezioni SINTESI, SPIEGAZIONE IN PAROLE
+SEMPLICI, INCERTEZZE O LIMITI, INDICAZIONI. L'area è una delle 19 branche di
+`resources/strutture_sanitarie.py` (stesse etichette), scelta per organo o
+apparato esaminato e non per chi ha scritto il referto; riserva: Medicina
+generale. L'argomento descrive l'esame, mai il risultato. Il frontend per ora
+mostra la riga così com'è; in futuro può leggerla per "Dove andare".
+
 - `agenti/*.md`: prompt di ogni agente, con `agentId` e configurazione
   nell'intestazione; `sincronizza_prompt.py <file>` carica il prompt su Evolus
   senza toccare gli altri campi. In `agenti/archivio/` i prompt di Lettore,

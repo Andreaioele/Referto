@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-14
 
+- `chat-frontend` · Mother agent: nuovo passo di classificazione e riga `ARGOMENTO: <esame> · <area>` in cima alla risposta (area da elenco chiuso di 19 branche, riserva Medicina generale, mai diagnosi o reperti); prompt caricato su Evolus · [[15-backend]]
 - `chat-frontend` · Aggiunta `resources/evolus/`: prompt degli agenti Evolus allineati alla piattaforma (Mother e Farmaci; Lettore, Spiegatore, Valutatore e Revisore in `agenti/archivio/`), script di sincronizzazione e di caricamento delle schede AIFA nella Conoscenza (le schede, generate, restano fuori da Git); note sui modelli Token Factory per H100 (`resources/modelli_*.pdf`) · [[15-backend]]
 - `chat-frontend` · `CLAUDE.md`: tolto il vincolo "il referto non lascia il computer"; resta il divieto di dati sanitari in Git e di contenuti nei log · [[14-problemi-noti-e-prossimi-passi]]
 - `chat-frontend` · Chat "Spiegami un referto" nel frontend collegata al Mother agent: `POST /api/chat` nel backend inoltra a Evolus `/ask-stream` e ritrasmette la risposta in streaming; credenziali Evolus solo lato server, 10 messaggi al minuto per IP · [[15-backend]] · [[16-frontend]]
