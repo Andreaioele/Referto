@@ -98,25 +98,12 @@ backend con una chiamata dedicata.
 
 ### Dove si salva
 
-**Opzione scelta: file JSON su disco** (coerente con l'approccio dell'app
-Python, che usa file per trace, glossario e cache).
+**MongoDB con Mongoose.** Database `Referto`, stringa di connessione in
+`MONGODB_URI` (variabile d'ambiente). Se la variabile è vuota il modulo non
+viene caricato: gli altri moduli funzionano senza database.
 
-```
-backend/data/sessioni/           # fuori da Git (.gitignore)
-├── utenti.json                  # { id, nickname, creato }[]
-└── sessioni/
-    ├── <sessione-id>.json       # { turni: Turno[], ... }
-    └── ...
-```
-
-**Alternativa futura:** database SQLite o PostgreSQL quando l'app va in
-produzione su Vercel (i file su disco non persistono tra i deploy delle
-funzioni serverless). Per Vercel: Vercel KV (Redis) o Vercel Postgres.
-
-**Nota Vercel:** le funzioni serverless di Vercel Services non hanno un
-filesystem persistente. Per il deploy su Vercel, i dati di sessione devono
-stare in un servizio esterno. Per lo sviluppo locale e per la demo, i file su
-disco funzionano. Questa limitazione va risolta prima del deploy in produzione.
+Collezioni: `utenti` (nickname, timestamps) e `sessioni` (utente ObjectId,
+titolo, array di sotto-documenti `turni`).
 
 ## Storico delle chat
 
@@ -138,19 +125,18 @@ appartenga a quell'utente. Nessun token, nessuna firma.
 
 ### Architettura backend
 
-#### Modulo `sessioni` (NestJS)
+#### Modulo `sessioni` (NestJS) — implementato
 
 ```
 backend/src/sessioni/
-├── sessioni.module.ts
+├── sessioni.module.ts           # MongooseModule.forFeature
 ├── sessioni.service.ts          # CRUD utenti, sessioni, turni
-├── sessioni.controller.ts       # rotte API
-├── archivio.service.ts          # lettura/scrittura file JSON
+├── sessioni.controller.ts       # rotte API sotto /api/sessioni
+├── schemi.ts                    # schemi Mongoose (Utente, Sessione, Turno)
 └── dto/
     ├── crea-utente.dto.ts       # { nickname: string }
     ├── crea-sessione.dto.ts     # { titolo?: string }
-    ├── salva-turno.dto.ts       # { messaggio, risposta, ... }
-    └── risposte.dto.ts
+    └── salva-turno.dto.ts       # { messaggio, risposta, ... }
 ```
 
 #### DTO
@@ -315,8 +301,7 @@ Se l'utente scrive un nuovo messaggio:
 
 | Rischio | Impatto | Mitigazione |
 |---|---|---|
-| File su disco non persistono su Vercel | Sessioni perse a ogni deploy | Per la demo va bene; in produzione passare a database |
 | Nessuna autenticazione reale | Chiunque con un ID accede alle sessioni | Accettabile per hackathon; aggiungere auth vera dopo |
 | `localStorage` cancellato | L'utente perde accesso alle sessioni | Messaggio: "Inserisci di nuovo il tuo nome" |
 | Conversazione Evolus scaduta | Impossibile continuare la chat | Iniziare una nuova conversazione Evolus, il contesto è nei turni salvati |
-| Spazio disco con molte sessioni | Disco pieno | Limite di sessioni per utente (es. 50) e pulizia automatica |
+| MongoDB non raggiungibile | Le rotte sessioni non funzionano | Il modulo è condizionale: senza `MONGODB_URI` il resto dell'app funziona |

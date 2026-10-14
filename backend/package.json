@@ -19,11 +19,13 @@
   "dependencies": {
     "@nestjs/common": "^11.1.0",
     "@nestjs/core": "^11.1.0",
+    "@nestjs/mongoose": "^12.0.0",
     "@nestjs/platform-express": "^11.1.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.7.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "mongoose": "^9.11.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -52,8 +54,11 @@
     ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.ts$": "ts-jest"
+      "^.+\\.(ts|js)$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@nestjs/mongoose|mongoose)/)"
+    ],
     "testEnvironment": "node"
   }
 }

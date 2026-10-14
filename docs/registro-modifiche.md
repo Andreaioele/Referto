@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-14
 
+- `chat-frontend` · Modulo sessioni con Mongoose: schemi Utente/Sessione/Turno, CRUD completo, rotte API sotto `/api/sessioni`, connessione MongoDB condizionale (`MONGODB_URI`), 10 test e2e · [[15-backend]] · [[specifica-storico-sessione]]
 - `chat-frontend` · Tre documenti di specifica in `docs/`: terminologia medica ([[specifica-terminologia]]), visite e specialisti vicini ([[specifica-visite-specialisti]]), storico referti per sessione ([[specifica-storico-sessione]]). Aggiornato l'indice e la mappa mermaid · [[00-indice]]
 - `chat-frontend` · Mother agent: nuovo passo di classificazione e riga `ARGOMENTO: <esame> · <area>` in cima alla risposta (area da elenco chiuso di 19 branche, riserva Medicina generale, mai diagnosi o reperti); prompt caricato su Evolus · [[15-backend]]
 - `chat-frontend` · Aggiunta `resources/evolus/`: prompt degli agenti Evolus allineati alla piattaforma (Mother e Farmaci; Lettore, Spiegatore, Valutatore e Revisore in `agenti/archivio/`), script di sincronizzazione e di caricamento delle schede AIFA nella Conoscenza (le schede, generate, restano fuori da Git); note sui modelli Token Factory per H100 (`resources/modelli_*.pdf`) · [[15-backend]]

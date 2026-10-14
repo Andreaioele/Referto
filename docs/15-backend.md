@@ -28,6 +28,13 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 | `GET /api/farmaci/:cod` | Un farmaco per codice AIFA, con categoria e link a foglietto e RCP | sì |
 | `GET /api/salute` | Stato e data del prontuario | no |
 | `POST /api/chat` | Inoltra un messaggio al Mother agent di Evolus e ritrasmette la risposta in streaming | no (limite per IP) |
+| `POST /api/sessioni/utenti` | Crea utente (nickname → id) | no |
+| `GET /api/sessioni/utenti/:id` | Verifica che un utente esista | no |
+| `POST /api/sessioni` | Crea sessione di chat (header `X-Utente-Id`) | no |
+| `GET /api/sessioni` | Lista sessioni dell'utente | no |
+| `GET /api/sessioni/:id` | Dettaglio sessione con turni | no |
+| `POST /api/sessioni/:id/turni` | Salva un turno (domanda + risposta) | no |
+| `DELETE /api/sessioni/:id` | Elimina una sessione | no |
 | `GET /api/docs`, `/api/docs-json` | Documentazione OpenAPI (da importare come Web API in Evolus) | no |
 
 Chiave: intestazione `x-api-key` uguale alla variabile `CHIAVE_API`. Se non è
@@ -79,6 +86,24 @@ mostra la riga così com'è; in futuro può leggerla per "Dove andare".
 - `openapi-referto-farmaci.json`: la Web API importata nel Mother.
 - Credenziali da `EVOLUS_API_KEY`/`EVOLUS_APPLICATION_ID` o dalla configurazione
   MCP locale, mai nel repository.
+
+## Sessioni e storico (`src/sessioni/`)
+
+Modulo NestJS con Mongoose per MongoDB (database `Referto`). Salva utenti
+(nickname, login fake), sessioni di chat e turni (domanda + risposta). Evita di
+richiamare il modello per sessioni già analizzate.
+
+- Stringa di connessione in `MONGODB_URI` (variabile d'ambiente). Se mancante,
+  il modulo non viene caricato e le rotte non esistono: gli altri moduli non ne
+  risentono.
+- Collezioni: `utenti` (nickname, timestamps) e `sessioni` (utente, titolo,
+  array di turni con messaggio, risposta, timestamp, metadati).
+- Autenticazione: header `X-Utente-Id` con l'ObjectId dell'utente. Nessun
+  token né password (hackathon).
+- Nei log solo ID e timestamp, mai il contenuto dei turni
+  ([[09-trace-e-privacy]]).
+
+Specifica completa: [[specifica-storico-sessione]].
 
 ## Privacy
 

@@ -31,4 +31,6 @@ export const config = {
     applicationId: process.env.EVOLUS_APPLICATION_ID ?? '',
     agentId: process.env.EVOLUS_AGENT_ID ?? '85b39c17-6e3e-46a6-9f1c-c4c13c68cc77',
   },
+  /** Stringa di connessione MongoDB (database Referto). */
+  mongoUri: process.env.MONGODB_URI ?? '',
 };
