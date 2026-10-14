@@ -1,6 +1,6 @@
 ---
 tags: [area/core]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Architettura
@@ -65,6 +65,8 @@ modello da 7B servono minuti; vedi [[14-problemi-noti-e-prossimi-passi]].
 | `glossario/hpo_glossario.json` | Glossario HPO (~19.000 termini) | Sì |
 | `glossario/parole_salvate.json` | Spiegazioni semplici generate e parole incontrate | No |
 | `farmaci/aifa_farmaci.json` | Prontuario AIFA (~12.600 farmaci) | Sì |
+| `farmaci/normalizzazione.json` | Sali e alias dei nomi dei farmaci (app e [[15-servizio-farmaci]]) | Sì |
+| `servizio-farmaci/data/atc.json` | Descrizioni della classificazione ATC | Sì |
 | `farmaci_cache/` | PDF dei foglietti già aperti | No |
 | `strutture_cache/` | Risposte di Nominatim e Overpass | No |
 | `profilo/profilo.json` | Profilo del paziente (città) | No |

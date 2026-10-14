@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Registro delle modifiche
@@ -10,8 +10,14 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+## 2026-10-14
+
+- `servizio-farmaci` · Pubblicazione su Vercel: `vercel.json` e `npm run copia-dati` portano i dati di `farmaci/` nella funzione; il servizio li cerca prima in `servizio-farmaci/data/` · [[15-servizio-farmaci]]
+- `servizio-farmaci` · Nuovo servizio NestJS (TypeScript) per gli agenti Evolus: collega i nomi dei farmaci al prontuario AIFA con la stessa logica di `lookup()`, più categoria ATC e frase pronta; riceve solo nomi, mai il referto. Sali e alias spostati in `farmaci/normalizzazione.json`, condiviso con `farmaci_referti.py` · [[15-servizio-farmaci]]
+
 ## 2026-10-13
 
+- `staging` · "Per saperne di più" con righe compatte che portano a Terminologie, Farmaci e Dove andare filtrati sul referto, con ritorno al referto; tolte le viste interne non più usate · [[05-webapp-e-interfaccia]]
 - `staging` · Terminologie in stile vocabolario: menu a tendina alfabetico per iniziale e scheda completa della parola, con i referti in cui compare · [[06-glossario-hpo]]
 - `staging` · "Dove andare" automatico: città dal profilo (Ferrara), specialità dall'ultimo referto, mappa ed elenco a gruppi subito; geocoding sul comune e non sulla provincia; mirror Overpass `maps.mail.ru` · [[07-branca-e-strutture]]
 - `staging` · Farmaci: corrispondenza univoca nome → foglietto. Nome commerciale italiano (escluse le importazioni parallele) o unico farmaco con quel principio attivo; negli altri casi sceglie il paziente, mai l'app · [[08-referti-e-farmaci-aifa]]

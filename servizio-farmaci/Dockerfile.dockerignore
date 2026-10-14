@@ -1,0 +1,11 @@
+# Contesto di build = radice del repository: entra solo ciò che serve al servizio.
+*
+!servizio-farmaci/package.json
+!servizio-farmaci/package-lock.json
+!servizio-farmaci/tsconfig.json
+!servizio-farmaci/tsconfig.build.json
+!servizio-farmaci/src
+!servizio-farmaci/data
+!farmaci/aifa_farmaci.json
+!farmaci/normalizzazione.json
+servizio-farmaci/src/**/*.spec.ts

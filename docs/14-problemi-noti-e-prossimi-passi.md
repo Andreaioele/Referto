@@ -1,6 +1,6 @@
 ---
 tags: [area/progetto]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Problemi noti e prossimi passi
@@ -25,9 +25,12 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |
+| Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `servizio-farmaci/` | [[15-servizio-farmaci]] |
 
 ## Prossimi passi proposti
 
+- Pubblicare `servizio-farmaci/` e collegarlo come Web API all'agente Referto
+  su Evolus al posto del sotto-agente "Referto Farmaci" ([[15-servizio-farmaci]]).
 - Correggere la sezione Indicazioni dividendo il testo sulle intestazioni
   (`PLAN:`, `RECOMMENDATIONS:`, `CONCLUSIONI:`).
 - Portare su `main` (via `staging`) le modifiche di `output-test`.

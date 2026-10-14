@@ -38,47 +38,18 @@ USE_TYPES = [
     "citato",
 ]
 
+# Sali, forme e alias dei nomi dei farmaci: stessi dati del servizio
+# servizio-farmaci/, così app e servizio riconoscono gli stessi nomi.
+NORMALIZATION_FILE = BASE_DIR / "farmaci" / "normalizzazione.json"
+_NORMALIZATION = json.loads(NORMALIZATION_FILE.read_text(encoding="utf-8"))
+
 # Parole del principio attivo AIFA che indicano il sale o la forma: "METFORMINA
 # CLORIDRATO" e "metformin" devono portare allo stesso principio attivo.
-SALT_WORDS = {
-    "cloridrato", "dicloridrato", "idrocloruro", "bromidrato", "sodico", "sodica", "potassico",
-    "potassica", "calcico", "calcica", "magnesico", "maleato", "besilato", "mesilato", "tartrato",
-    "succinato", "fumarato", "citrato", "solfato", "fosfato", "acetato", "valerato", "propionato",
-    "dipropionato", "furoato", "butirrato", "monoidrato", "diidrato", "triidrato", "esaidrato",
-    "emiidrato", "sesquiidrato", "anidro", "sale", "di", "medoxomil", "cilexetil", "trometamolo",
-}
+SALT_WORDS = set(_NORMALIZATION["parole_sale"])
 
 # Nomi inglesi e marchi USA frequenti nei referti (MTSamples) che la sola
 # normalizzazione non collega al principio attivo italiano.
-ALIASES = {
-    "acetaminophen": "paracetamolo", "tylenol": "paracetamolo", "aspirin": "acido acetilsalicilico",
-    "acetylsalicylic acid": "acido acetilsalicilico", "motrin": "ibuprofene", "advil": "ibuprofene",
-    "aleve": "naprossene", "naprosyn": "naprossene", "coumadin": "warfarin", "lasix": "furosemide",
-    "lipitor": "atorvastatina", "zocor": "simvastatina", "crestor": "rosuvastatina",
-    "plavix": "clopidogrel", "norvasc": "amlodipina", "toprol": "metoprololo",
-    "lopressor": "metoprololo", "zestril": "lisinopril", "prinivil": "lisinopril",
-    "synthroid": "levotiroxina", "levoxyl": "levotiroxina", "prilosec": "omeprazolo",
-    "nexium": "esomeprazolo", "protonix": "pantoprazolo", "zoloft": "sertralina",
-    "celexa": "citalopram", "lexapro": "escitalopram", "prozac": "fluoxetina", "xanax": "alprazolam",
-    "ativan": "lorazepam", "valium": "diazepam", "ambien": "zolpidem", "neurontin": "gabapentin",
-    "lyrica": "pregabalin", "flomax": "tamsulosina", "zyrtec": "cetirizina", "claritin": "loratadina",
-    "benadryl": "difenidramina", "keflex": "cefalexina", "cipro": "ciprofloxacina",
-    "augmentin": "amoxicillina/acido clavulanico", "zithromax": "azitromicina",
-    "bactrim": "sulfametoxazolo/trimetoprim", "flagyl": "metronidazolo", "ultram": "tramadolo",
-    "toradol": "ketorolac", "vytorin": "ezetimibe/simvastatina", "actos": "pioglitazone",
-    "januvia": "sitagliptin", "lantus": "insulina glargine", "humalog": "insulina lispro",
-    "novolog": "insulina aspart", "medrol": "metilprednisolone", "solu-medrol": "metilprednisolone",
-    "decadron": "desametasone", "albuterol": "salbutamolo", "ventolin": "salbutamolo",
-    "proventil": "salbutamolo", "advair": "fluticasone/salmeterolo", "singulair": "montelukast",
-    "spiriva": "tiotropio", "hctz": "idroclorotiazide", "vitamin d": "colecalciferolo",
-    "epinephrine": "adrenalina", "norepinephrine": "noradrenalina", "depakote": "acido valproico",
-    "valproic acid": "acido valproico", "dilantin": "fenitoina", "keppra": "levetiracetam",
-    "tegretol": "carbamazepina", "cardizem": "diltiazem", "lovenox": "enoxaparina",
-    "heparin": "eparina", "digoxin": "digossina", "nitroglycerin": "glicerile trinitrato",
-    "percocet": "ossicodone/paracetamolo", "potassium chloride": "potassio cloruro",
-    "tamiflu": "oseltamivir", "zofran": "ondansetron", "phenergan": "prometazina",
-    "reglan": "metoclopramide", "versed": "midazolam", "demerol": "petidina",
-}
+ALIASES = dict(_NORMALIZATION["alias"])
 
 EXTRACT_PROMPT = """Estrai dal documento medico i farmaci citati. Non aggiungere
 farmaci che non sono scritti e non dare consigli.

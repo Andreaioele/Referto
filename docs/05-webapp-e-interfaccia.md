@@ -62,8 +62,19 @@ Schermata del risultato (`showSingleResult`) e dettaglio di un referto
 (`showReportDetail`) condividono la struttura:
 
 1. la spiegazione con i titoli "umani";
-2. **Per saperne di più** (`renderMoreSections`): voci a scomparsa per
-   Terminologie, Farmaci scritti nel referto, Chi se ne occupa, Testo originale.
+2. **Per saperne di più** (`renderMoreSections`): righe compatte (`moreLink`),
+   non contenuti aperti nella pagina. Ognuna ha un riassunto di una riga e un
+   pulsante che porta alla sezione vera, **filtrata su quel referto**:
+   - *Terminologie · 13 parole* → «Apri il vocabolario» (solo le parole del referto);
+   - *Farmaci · 12* (nomi e quanti sono "da scegliere") → «Vai ai farmaci»;
+   - *Chi se ne occupa · Neurologia* → «Vedi sulla mappa»;
+   - nel dettaglio dallo storico anche *Il testo originale* (a scomparsa) e,
+     se i farmaci non sono ancora stati cercati, «Cerca i farmaci».
+
+   Il filtro (`glossaryFilter`, `medicationsFilter`) mostra un riquadro
+   (`filterBanner`) con «← Torna al referto» e «Mostra tutti...». Un clic vero
+   sulla barra laterale toglie i filtri (`event.isTrusted`); i collegamenti
+   interni passano da `activatePanel()`, che simula il clic e li conserva.
 
 Il foglietto illustrativo si apre in una finestra sopra la pagina
 (`openLeaflet`, `#leaflet-modal`).

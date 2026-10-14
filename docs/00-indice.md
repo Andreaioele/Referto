@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Referto: documentazione di progetto
@@ -21,6 +21,7 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 4. [[05-webapp-e-interfaccia]]: rotte Flask, sezioni della UI, principi di semplicità.
 5. Le funzioni costruite sopra la spiegazione:
    [[06-glossario-hpo]], [[07-branca-e-strutture]], [[08-referti-e-farmaci-aifa]].
+   Per gli agenti Evolus: [[15-servizio-farmaci]] (servizio NestJS).
 6. [[09-trace-e-privacy]]: cosa viene salvato e dove.
 7. [[11-modelli-e-ollama]] e [[10-dataset-e-valutazione]]: modelli, dataset, cluster.
 8. [[12-test-e-sviluppo]] e [[13-git-e-workflow]]: come lavorare sul repo.
@@ -41,6 +42,7 @@ graph LR
   webapp --> strutture[07-branca-e-strutture]
   webapp --> farmaci[08-referti-e-farmaci-aifa]
   farmaci --> trace[09-trace-e-privacy]
+  farmaci --> servizio[15-servizio-farmaci]
   glossario --> trace
   architettura --> trace
   pipeline --> modelli[11-modelli-e-ollama]
@@ -64,6 +66,7 @@ graph LR
 | `profilo_utente.py` | Profilo del paziente (città) | [[07-branca-e-strutture]] |
 | `archivio_referti.py` | Storico dei referti (sulle trace) | [[08-referti-e-farmaci-aifa]] |
 | `farmaci_referti.py`, `farmaci/` | Farmaci dei referti e prontuario AIFA | [[08-referti-e-farmaci-aifa]] |
+| `servizio-farmaci/` | Servizio NestJS di ricerca dei farmaci per gli agenti Evolus | [[15-servizio-farmaci]] |
 | `trace_store.py`, `performance_metrics.py` | Trace e metriche delle chiamate | [[09-trace-e-privacy]] |
 | `benchmarking.py` | Benchmark A/B con e senza decision model | [[04-decision-model]] |
 | `cluster_agent_task.py`, `submit_h100.sh`, `merge_datasets.py` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |
