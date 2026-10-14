@@ -13,6 +13,7 @@
     "start:dev": "ts-node src/main.ts",
     "test": "jest",
     "atc": "ts-node scripts/costruisci-atc.ts",
+    "copia-dati": "node scripts/copia-dati.mjs",
     "parita": "python3 scripts/casi_parita.py",
     "parita:tutti": "python3 scripts/casi_parita.py --tutti /tmp/parita-tutti.json && ts-node scripts/verifica-parita.ts /tmp/parita-tutti.json"
   },

@@ -62,8 +62,13 @@ cd servizio-farmaci && npm install && npm test && npm run start:dev
 docker build -f servizio-farmaci/Dockerfile -t referto-servizio-farmaci .   # dalla radice
 ```
 
+Su **Vercel** il servizio diventa una sola funzione: Root Directory
+`servizio-farmaci`, preset NestJS, variabile `CHIAVE_API`. `vercel.json` esegue
+`npm run copia-dati`, che copia i dati di `farmaci/` in `servizio-farmaci/data/`
+(copie fuori da Git) perché la funzione li includa.
+
 Nest 11 (CommonJS): Nest 12 è solo ESM e complica Jest. Dettagli in
-`servizio-farmaci/README.md`. Collegamento agli agenti Evolus e pubblicazione:
+`servizio-farmaci/README.md`. Collegamento agli agenti Evolus:
 da fare ([[14-problemi-noti-e-prossimi-passi]]).
 
 ## Limiti

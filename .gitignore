@@ -51,3 +51,7 @@ profilo/
 # Servizio farmaci (NestJS): dipendenze e build
 servizio-farmaci/node_modules/
 servizio-farmaci/dist/
+# copie dei dati di farmaci/ fatte da `npm run copia-dati` (Vercel)
+servizio-farmaci/data/aifa_farmaci.json
+servizio-farmaci/data/normalizzazione.json
+servizio-farmaci/.vercel/

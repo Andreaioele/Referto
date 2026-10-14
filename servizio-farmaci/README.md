@@ -64,6 +64,9 @@ Per ogni nome la risposta contiene `trovato` e, se trovato:
 | `../farmaci/normalizzazione.json` | Sali e alias dei nomi, condivisi con l'app | a mano |
 | `data/atc.json` | Descrizioni della classificazione ATC | `npm run atc -- /percorso/atc.csv` (open data AIFA) |
 
+Il servizio cerca i file prima in `data/` (copie fatte da `npm run copia-dati`,
+usate su Vercel) e poi in `../farmaci/`.
+
 ## Comandi
 
 ```bash
@@ -85,6 +88,29 @@ Da rilanciare dopo ogni modifica a `farmaci_referti.py`, ai dati in `farmaci/`
 o a `src/farmaci/`.
 
 ## Pubblicazione
+
+### Vercel
+
+Vercel riconosce NestJS da `src/main.ts` e pubblica il servizio come una sola
+funzione (niente Docker). Impostazioni del progetto:
+
+| Campo | Valore |
+|---|---|
+| Root Directory | `servizio-farmaci` |
+| Application Preset | NestJS |
+| Build Command | lasciare il valore predefinito: lo imposta `vercel.json` (`npm run copia-dati`) |
+| Variabili d'ambiente | `CHIAVE_API` |
+| Root Directory → "Include files outside the Root Directory" | attivo (serve per leggere `../farmaci/`) |
+
+`npm run copia-dati` copia `farmaci/aifa_farmaci.json` e
+`farmaci/normalizzazione.json` in `data/` prima della build; Vercel li include
+nella funzione perché `src/config.ts` li legge da `process.cwd()/data`.
+Provato in locale con `vercel build` (CLI 64): la funzione contiene i tre file
+di dati, pesa 14 MB e risponde anche copiata fuori dal repository.
+
+Il piano Hobby di Vercel è gratuito solo per uso personale e non commerciale.
+
+### Docker
 
 ```bash
 # dalla radice del repository
