@@ -1,3 +1,5 @@
+// Deve restare il primo import: rende trovabili le librerie nella funzione di Vercel Services.
+import './percorsi-moduli';
 import 'reflect-metadata';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';

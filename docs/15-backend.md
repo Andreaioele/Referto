@@ -83,7 +83,11 @@ cd backend && npm install && npm test && npm run start:dev   # porta 3000
   dichiara `framework: nestjs` ed `entrypoint: src/main.ts`, perché nella cartella
   c'è anche il `Dockerfile` e Vercel altrimenti non sa quale usare. Nella funzione
   i dati stanno in `backend/data/` (percorsi dalla radice del repository):
-  `src/config.ts` li cerca anche lì. Provato con `vercel build`.
+  `src/config.ts` li cerca anche lì. Anche le librerie restano in
+  `backend/node_modules/` mentre il codice è nella radice della funzione:
+  `src/percorsi-moduli.ts`, importato per primo da `main.ts`, aggiunge quella
+  cartella ai percorsi dei moduli (senza, l'avvio fallisce con "Cannot find
+  module 'reflect-metadata'", visto nei log del primo deploy).
   Funziona anche come progetto a sé (Root Directory `backend`, preset NestJS).
 - **Docker**: `docker build -t referto-backend backend`.
 

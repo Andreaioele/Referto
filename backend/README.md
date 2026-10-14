@@ -92,7 +92,10 @@ progetto: `CHIAVE_API`. Il servizio dichiara `framework: nestjs` ed
 
 `src/config.ts` trova i dati sia in `data/` (avvio da questa cartella) sia in
 `backend/data/` (la funzione di Services ricrea i percorsi dalla radice del
-repository). Provato in locale con `vercel build` (CLI 64).
+repository). Per lo stesso motivo le librerie restano in `backend/node_modules/`
+mentre il codice è nella radice della funzione: `src/percorsi-moduli.ts`,
+primo import di `main.ts`, le rende trovabili. Provato in locale con
+`vercel build` (CLI 64) rimontando la funzione come la monta Vercel.
 
 Funziona anche come progetto Vercel a sé: Root Directory `backend`, preset
 NestJS, nessuna configurazione. Il piano Hobby di Vercel è gratuito solo per uso personale e non

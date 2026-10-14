@@ -12,6 +12,7 @@ Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 ## 2026-10-14
 
+- `vercel-services` · Backend su Vercel Services: `src/percorsi-moduli.ts` rende trovabili le librerie in `backend/node_modules/` (il primo deploy falliva con "Cannot find module 'reflect-metadata'") · [[15-backend]]
 - `vercel-services` · Un solo progetto Vercel con Services (`vercel.json` nella radice): `/api/*` al backend, il resto al frontend; `resources/` esclusa. Il backend trova i dati anche in `backend/data/`, come li monta la funzione di Services · [[15-backend]] · [[16-frontend]]
 - `riorganizzazione` · Nuova struttura: `backend/` (ex `servizio-farmaci/`, rotte sotto `/api`, dati AIFA in `backend/data/`), `frontend/` (React + Vite, inoltro `/api` al backend), `resources/` (app Python, dataset, script). Due progetti Vercel · [[15-backend]] · [[16-frontend]]
 - `servizio-farmaci` · Pubblicazione su Vercel: `vercel.json` e `npm run copia-dati` portano i dati di `farmaci/` nella funzione; il servizio li cerca prima in `servizio-farmaci/data/` · [[15-backend]]
