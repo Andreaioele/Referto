@@ -29,3 +29,7 @@ models/
 .DS_Store
 .idea/
 .vscode/
+
+# Schede farmaci generate dagli open data AIFA (evolus/costruisci_schede_farmaci.py)
+evolus/farmaci/*
+!evolus/farmaci/.gitkeep

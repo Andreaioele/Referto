@@ -107,7 +107,11 @@
           <div class="panel-heading">
             <p class="section-label">TESTO</p>
             <h2>Incolla il testo del referto</h2>
+            {% if text_model_remote %}
+            <p><strong>Il testo viene inviato a un servizio remoto ({{ text_model_name }}).</strong> Incolla solo referti anonimizzati, senza dati identificativi.</p>
+            {% else %}
             <p>Rimuovi i dati identificativi se non sono necessari.</p>
+            {% endif %}
           </div>
           <form class="analysis-form" data-endpoint="/api/analyze/text" data-result="result-text">
             <label class="field-label" for="report-text">Testo del referto</label>

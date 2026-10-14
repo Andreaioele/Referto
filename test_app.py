@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import tempfile
 import unittest
 import urllib.error
@@ -8,13 +9,17 @@ from unittest.mock import patch
 
 import benchmarking
 import decision_model
+import tokenfactory
 import web_app
+from performance_metrics import capture_model_calls
 from spiega_referto import (
+    UserFacingError,
     dataset_record_to_text,
     detokenize_report,
     extract_document_recommendations,
     load_jsonl_reports,
     normalize_explanation_format,
+    ollama_chat,
     sanitize_explanation,
     validate_explanation,
 )
@@ -227,6 +232,86 @@ class DecisionModelTests(unittest.TestCase):
 
 
 
+class TokenFactoryTests(unittest.TestCase):
+    def setUp(self):
+        env = patch.dict("os.environ", {"RADEON_API_KEY": "rc-test", "RADEON_BASE_URL": "https://tf.example/v1"})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def test_prefixed_model_is_routed_to_chat_completions(self):
+        payload = {
+            "choices": [{"message": {"content": "Spiegazione"}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 12, "completion_tokens": 3},
+        }
+        captured = {}
+
+        class FakeResponse:
+            def __enter__(self):
+                return io.BytesIO(json.dumps(payload).encode())
+
+            def __exit__(self, *_args):
+                return False
+
+        def fake_urlopen(request, timeout):
+            captured["url"] = request.full_url
+            captured["auth"] = request.get_header("Authorization")
+            captured["body"] = json.loads(request.data)
+            return FakeResponse()
+
+        with patch("tokenfactory.urllib.request.urlopen", side_effect=fake_urlopen):
+            with capture_model_calls() as calls:
+                content = ollama_chat(
+                    "http://localhost:11434", "tokenfactory/DeepSeek-V4-Flash", "Ciao", 30, 100
+                )
+        self.assertEqual(content, "Spiegazione")
+        self.assertEqual(captured["url"], "https://tf.example/v1/chat/completions")
+        self.assertEqual(captured["auth"], "Bearer rc-test")
+        self.assertEqual(captured["body"]["model"], "DeepSeek-V4-Flash")
+        self.assertEqual(captured["body"]["max_tokens"], 100)
+        self.assertEqual(captured["body"]["messages"][0]["role"], "system")
+        self.assertEqual(calls[0]["prompt_eval_count"], 12)
+        self.assertEqual(calls[0]["eval_count"], 3)
+
+    def test_rate_limit_is_retried(self):
+        rate_limited = urllib.error.HTTPError(
+            url="https://tf.example/v1/chat/completions",
+            code=429,
+            msg="Too Many Requests",
+            hdrs={"Retry-After": "0"},
+            fp=io.BytesIO(b"{}"),
+        )
+        payload = {"choices": [{"message": {"content": "ok"}}], "usage": {}}
+
+        class FakeResponse:
+            def __enter__(self):
+                return io.BytesIO(json.dumps(payload).encode())
+
+            def __exit__(self, *_args):
+                return False
+
+        with patch("tokenfactory.urllib.request.urlopen", side_effect=[rate_limited, FakeResponse()]):
+            with patch("tokenfactory.time.sleep") as sleep_mock:
+                result = tokenfactory.chat_completion("tokenfactory/DeepSeek-V4-Flash", [], 30, 10)
+        self.assertEqual(result["choices"][0]["message"]["content"], "ok")
+        sleep_mock.assert_called_once()
+
+    def test_missing_key_is_user_facing(self):
+        with patch.dict("os.environ", {"RADEON_API_KEY": ""}):
+            with self.assertRaises(UserFacingError) as ctx:
+                ollama_chat("http://localhost", "tokenfactory/DeepSeek-V4-Flash", "Ciao", 30, 100)
+        self.assertIn("RADEON_API_KEY", str(ctx.exception))
+
+    def test_env_file_does_not_override_existing_variables(self):
+        with tempfile.TemporaryDirectory() as temp_name:
+            env_file = Path(temp_name) / ".env"
+            env_file.write_text("# commento\nRADEON_API_KEY=rc-file\nRADEON_MODEL='DeepSeek-V4-Flash'\n", encoding="utf-8")
+            with patch.dict("os.environ", {"RADEON_API_KEY": "rc-shell"}):
+                with patch("tokenfactory._env_loaded", False):
+                    tokenfactory.load_env_file(env_file)
+                    self.assertEqual(os.environ["RADEON_API_KEY"], "rc-shell")
+                    self.assertEqual(os.environ["RADEON_MODEL"], "DeepSeek-V4-Flash")
+
+
 class BenchmarkTests(unittest.TestCase):
     def test_dataset_benchmark_aggregates_every_report_without_saving_text(self):
         records = [
@@ -308,6 +393,8 @@ class WebTests(unittest.TestCase):
         trace = trace_response.get_json()["trace"]
         self.assertEqual(trace["status"], "ok")
         self.assertEqual(trace["source_type"], "text")
+        self.assertEqual(_mock.call_args.kwargs["model"], "tokenfactory/DeepSeek-V4-Flash")
+        self.assertEqual(trace["model"], "tokenfactory/DeepSeek-V4-Flash")
         self.assertEqual(trace["output"], "SPIEGAZIONE TEST")
 
     def test_failed_execution_is_traced(self):

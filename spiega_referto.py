@@ -22,6 +22,7 @@ from decision_model import (
 )
 from performance_metrics import record_model_call
 from trace_store import TraceRecorder, trace_scope, traced_step
+import tokenfactory
 
 try:
     from pypdf import PdfReader
@@ -525,6 +526,10 @@ def ollama_chat(
     image_paths: Optional[Sequence[Path]] = None,
     stage: str = "Chiamata al modello",
 ) -> str:
+    if tokenfactory.is_tokenfactory_model(model):
+        return tokenfactory_chat(
+            model, user_prompt, timeout, num_predict, image_paths=image_paths, stage=stage
+        )
     base_url = normalize_ollama_url(base_url)
     trace_details: Dict[str, Any] = {
         "model": model,
@@ -601,6 +606,72 @@ def ollama_chat(
                 "load_duration": result.get("load_duration"),
                 "prompt_eval_count": result.get("prompt_eval_count"),
                 "eval_count": result.get("eval_count"),
+            }
+        )
+        return content
+
+
+def tokenfactory_chat(
+    model: str,
+    user_prompt: str,
+    timeout: int,
+    num_predict: int,
+    image_paths: Optional[Sequence[Path]] = None,
+    stage: str = "Chiamata al modello",
+) -> str:
+    """Come ollama_chat, ma verso AMD Token Factory (API compatibile OpenAI)."""
+    trace_details: Dict[str, Any] = {
+        "model": model,
+        "provider": "tokenfactory",
+        "system_prompt": SYSTEM_PROMPT,
+        "user_prompt": user_prompt,
+        "image_files": [path.name for path in image_paths or []],
+        "options": {"temperature": 0.0, "max_tokens": num_predict},
+    }
+    with traced_step(stage, trace_details) as details:
+        image_urls = [
+            tokenfactory.image_data_url(path, encoded)
+            for path, encoded in zip(image_paths or [], _encode_images(image_paths or []))
+        ]
+        messages = tokenfactory.build_messages(SYSTEM_PROMPT, user_prompt, image_urls)
+        started = perf_counter()
+        try:
+            result = tokenfactory.chat_completion(
+                model, messages, timeout=timeout, max_tokens=num_predict
+            )
+        except tokenfactory.TokenFactoryError as exc:
+            raise UserFacingError(str(exc)) from exc
+        except TimeoutError as exc:
+            raise UserFacingError(
+                "Il modello ha impiegato troppo tempo. Riprova aumentando --timeout."
+            ) from exc
+
+        choice = (result.get("choices") or [{}])[0]
+        content = (choice.get("message", {}).get("content") or "").strip()
+        if not content:
+            if choice.get("finish_reason") == "length":
+                raise UserFacingError(
+                    "Il modello ha esaurito i token prima di rispondere. Riprova con un modello "
+                    "senza ragionamento attivo, ad esempio tokenfactory/DeepSeek-V4-Flash."
+                )
+            raise UserFacingError("Il modello non ha restituito alcun testo.")
+        usage = result.get("usage") or {}
+        wall_duration_ms = round((perf_counter() - started) * 1000, 2)
+        details["response"] = content
+        details["metrics"] = {
+            "prompt_tokens": usage.get("prompt_tokens"),
+            "completion_tokens": usage.get("completion_tokens"),
+            "wall_duration_ms": wall_duration_ms,
+        }
+        record_model_call(
+            {
+                "kind": "generative",
+                "model": model,
+                "stage": stage,
+                "endpoint": "/v1/chat/completions",
+                "wall_duration_ms": wall_duration_ms,
+                "prompt_eval_count": usage.get("prompt_tokens"),
+                "eval_count": usage.get("completion_tokens"),
             }
         )
         return content
@@ -1041,7 +1112,8 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
                 report = extract_pdf_text(pdf_path)
                 details["characters"] = len(report)
             trace.set_artifact("report_text", report)
-            print(f"Analisi locale con {args.model}...", file=sys.stderr, flush=True)
+            where = "remota" if tokenfactory.is_tokenfactory_model(args.model) else "locale"
+            print(f"Analisi {where} con {args.model}...", file=sys.stderr, flush=True)
             explanation = explain_report(
                 report,
                 args.ollama_url,
