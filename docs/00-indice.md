@@ -39,6 +39,9 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
 7. [[11-modelli-e-ollama]] e [[10-dataset-e-valutazione]]: modelli, dataset, cluster.
 8. [[12-test-e-sviluppo]] e [[13-git-e-workflow]]: come lavorare sul repo.
 9. [[14-problemi-noti-e-prossimi-passi]]: cosa non funziona ancora.
+10. Specifiche delle prossime funzionalità:
+    [[specifica-terminologia]], [[specifica-visite-specialisti]],
+    [[specifica-storico-sessione]].
 
 ## Mappa
 
@@ -66,6 +69,16 @@ graph LR
   test --> git[13-git-e-workflow]
   git --> registro[registro-modifiche]
   indice --> problemi[14-problemi-noti-e-prossimi-passi]
+  indice --> specTerminologia[specifica-terminologia]
+  indice --> specVisite[specifica-visite-specialisti]
+  indice --> specStorico[specifica-storico-sessione]
+  specTerminologia --> glossario
+  specTerminologia --> backend
+  specVisite --> strutture
+  specVisite --> backend
+  specStorico --> farmaci
+  specStorico --> backend
+  specStorico --> frontend
 ```
 
 ## Mappa dei file del codice
