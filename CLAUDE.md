@@ -9,6 +9,15 @@ Leggi `docs/00-indice.md` e poi le note dell'area che tocchi. La cartella
 `docs/` è la documentazione di onboarding (vault Obsidian, note collegate con
 `[[wikilink]]`).
 
+## Struttura
+
+- `backend/`: backend NestJS (TypeScript), rotte sotto `/api`; dati AIFA in `backend/data/`.
+- `frontend/`: frontend React + Vite (TypeScript); inoltra `/api` al backend.
+- `resources/`: app Python di riferimento (Flask), dataset, script e prove. Le
+  sue funzioni vanno portate in backend e frontend una alla volta.
+- Nella radice restano solo `backend/`, `frontend/`, `resources/`, `docs/` e i
+  file del repository (`README.md`, `CLAUDE.md`, `.gitignore`): niente file sparsi.
+
 ## Regola: documentazione sempre allineata
 
 **Ogni modifica al codice va riportata in `docs/` nello stesso commit:**
@@ -36,8 +45,10 @@ Convenzioni delle note in `docs/come-usare-questa-documentazione.md`.
 ## Comandi
 
 ```bash
-uv run --no-project --with-requirements requirements.txt python -m unittest test_app
-uv run --no-project --with-requirements requirements.txt python web_app.py --port 7860 --model <modello> --senza-decision-model
+cd backend && npm test && npm run parita:tutti     # test e parità con l'app Python
+cd frontend && npm run build && npm run lint
+cd resources && uv run --no-project --with-requirements requirements.txt python -m unittest test_app
+cd resources && uv run --no-project --with-requirements requirements.txt python web_app.py --port 7860 --model <modello> --senza-decision-model
 ```
 
 ## Git

@@ -31,8 +31,8 @@ models/
 .vscode/
 
 # Parole del glossario incontrate nei referti analizzati (dato locale)
-glossario/parole_salvate.json
-glossario/*.tmp
+resources/glossario/parole_salvate.json
+resources/glossario/*.tmp
 
 # Risposte di OpenStreetMap salvate per la mappa delle strutture
 strutture_cache/
@@ -48,14 +48,11 @@ docs/.obsidian/*
 # Profilo del paziente (città): dato personale, resta su questo computer
 profilo/
 
-# Schede farmaci generate dagli open data AIFA (evolus/costruisci_schede_farmaci.py)
-evolus/farmaci/*
-!evolus/farmaci/.gitkeep
+# Schede farmaci generate dagli open data AIFA (resources/evolus/costruisci_schede_farmaci.py)
+resources/evolus/farmaci/*
+!resources/evolus/farmaci/.gitkeep
 
-# Servizio farmaci (NestJS): dipendenze e build
-servizio-farmaci/node_modules/
-servizio-farmaci/dist/
-# copie dei dati di farmaci/ fatte da `npm run copia-dati` (Vercel)
-servizio-farmaci/data/aifa_farmaci.json
-servizio-farmaci/data/normalizzazione.json
-servizio-farmaci/.vercel/
+# Backend (NestJS) e frontend (React + Vite): dipendenze, build e Vercel
+node_modules/
+dist/
+.vercel/

@@ -13,6 +13,19 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 > **Regola:** ogni modifica al codice aggiorna la nota dell'area toccata e
 > [[registro-modifiche]]. È scritto anche in `CLAUDE.md` alla radice del repo.
 
+## Struttura del repository
+
+| Cartella | Contenuto |
+|---|---|
+| `backend/` | Backend NestJS: il prodotto, rotte sotto `/api` ([[15-backend]]) |
+| `frontend/` | Frontend React + Vite ([[16-frontend]]) |
+| `resources/` | App Python di riferimento (Flask), dataset, script, prove |
+| `docs/` | Questa documentazione |
+
+Le note dalla 02 alla 12 descrivono l'app Python: i loro percorsi
+(`glossario/`, `static/`, `traces/` …) sono relativi a `resources/`.
+L'app Python verrà portata un pezzo alla volta in backend e frontend.
+
 ## Ordine di lettura consigliato
 
 1. [[01-panoramica]]: cos'è Referto, l'hackathon, i vincoli del track Health.
@@ -21,7 +34,7 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 4. [[05-webapp-e-interfaccia]]: rotte Flask, sezioni della UI, principi di semplicità.
 5. Le funzioni costruite sopra la spiegazione:
    [[06-glossario-hpo]], [[07-branca-e-strutture]], [[08-referti-e-farmaci-aifa]].
-   Per gli agenti Evolus: [[15-servizio-farmaci]] (servizio NestJS).
+   Prodotto nuovo: [[15-backend]] (NestJS, anche per gli agenti Evolus) e [[16-frontend]] (React).
 6. [[09-trace-e-privacy]]: cosa viene salvato e dove.
 7. [[11-modelli-e-ollama]] e [[10-dataset-e-valutazione]]: modelli, dataset, cluster.
 8. [[12-test-e-sviluppo]] e [[13-git-e-workflow]]: come lavorare sul repo.
@@ -42,7 +55,9 @@ graph LR
   webapp --> strutture[07-branca-e-strutture]
   webapp --> farmaci[08-referti-e-farmaci-aifa]
   farmaci --> trace[09-trace-e-privacy]
-  farmaci --> servizio[15-servizio-farmaci]
+  farmaci --> backend[15-backend]
+  backend --> frontend[16-frontend]
+  webapp --> frontend
   glossario --> trace
   architettura --> trace
   pipeline --> modelli[11-modelli-e-ollama]
@@ -55,8 +70,12 @@ graph LR
 
 ## Mappa dei file del codice
 
+I file Python sono in `resources/`.
+
 | File | Ruolo | Nota |
 |---|---|---|
+| `backend/` | Backend NestJS (farmaci; poi il resto dell'app) | [[15-backend]] |
+| `frontend/` | Frontend React + Vite | [[16-frontend]] |
 | `spiega_referto.py` | Pipeline di spiegazione, prompt, validatori, CLI | [[03-pipeline-spiegazione]] |
 | `decision_model.py` | Decide se saltare l'audit (Laya o BGE-M3) | [[04-decision-model]] |
 | `web_app.py` | App Flask: rotte API e pagina | [[05-webapp-e-interfaccia]] |
@@ -66,7 +85,6 @@ graph LR
 | `profilo_utente.py` | Profilo del paziente (città) | [[07-branca-e-strutture]] |
 | `archivio_referti.py` | Storico dei referti (sulle trace) | [[08-referti-e-farmaci-aifa]] |
 | `farmaci_referti.py`, `farmaci/` | Farmaci dei referti e prontuario AIFA | [[08-referti-e-farmaci-aifa]] |
-| `servizio-farmaci/` | Servizio NestJS di ricerca dei farmaci per gli agenti Evolus | [[15-servizio-farmaci]] |
 | `trace_store.py`, `performance_metrics.py` | Trace e metriche delle chiamate | [[09-trace-e-privacy]] |
 | `benchmarking.py` | Benchmark A/B con e senza decision model | [[04-decision-model]] |
 | `cluster_agent_task.py`, `submit_h100.sh`, `merge_datasets.py` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |

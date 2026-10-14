@@ -1,6 +1,6 @@
 ---
 tags: [area/interfaccia]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Webapp e interfaccia
@@ -10,6 +10,7 @@ Torna a [[00-indice]] · Parte di [[02-architettura]].
 ## Avvio
 
 ```bash
+cd resources
 uv run --no-project --with-requirements requirements.txt python web_app.py --port 7860 --model <modello> --senza-decision-model
 ```
 

@@ -1,6 +1,6 @@
 ---
 tags: [area/valutazione]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Dataset e valutazione
@@ -33,7 +33,7 @@ vuote: è la causa del problema della sezione Indicazioni
   scrive un CSV (`CSV_FIELDNAMES`: stato, errore, durata, token, chiamate,
   testo del referto, spiegazione) più trace e riepilogo JSON. `--resume`
   riparte dai `doc_key` già fatti. Codice di uscita 1 se qualche referto è in errore.
-- `submit_h100.sh`: script SLURM singolo, più vecchio.
+- `submit_h100.sh`: script SLURM singolo, più vecchio (da lanciare dentro `resources/`).
 - **Pipeline SLURM a shard** (`slurm/`: `submit.sh`, `config.sh`,
   `run_shard.sbatch`, `prepare_shards.py`, `merge.sbatch`, `merge_outputs.py`):
   sta **solo sul branch `output-test`**, non su `main` ([[13-git-e-workflow]]).

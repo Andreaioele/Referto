@@ -25,12 +25,16 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |
-| Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `servizio-farmaci/` | [[15-servizio-farmaci]] |
+| Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `backend/` | [[15-backend]] |
 
 ## Prossimi passi proposti
 
-- Pubblicare `servizio-farmaci/` e collegarlo come Web API all'agente Referto
-  su Evolus al posto del sotto-agente "Referto Farmaci" ([[15-servizio-farmaci]]).
+- Pubblicare `backend/` e `frontend/` come due progetti Vercel e collegare il
+  backend come Web API all'agente Referto su Evolus, al posto del sotto-agente
+  "Referto Farmaci" ([[15-backend]], [[16-frontend]]).
+- Portare l'app Python (`resources/`) in backend e frontend, una funzione alla
+  volta. Prima di pubblicare in cloud l'analisi dei referti va rivisto il vincolo
+  "il referto non lascia il computer" (`CLAUDE.md`, [[09-trace-e-privacy]]).
 - Correggere la sezione Indicazioni dividendo il testo sulle intestazioni
   (`PLAN:`, `RECOMMENDATIONS:`, `CONCLUSIONI:`).
 - Portare su `main` (via `staging`) le modifiche di `output-test`.

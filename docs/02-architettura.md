@@ -7,7 +7,15 @@ aggiornato: 2026-10-14
 
 Torna a [[00-indice]] · Contesto in [[01-panoramica]].
 
-## Componenti
+## Struttura del repository
+
+`backend/` (NestJS, [[15-backend]]) e `frontend/` (React + Vite, [[16-frontend]])
+sono il prodotto, pubblicati come due progetti Vercel: il frontend inoltra
+`/api/*` al backend. L'app Python descritta qui sotto è in `resources/` (tutti i
+percorsi di questa nota sono relativi a quella cartella) ed è il riferimento
+da cui portare le funzioni.
+
+## Componenti (app Python)
 
 ```mermaid
 graph TD
@@ -64,9 +72,9 @@ modello da 7B servono minuti; vedi [[14-problemi-noti-e-prossimi-passi]].
 | `risultati/`, `benchmarks/` | Output di dataset e benchmark | No |
 | `glossario/hpo_glossario.json` | Glossario HPO (~19.000 termini) | Sì |
 | `glossario/parole_salvate.json` | Spiegazioni semplici generate e parole incontrate | No |
-| `farmaci/aifa_farmaci.json` | Prontuario AIFA (~12.600 farmaci) | Sì |
-| `farmaci/normalizzazione.json` | Sali e alias dei nomi dei farmaci (app e [[15-servizio-farmaci]]) | Sì |
-| `servizio-farmaci/data/atc.json` | Descrizioni della classificazione ATC | Sì |
+| `../backend/data/aifa_farmaci.json` | Prontuario AIFA (~12.600 farmaci), del backend | Sì |
+| `../backend/data/normalizzazione.json` | Sali e alias dei nomi dei farmaci (app e [[15-backend]]) | Sì |
+| `../backend/data/atc.json` | Descrizioni della classificazione ATC | Sì |
 | `farmaci_cache/` | PDF dei foglietti già aperti | No |
 | `strutture_cache/` | Risposte di Nominatim e Overpass | No |
 | `profilo/profilo.json` | Profilo del paziente (città) | No |

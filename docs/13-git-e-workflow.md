@@ -1,6 +1,6 @@
 ---
 tags: [area/sviluppo]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Git e flusso di lavoro
@@ -19,6 +19,8 @@ Repository: `github.com/Andreaioele/Referto`.
 | `output-test` | Pipeline SLURM a shard, input da file di testo, `"think": false`, timeout di caricamento. **Non ancora in `main`** |
 | `fine-tuning-test` | Esperimenti di fine-tuning (locale) |
 | `impl/decision-model` | Lavoro sul decision model (remoto) |
+| `servizio-farmaci` | Backend NestJS dei farmaci (già in `main`) |
+| `riorganizzazione` | Struttura `backend/`, `frontend/`, `resources/` |
 
 Flusso: branch di lavoro → merge su `staging` → verifica (test e prova nell'app)
 → merge su `main`.

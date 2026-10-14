@@ -1,6 +1,6 @@
 ---
 tags: [area/infrastruttura]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-14
 ---
 
 # Modelli, Ollama e infrastruttura AMD
@@ -36,7 +36,7 @@ Catalogo di API di AMD Radeon Cloud (manuale completo in
   sintetici o pubblici ([[09-trace-e-privacy]]);
 - limiti di 20–30 richieste al minuto per tutto il team: le valutazioni
   massive vanno sul cluster o su un endpoint dedicato;
-- `check-usage-app/`: microservizio per vedere l'usage del team (token nel
+- `resources/check-usage-app/`: microservizio per vedere l'usage del team (token nel
   server, mai nel browser).
 
 ## Cluster SLURM (H100)

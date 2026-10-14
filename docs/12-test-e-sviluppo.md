@@ -9,9 +9,10 @@ Torna a [[00-indice]] · Flusso git in [[13-git-e-workflow]].
 
 ## Ambiente
 
-Python gestito con **uv**. Senza creare un ambiente:
+Python gestito con **uv**, dalla cartella `resources/`. Senza creare un ambiente:
 
 ```bash
+cd resources
 uv run --no-project --with-requirements requirements.txt python -m unittest test_app
 ```
 
@@ -34,8 +35,9 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 | `FacilitiesTests` | [[07-branca-e-strutture]] |
 | `MedicationTests`, `UnivocalMedicationTests`, `ArchiveTests` | [[08-referti-e-farmaci-aifa]] |
 
-Il servizio NestJS in `servizio-farmaci/` ha test propri (Jest): `cd servizio-farmaci && npm test`,
-più il confronto con Python `npm run parita:tutti` ([[15-servizio-farmaci]]).
+Il backend ha test propri (Jest): `cd backend && npm test`, più il confronto con
+Python `npm run parita:tutti` ([[15-backend]]). Il frontend si controlla con
+`cd frontend && npm run build && npm run lint` ([[16-frontend]]).
 
 Ogni nuova funzione arriva con i suoi test, nello stile esistente
 (`patch.object` sulle chiamate al modello e ai servizi esterni, cartelle temporanee).
@@ -46,6 +48,7 @@ Sul Mac c'è `qwen2.5-coder:7b` in Ollama: basta per provare il **flusso** (non
 la qualità medica):
 
 ```bash
+cd resources
 uv run --no-project --with-requirements requirements.txt python web_app.py --port 7860 --senza-decision-model --model qwen2.5-coder:7b
 ```
 
@@ -56,8 +59,8 @@ salvato spiegazioni generate da questo modello, cancellare
 ## Convenzioni del codice
 
 - Commenti, docstring, messaggi e testi della UI in italiano.
-- Moduli piatti nella radice (`nome_modulo.py`); dati e script di costruzione in
-  una cartella omonima (`glossario/`, `farmaci/`).
+- Python: moduli piatti in `resources/` (`nome_modulo.py`); dati e script di
+  costruzione in una cartella omonima (`glossario/`, `farmaci/`).
 - Ogni chiamata al modello: `record_model_call()` e, se rilevante, `traced_step()`
   ([[09-trace-e-privacy]]).
 - Ogni dato generato dal modello deve essere verificabile o avere una riserva

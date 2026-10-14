@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/:percorso*", "destination": "https://referto-backend.vercel.app/api/:percorso*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

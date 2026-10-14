@@ -60,7 +60,7 @@ Nessun secondo salvataggio: lo storico è una vista sulle trace
    - Per riconoscere i principi attivi: `inn_key()` avvicina inglese e italiano
      (metformin → metformina), `SALT_WORDS` toglie i sali, `ALIASES` copre nomi
      inglesi e marchi USA (Motrin → ibuprofene). Sali e alias stanno in
-     `farmaci/normalizzazione.json`, condiviso con [[15-servizio-farmaci]]: la
+     `backend/data/normalizzazione.json`, condiviso con [[15-backend]]: la
      stessa logica di `lookup()` è portata in TypeScript per gli agenti Evolus.
    - `resolve_medication()` **ricalcola la corrispondenza a ogni lettura** (storico,
      dettaglio, sezione Farmaci): le regole valgono anche per i referti vecchi.
@@ -74,7 +74,7 @@ Nessun secondo salvataggio: lo storico è una vista sulle trace
 - Fonte: `https://drive.aifa.gov.it/farmaci/confezioni_fornitura.csv` (AIFA,
   CC BY 4.0): 160.165 confezioni autorizzate, ognuna con link a foglietto
   illustrativo (FI) e RCP della Banca Dati Farmaci.
-- `farmaci/build_aifa_index.py` → `farmaci/aifa_farmaci.json` (~12.600 farmaci,
+- `farmaci/build_aifa_index.py` → `backend/data/aifa_farmaci.json` (~12.600 farmaci,
   5,9 MB, con il tipo di procedura per riconoscere le importazioni parallele). I link non sono salvati: seguono sempre lo schema `link_template`
   (verificato su tutte le confezioni dallo script).
 - `leaflet_pdf()`: scarica il PDF ufficiale alla prima apertura e lo tiene in
