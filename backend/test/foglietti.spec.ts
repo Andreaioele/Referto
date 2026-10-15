@@ -166,6 +166,30 @@ describe('API /api/foglietti', () => {
       .expect(400);
   });
 
+  it('se l’agente va in timeout risponde con il brano del foglio invece di dare errore', async () => {
+    Object.assign(config.evolus, { apiKey: 'chiave-di-prova', applicationId: 'app-di-prova' });
+    const servizio = app.get(FogliettiService);
+    jest.spyOn(servizio, 'foglietto').mockImplementation(async () => ({
+      farmaco: { nome: 'PROVAMED' } as never,
+      pdf: new Uint8Array(),
+      pagine: 3,
+      testo: PAGINE,
+    }));
+    global.fetch = jest.fn(async () => {
+      const flusso = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.error(new DOMException('The operation was aborted due to timeout', 'TimeoutError'));
+        },
+      });
+      return new Response(flusso, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+    }) as unknown as typeof fetch;
+    const risposta = await request(app.getHttpServer())
+      .post('/api/foglietti/027161/domande')
+      .send({ domanda: 'Come si conserva?' })
+      .expect(200);
+    expect(risposta.body).toMatchObject({ sezione: 5, trovata: true, origine: 'foglietto' });
+  });
+
   it('senza agente configurato risponde con il brano del foglio (riserva deterministica)', async () => {
     Object.assign(config.evolus, { apiKey: '', applicationId: '' });
     const servizio = app.get(FogliettiService);

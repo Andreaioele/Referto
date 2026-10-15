@@ -193,8 +193,8 @@ Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
   che corrisponde a `forma`, la confezione prescritta. `scegliBrani` sceglie i
   brani vicini alla domanda.
 - Solo quei brani vanno al Mother agent, che deve citare la sezione
-  (`SEZIONE: n`, controllata da `interpreta`). Senza agente risponde il brano
-  stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
+  (`SEZIONE: n`, controllata da `interpreta`). Senza agente, se dà errore o se
+  non finisce entro 75 secondi risponde il brano stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
 - Test: `test/foglietti.spec.ts`.
 
 ## Avvio in locale con le credenziali

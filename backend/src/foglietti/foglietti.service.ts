@@ -28,6 +28,8 @@ export interface RispostaDomanda {
 const CODICE = /^\d{6}$/;
 const MASSIMO_IN_MEMORIA = 30;
 const ATTESA_AIFA_MS = 30_000;
+// Oltre questo tempo la persona riceve il brano del foglio invece della risposta dell'agente.
+const ATTESA_AGENTE_MS = 75_000;
 const CHIUSURA_AGENTE = /Questa è una spiegazione automatica[\s\S]*$/;
 export const NON_TROVATA = 'Non ho trovato questa informazione nel foglietto. Puoi chiedere al medico o al farmacista.';
 
@@ -105,13 +107,22 @@ export class FogliettiService {
     return { farmaco, pdf, pagine: totalPages, testo: text };
   }
 
-  /** Testo completo della risposta dell'agente, o null se non è configurato o non risponde. */
+  /**
+   * Testo completo della risposta dell'agente, o null se non è configurato, dà
+   * errore o non finisce entro ATTESA_AGENTE_MS: in quei casi si usa la riserva.
+   */
   private async chiediAgente(messaggio: string): Promise<string | null> {
     if (!this.evolus.configurato()) return null;
+    const inizio = Date.now();
     let testo = '';
-    for await (const evento of this.evolus.chiedi(messaggio, undefined, AbortSignal.timeout(120_000))) {
-      if (evento.tipo === 'testo') testo += evento.testo;
-      else if (evento.tipo === 'errore') return null;
+    try {
+      for await (const evento of this.evolus.chiedi(messaggio, undefined, AbortSignal.timeout(ATTESA_AGENTE_MS))) {
+        if (evento.tipo === 'testo') testo += evento.testo;
+        else if (evento.tipo === 'errore') return null;
+      }
+    } catch (errore) {
+      this.logger.warn(`Agente senza risposta dopo ${Math.round((Date.now() - inizio) / 1000)}s: ${(errore as Error).name}`);
+      return null;
     }
     return testo.trim() || null;
   }
