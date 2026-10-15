@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · chat-frontend · Backend: `@nestjs/mongoose` 11.0.4 (CommonJS) al posto della 12 (solo ESM), che su Vercel bloccava l'avvio di tutto il backend · [[15-backend]]
 - 2026-10-15 · chat-frontend · Frontend rifatto come portale dimostrativo di uno studio medico con Referto integrato (widget, lettore PDF del foglietto con domande, versione per telefono) · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Backend: modulo foglietti (PDF AIFA, sezioni, domande all'agente con riserva deterministica) · [[15-backend]]
 

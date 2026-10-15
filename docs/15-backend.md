@@ -93,6 +93,10 @@ Modulo NestJS con Mongoose per MongoDB (database `Referto`). Salva utenti
 (nickname, login fake), sessioni di chat e turni (domanda + risposta). Evita di
 richiamare il modello per sessioni già analizzate.
 
+- `@nestjs/mongoose` resta alla 11.x: la 12 è solo ESM e il runtime delle
+  funzioni Vercel non la carica con `require` (errore `ERR_REQUIRE_ESM`, backend
+  fermo su tutte le rotte), mentre in locale Node 22 sì. Prova prima di
+  aggiornare: `node --no-experimental-require-module dist/main.js`.
 - Stringa di connessione in `MONGODB_URI` (variabile d'ambiente). Se mancante,
   il modulo non viene caricato e le rotte non esistono: gli altri moduli non ne
   risentono.
