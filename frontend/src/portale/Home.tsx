@@ -27,7 +27,7 @@ export function Home() {
       </div>
 
       {(nuovo || daRitirare.length > 0) && (
-        <Gruppo id="titolo-da-fare" titolo="Da fare">
+        <Gruppo id="titolo-da-fare" titolo="Da fare" icona="campanella" prioritario>
           {nuovo && (
             <div className="riga avviso-referto">
               {refertoAttivo && <MarchioReferto grande />}
@@ -69,7 +69,7 @@ export function Home() {
       )}
 
       {prossima && (
-        <Gruppo id="titolo-prossima" titolo="Prossima visita" collegamento={{ href: '/visite', testo: 'Tutte le visite' }}>
+        <Gruppo id="titolo-prossima" titolo="Prossima visita" icona="calendario" collegamento={{ href: '/visite', testo: 'Tutte le visite' }}>
           <SchedaVisita visita={prossima} inEvidenza nuda />
         </Gruppo>
       )}
@@ -79,13 +79,13 @@ export function Home() {
         Prenota una visita
       </button>
 
-      <Gruppo id="titolo-documenti" titolo="Ultimi documenti" collegamento={{ href: '/documenti', testo: 'Tutti i documenti' }}>
+      <Gruppo id="titolo-documenti" titolo="Ultimi documenti" icona="documento" collegamento={{ href: '/documenti', testo: 'Tutti i documenti' }}>
         {ultimi.map((documento) => (
           <RigaDocumento key={documento.id} documento={documento} compatta />
         ))}
       </Gruppo>
 
-      <Gruppo id="titolo-messaggio" titolo="Dallo studio">
+      <Gruppo id="titolo-messaggio" titolo="Dallo studio" icona="messaggio">
         <p className="riga messaggio-studio">{messaggioStudio}</p>
       </Gruppo>
     </>

@@ -80,14 +80,24 @@ verde e bianco per pazienti anziani:
   Apple Salute, Doctolib e One Medical):** pagina neutra `#f4f5f4`, contenuti in
   **gruppi di righe** su carta bianca (titolo del gruppo sopra, righe separate da
   filetti, componente `Gruppo` in `portale/elementi.tsx`) invece di schede
-  separate; un solo verde `#0f5143` per azioni e selezione, menta `#e8f0ec` solo
-  per il selezionato; testo tenue `#4b5450` (7,6:1), bordi dei controlli
-  `#76847e`. Titoli delle pagine, nome dello studio e giorno delle visite in
+  separate; testo tenue `#4b5450` (7,8:1), bordi dei controlli `#76847e`.
+  Titoli delle pagine, nome dello studio e giorno delle visite in
   **Source Serif 4** (carta intestata dello studio, come One Medical), il resto
   in Public Sans. Tolti: fascia di benvenuto con motivo, riquadri colorati delle
-  icone, pillole colorate (ora testo con pallino solo per ciò che chiede
-  un'azione), riquadro colorato del calendario (ora colonna della data con
-  filetto), separatori a punto centrale nei testi, maiuscole nelle tabelle.
+  icone, pillole piene, riquadro colorato del calendario (ora colonna della data
+  con filetto), separatori a punto centrale nei testi, maiuscole nelle tabelle.
+- **Blu per il portale, verde per Referto** (15/10/2026, come era su `main`): il
+  blu `#1f4e8c` (8,3:1) è dello studio: pulsanti, collegamenti, menu e schede
+  selezionate (fondo `#e6edf7`), icone delle righe. La **testata** è blu scuro
+  `#163a69` con il marchio bianco: il punto fermo in cima a ogni pagina. Il
+  verde resta solo di Referto (pillole con il marchio, widget, lettore), così si
+  distingue a colpo d'occhio cosa apre Referto. Colore per orientare l'occhio:
+  icona blu e titolo blu scuro su ogni gruppo (`Gruppo` con `icona`), cornice
+  blu sul gruppo "Da fare" (`prioritario`), giorno della prossima visita in blu,
+  "Tra 8 giorni" come etichetta blu chiaro, "Nuovo" con pallino blu, "Da
+  ritirare" con pallino ambra (azione fuori dal portale), note "Da portare" e
+  "Come ha scritto il medico" su azzurro `#eef3fa`; l'ambra resta per avvisi e
+  preparazione.
 - **Home "Da fare"** (come i «To Do» di MyChart): nuovo referto e ricette da
   ritirare in cima, poi prossima visita, ultimi documenti e messaggio dello studio.
 - **Schede di pagina** (Prossime/Già fatte, Farmaci/Esami) come in MyChart e NHS:

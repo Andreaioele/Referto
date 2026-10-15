@@ -8,7 +8,7 @@ import { Commutatore } from './elementi'
 import { MarchioReferto } from './Struttura'
 
 const STATI: Record<Farmaco['stato'] | 'prenotata' | 'usata', { nome: string; classe: string }> = {
-  'da ritirare': { nome: 'Da ritirare', classe: 'pastiglia' },
+  'da ritirare': { nome: 'Da ritirare', classe: 'pastiglia pastiglia-avviso' },
   ritirata: { nome: 'Ritirata', classe: 'pastiglia pastiglia-grigia' },
   'indicato dal medico': { nome: 'Indicato dal medico', classe: 'pastiglia pastiglia-grigia' },
   prenotata: { nome: 'Prenotata', classe: 'pastiglia pastiglia-chiara' },

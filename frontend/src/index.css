@@ -4,7 +4,8 @@
  *
  * Impostazione presa dai portali paziente più usati (MyChart, NHS App, Apple
  * Salute, Doctolib, One Medical): pagina neutra, contenuti in gruppi di righe
- * su carta bianca, un solo verde per azioni e selezione, niente decorazioni.
+ * su carta bianca, il blu dello studio per orientarsi (testata, menu, azioni,
+ * icone), il verde solo per Referto, niente decorazioni.
  * Il carattere dello studio è nei titoli in serif (Source Serif 4), come la
  * carta intestata; tutto il resto è Public Sans.
  *
@@ -12,10 +13,19 @@
  * anni. Dimensioni del testo in rem (seguono la scelta del telefono o del browser).
  */
 :root {
-  /* Contrasto sul bianco: verde 9,2:1, inchiostro 16:1, tenue 7,6:1, bordo 3,9:1. */
-  --p-verde: #0f5143; /* azioni, collegamenti, selezione */
-  --p-foresta: #0b3f33; /* passaggio del mouse, contorno di fuoco */
-  --p-menta: #e8f0ec; /* fondo di ciò che è selezionato */
+  /*
+   * Due colori con due compiti: il blu è dello studio (testata, menu, pulsanti
+   * e collegamenti del portale), il verde è solo di Referto (pulsanti a pillola
+   * con il marchio, widget, lettore). Così l'occhio distingue a colpo d'occhio
+   * cosa fa il portale e cosa apre Referto.
+   * Contrasto sul bianco: blu 8,3:1, blu scuro 11,4:1, inchiostro 16:1,
+   * tenue 7,8:1, bordo 3,9:1.
+   */
+  --p-blu: #1f4e8c; /* azioni, collegamenti, selezione, icone */
+  --p-blu-scuro: #163a69; /* testata, passaggio del mouse, contorno di fuoco */
+  --p-blu-chiaro: #e6edf7; /* fondo di ciò che è selezionato, etichette di tempo */
+  --p-blu-velo: #eef3fa; /* fondo delle note informative ("Da portare") */
+  --p-blu-testata-tenue: #c5d3e8; /* testo secondario sulla testata (7,5:1 sul blu scuro) */
   --p-ink: #1a201e;
   --p-tenue: #4b5450;
   --p-bordo: #76847e; /* bordi dei controlli (oltre 3:1) */
@@ -76,12 +86,12 @@ h3 {
 }
 
 a {
-  color: var(--p-verde);
+  color: var(--p-blu);
   text-underline-offset: 0.18em;
 }
 
 a:hover {
-  color: var(--p-foresta);
+  color: var(--p-blu-scuro);
 }
 
 button {
@@ -89,8 +99,8 @@ button {
 }
 
 :focus-visible {
-  /* Doppio anello (bianco e verde scuro): si vede su carta e sul verde. */
-  outline: 3px solid var(--p-foresta);
+  /* Doppio anello (bianco e blu scuro): si vede su carta, sul blu e sul verde. */
+  outline: 3px solid var(--p-blu-scuro);
   outline-offset: 2px;
   box-shadow: 0 0 0 2px #fff;
 }
@@ -134,12 +144,12 @@ button {
 
 .bottone {
   border: 0;
-  background: var(--p-verde);
+  background: var(--p-blu);
   color: #fff;
 }
 
 .bottone:hover:not(:disabled) {
-  background: var(--p-foresta);
+  background: var(--p-blu-scuro);
   color: #fff;
 }
 
@@ -173,6 +183,7 @@ button:disabled {
   overflow-x: clip;
 }
 
+/* Testata blu scuro, come l'insegna dello studio: il punto fermo in cima a ogni pagina. */
 .testata {
   display: flex;
   flex-wrap: wrap;
@@ -180,20 +191,25 @@ button:disabled {
   justify-content: space-between;
   gap: 12px 20px;
   padding: 14px 32px;
-  background: var(--p-carta);
-  border-bottom: 1px solid var(--p-linea);
+  background: var(--p-blu-scuro);
+  color: #fff;
+}
+
+.testata :focus-visible {
+  outline-color: #fff;
+  box-shadow: 0 0 0 2px var(--p-blu-scuro);
 }
 
 .testata-marchio {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--p-ink);
+  color: #fff;
   text-decoration: none;
 }
 
 .testata-marchio:hover {
-  color: var(--p-ink);
+  color: #fff;
 }
 
 .marchio-studio {
@@ -203,7 +219,8 @@ button:disabled {
   width: 40px;
   height: 40px;
   border-radius: 6px;
-  background: var(--p-verde);
+  background: #fff;
+  color: var(--p-blu-scuro);
 }
 
 .testata-nome {
@@ -220,7 +237,7 @@ button:disabled {
 }
 
 .testata-nome span {
-  color: var(--p-tenue);
+  color: var(--p-blu-testata-tenue);
   font-size: 0.9375rem;
 }
 
@@ -254,8 +271,8 @@ button:disabled {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #e3e8e5;
-  color: var(--p-ink);
+  background: var(--p-blu-chiaro);
+  color: var(--p-blu-scuro);
   font-weight: 650;
   text-decoration: none;
 }
@@ -266,6 +283,17 @@ button:disabled {
   font-family: var(--p-serif);
   font-size: 1.875rem;
   font-weight: 600;
+}
+
+.testata .bottone-leggero {
+  border-color: var(--p-blu-testata-tenue);
+  background: transparent;
+  color: #fff;
+}
+
+.testata .bottone-leggero:hover {
+  background: var(--p-blu);
+  color: #fff;
 }
 
 .corpo {
@@ -306,10 +334,10 @@ button:disabled {
 /* Pagina in cui sei: fondo menta, testo verde e barra a sinistra (si vede
    anche senza distinguere il colore). */
 .menu a[aria-current='page'] {
-  background: var(--p-menta);
-  color: var(--p-verde);
+  background: var(--p-blu-chiaro);
+  color: var(--p-blu);
   font-weight: 700;
-  box-shadow: inset 3px 0 0 var(--p-verde);
+  box-shadow: inset 3px 0 0 var(--p-blu);
 }
 
 .menu-prenota {
@@ -319,16 +347,16 @@ button:disabled {
   gap: 10px;
   min-height: 52px;
   margin-top: 20px;
-  border: 1px solid var(--p-verde);
+  border: 1px solid var(--p-blu);
   border-radius: var(--p-raggio-controllo);
   background: var(--p-carta);
-  color: var(--p-verde);
+  color: var(--p-blu);
   font-weight: 600;
   cursor: pointer;
 }
 
 .menu-prenota:hover {
-  background: var(--p-menta);
+  background: var(--p-blu-chiaro);
 }
 
 .contenuto {
@@ -408,6 +436,19 @@ button:disabled {
   gap: 4px 16px;
 }
 
+.gruppo-testa h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--p-blu-scuro);
+}
+
+/* Icona del gruppo, in blu: fa trovare la sezione scorrendo la pagina. */
+.gruppo-testa h2 svg {
+  flex: none;
+  color: var(--p-blu);
+}
+
 .gruppo-testa a {
   font-size: 1.0625rem;
   font-weight: 600;
@@ -420,6 +461,11 @@ button:disabled {
   border-radius: var(--p-raggio);
   background: var(--p-carta);
   overflow: hidden;
+}
+
+/* Il gruppo con le cose da fare: cornice blu, è la prima cosa da guardare. */
+.gruppo-prioritario .gruppo-corpo {
+  border: 2px solid var(--p-blu);
 }
 
 .riga {
@@ -435,11 +481,11 @@ button:disabled {
   border-bottom: 0;
 }
 
-/* Icone a tratto accanto al testo: niente riquadri colorati. */
+/* Icone a tratto accanto al testo, in blu: niente riquadri colorati. */
 .riga > svg {
   flex: none;
   margin-top: 2px;
-  color: var(--p-tenue);
+  color: var(--p-blu);
 }
 
 .riga-semplice {
@@ -472,6 +518,10 @@ button:disabled {
   background: var(--p-carta);
 }
 
+.scheda h2 {
+  color: var(--p-blu-scuro);
+}
+
 .scheda-testa {
   display: flex;
   flex-wrap: wrap;
@@ -498,7 +548,7 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--p-verde);
+  color: var(--p-blu);
   font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.4;
@@ -513,7 +563,14 @@ button:disabled {
   background: currentColor;
 }
 
-.pastiglia-chiara,
+/* Quando (es. "Tra 8 giorni"): etichetta blu chiaro, si trova subito accanto al titolo. */
+.pastiglia-chiara {
+  padding: 1px 10px;
+  border-radius: 6px;
+  background: var(--p-blu-chiaro);
+  color: var(--p-blu-scuro);
+}
+
 .pastiglia-grigia {
   color: var(--p-tenue);
   font-weight: 600;
@@ -526,6 +583,11 @@ button:disabled {
 
 .pastiglia-avviso {
   color: var(--p-avviso-testo);
+}
+
+/* Pallino ambra: qualcosa da fare fuori dal portale (ritirare, prepararsi). */
+.pastiglia-avviso::before {
+  background: var(--p-avviso-segno);
 }
 
 .riga-titolo {
@@ -601,7 +663,7 @@ button:disabled {
 }
 
 .calendario-evidenza .calendario-giorno {
-  color: var(--p-verde);
+  color: var(--p-blu);
 }
 
 .calendario-sotto {
@@ -626,7 +688,7 @@ button:disabled {
 .nota-visita {
   padding: 12px 16px;
   border-radius: 6px;
-  background: var(--p-sfondo);
+  background: var(--p-blu-velo);
 }
 
 .nota-avviso {
@@ -655,7 +717,7 @@ button:disabled {
 
 .riga-documento > svg {
   flex: none;
-  color: var(--p-tenue);
+  color: var(--p-blu);
 }
 
 .riga-documento-testo {
@@ -708,7 +770,7 @@ button:disabled {
 }
 
 .commutatore button[aria-pressed='true'] {
-  border-bottom-color: var(--p-verde);
+  border-bottom-color: var(--p-blu);
   color: var(--p-ink);
   font-weight: 700;
 }
@@ -733,8 +795,8 @@ button:disabled {
 }
 
 .filtri button[aria-pressed='true'] {
-  border-color: var(--p-verde);
-  background: var(--p-verde);
+  border-color: var(--p-blu);
+  background: var(--p-blu);
   color: #fff;
 }
 
@@ -1034,7 +1096,18 @@ details summary {
     font-size: 0.875rem;
   }
 
-  .corpo {
+  .testata .bottone-leggero {
+  border-color: var(--p-blu-testata-tenue);
+  background: transparent;
+  color: #fff;
+}
+
+.testata .bottone-leggero:hover {
+  background: var(--p-blu);
+  color: #fff;
+}
+
+.corpo {
     display: block;
     padding: 24px 16px 190px;
   }
@@ -1287,12 +1360,12 @@ details summary {
   }
 
   .barra-schede a[aria-current='page'] {
-    color: var(--p-verde);
+    color: var(--p-blu);
     font-weight: 700;
   }
 
   .barra-schede a[aria-current='page'] .barra-schede-icona {
-    background: var(--p-menta);
+    background: var(--p-blu-chiaro);
   }
 
   .velo {

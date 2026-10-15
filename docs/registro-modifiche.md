@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Blu per il portale (testata blu scuro, menu, pulsanti, icone e titoli dei gruppi, cornice su "Da fare", etichette di tempo) e verde solo per Referto, per orientare l'occhio · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Client di Referto (`referto/cliente.ts`, al posto di `api.ts` e `servizio-chat.ts`) con esito sempre garantito e messaggi d'errore in un posto; stato del lettore in `useFoglietto`; test di client, `useChat` e `useFoglietto`; segnalato il doppio messaggio d'errore del widget · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Referto separato dal portale: tipi propri (`referto/tipi.ts`), adattatore `portale/perReferto.ts`, regola di lint che vieta import da `portale/`, CSS di Referto autonomo (corretta l'icona della visita collegata rimasta senza stile e il grigio secondario sotto 7:1); Vitest nel frontend con i primi test · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Sessioni: salvataggio dietro l'interfaccia `ArchivioSessioni` (MongoDB e memoria); i test girano sempre (prima saltati senza MongoDB), verificati anche su MongoDB 7 · [[15-backend]]

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useAzioni } from '../azioni'
-import { Icona } from '../Icona'
+import { Icona, type NomeIcona } from '../Icona'
 import { Collegamento } from '../Collegamento'
 import { type Documento, type Visita, documento as trovaDocumento } from './dati'
 import { anno, dataLunga, giornoSettimana, meseBreve, numeroGiorno, traQuanto } from './date'
@@ -13,18 +13,27 @@ import { MarchioReferto } from './Struttura'
 export function Gruppo({
   id,
   titolo,
+  icona,
+  prioritario = false,
   collegamento,
   children,
 }: {
   id: string
   titolo: string
+  /** Icona blu accanto al titolo: fa riconoscere la sezione scorrendo la pagina. */
+  icona?: NomeIcona
+  /** Le cose da fare: cornice blu, è il primo gruppo da guardare. */
+  prioritario?: boolean
   collegamento?: { href: string; testo: string }
   children: ReactNode
 }) {
   return (
-    <section className="gruppo" aria-labelledby={id}>
+    <section className={prioritario ? 'gruppo gruppo-prioritario' : 'gruppo'} aria-labelledby={id}>
       <div className="gruppo-testa">
-        <h2 id={id}>{titolo}</h2>
+        <h2 id={id}>
+          {icona && <Icona nome={icona} dimensione={24} />}
+          {titolo}
+        </h2>
         {collegamento && <Collegamento href={collegamento.href}>{collegamento.testo}</Collegamento>}
       </div>
       <div className="gruppo-corpo">{children}</div>

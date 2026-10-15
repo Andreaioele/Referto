@@ -65,6 +65,12 @@ const TRACCIATI = {
     </>
   ),
   scudo: <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />,
+  campanella: (
+    <>
+      <path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z" />
+      <path d="M10 20a2 2 0 0 0 4 0" />
+    </>
+  ),
 }
 
 export type NomeIcona = keyof typeof TRACCIATI
@@ -91,7 +97,7 @@ export function Icona({ nome, dimensione = 24 }: { nome: NomeIcona; dimensione?:
 /** Croce dello studio medico (marchio del portale finto). */
 export function MarchioStudio({ dimensione = 24 }: { dimensione?: number }) {
   return (
-    <svg width={dimensione} height={dimensione} viewBox="0 0 24 24" fill="#fff" aria-hidden="true" focusable="false">
+    <svg width={dimensione} height={dimensione} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
       <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" />
     </svg>
   )
