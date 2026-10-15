@@ -10,7 +10,7 @@ import { SessioniModule } from './sessioni/sessioni.module';
 import { ChiaveApiGuard } from './sicurezza/chiave-api.guard';
 
 const moduliOpzionali = config.mongoUri
-  ? [MongooseModule.forRoot(config.mongoUri, { dbName: 'Referto' }), SessioniModule]
+  ? [MongooseModule.forRoot(config.mongoUri, { dbName: 'Referto' }), SessioniModule.conMongo()]
   : [];
 
 @Module({

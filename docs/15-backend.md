@@ -106,6 +106,16 @@ richiamare il modello per sessioni già analizzate.
   token né password (hackathon).
 - Nei log solo ID e timestamp, mai il contenuto dei turni
   ([[09-trace-e-privacy]]).
+- **Archivio** (15/10/2026): `SessioniService` tiene le regole (la sessione è
+  dell'utente, il titolo viene dalla prima domanda, 100 caratteri) e salva
+  tramite l'interfaccia `ArchivioSessioni` (`archivio-sessioni.ts`, token
+  `ARCHIVIO_SESSIONI`). Due archivi: `ArchivioMongo` (Mongoose, usato dal
+  backend con `SessioniModule.conMongo()`) e `ArchivioInMemoria` (solo test,
+  `SessioniModule.inMemoria()`).
+- Test: `test/sessioni.spec.ts` gira sempre sull'archivio in memoria e, se c'è
+  `MONGODB_URI`, anche su MongoDB attraverso il backend completo. Per provarlo in
+  locale: `docker run -d --rm -p 27099:27017 mongo:7` e
+  `MONGODB_URI=mongodb://localhost:27099 npm test`.
 
 Specifica completa: [[specifica-storico-sessione]].
 

@@ -15,13 +15,13 @@ export class SessioniController {
   @Post('utenti')
   async creaUtente(@Body() dto: CreaUtenteDto) {
     const utente = await this.sessioni.creaUtente(dto.nickname);
-    return { id: utente._id, nickname: utente.nickname };
+    return { id: utente.id, nickname: utente.nickname };
   }
 
   @Get('utenti/:id')
   async trovaUtente(@Param('id') id: string) {
     const utente = await this.sessioni.trovaUtente(id);
-    return { id: utente._id, nickname: utente.nickname };
+    return { id: utente.id, nickname: utente.nickname };
   }
 
   /* ── Sessioni ── */
@@ -30,7 +30,7 @@ export class SessioniController {
   async creaSessione(@Headers('x-utente-id') utenteId: string, @Body() dto: CreaSessioneDto) {
     this.verificaUtente(utenteId);
     const sessione = await this.sessioni.creaSessione(utenteId, dto.titolo);
-    return { id: sessione._id, titolo: sessione.titolo };
+    return { id: sessione.id, titolo: sessione.titolo };
   }
 
   @Get()
@@ -38,9 +38,9 @@ export class SessioniController {
     this.verificaUtente(utenteId);
     const sessioni = await this.sessioni.listaSessioni(utenteId);
     return sessioni.map((s) => ({
-      id: s._id,
+      id: s.id,
       titolo: s.titolo,
-      creata: s.createdAt,
+      creata: s.creata,
       n_turni: s.turni.length,
       anteprima: s.turni.at(-1)?.risposta.slice(0, 100) ?? '',
     }));
@@ -51,9 +51,9 @@ export class SessioniController {
     this.verificaUtente(utenteId);
     const sessione = await this.sessioni.dettaglioSessione(utenteId, id);
     return {
-      id: sessione._id,
+      id: sessione.id,
       titolo: sessione.titolo,
-      creata: sessione.createdAt,
+      creata: sessione.creata,
       turni: sessione.turni.map((t) => ({
         messaggio: t.messaggio,
         risposta: t.risposta,
