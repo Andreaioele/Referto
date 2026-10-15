@@ -6,18 +6,24 @@
  * o nel browser (16px = 1rem).
  */
 :root {
-  /* Portale */
-  --p-ink: #1b2433;
-  --p-tenue: #556070;
-  --p-sfondo: #f4f6f9;
+  /*
+   * Portale: solo verdi e neutri (niente blu), dal più scuro al più chiaro.
+   * Contrasto sul bianco: foresta 11,8:1, pino 9,2:1, felce 6,4:1, muschio 3,4:1.
+   */
+  --p-foresta: #0b3f33; /* fascia di benvenuto, menu attivo, calendario */
+  --p-verde: #0f5143; /* azioni e collegamenti */
+  --p-felce: #2c6a55; /* icone e testi verdi secondari */
+  --p-muschio: #5f9580; /* bordi dei controlli (oltre 3:1) */
+  --p-salvia: #b5d0c3; /* dettagli decorativi */
+  --p-germoglio: #dcecc7; /* evidenza calda: "Nuovo" */
+  --p-menta: #e3f1ea; /* selezionato, fondi delle icone */
+  --p-velo: #eaf3ee;
+  --p-sfondo: #f1f5f2; /* nebbia: fondo della pagina */
   --p-carta: #ffffff;
-  --p-linea: #dde3ea;
-  --p-bordo: #c9d2dd;
-  --p-blu: #1f4e8c;
-  --p-blu-scuro: #163a69;
-  --p-blu-chiaro: #e3ebf6;
-  --p-blu-velo: #e8eef6;
-  --p-grigio: #eef1f4;
+  --p-ink: #1d2422;
+  --p-tenue: #55605c;
+  --p-linea: #d6e3dc;
+  --p-grigio: #edf2ef;
   --p-avviso: #fff4dc;
   --p-avviso-testo: #6b4200;
   --p-avviso-bordo: #f0d9a6;
@@ -62,11 +68,11 @@ h3 {
 }
 
 a {
-  color: var(--p-blu);
+  color: var(--p-verde);
 }
 
 a:hover {
-  color: var(--p-blu-scuro);
+  color: var(--p-foresta);
 }
 
 button {
@@ -74,8 +80,10 @@ button {
 }
 
 :focus-visible {
-  outline: 3px solid #2f6fd0;
+  /* Doppio anello (bianco e verde foresta): si vede su carta e su ogni verde. */
+  outline: 3px solid var(--p-foresta);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .tenue {
@@ -117,19 +125,19 @@ button {
 
 .bottone {
   border: 0;
-  background: var(--p-blu);
+  background: var(--p-verde);
   color: #fff;
 }
 
 .bottone:hover:not(:disabled) {
-  background: var(--p-blu-scuro);
+  background: var(--p-foresta);
   color: #fff;
 }
 
 .bottone-leggero {
   min-height: 48px;
   padding: 0 16px;
-  border: 1px solid var(--p-bordo);
+  border: 1px solid var(--p-muschio);
   background: var(--p-carta);
   color: var(--p-ink);
   font-size: 1.0625rem;
@@ -173,6 +181,8 @@ button:disabled {
 }
 
 .testata {
+  /* filetto verde in cima a ogni pagina */
+  border-top: 4px solid var(--p-verde);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -202,7 +212,7 @@ button:disabled {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: var(--p-blu);
+  background: var(--p-verde);
 }
 
 .testata-nome {
@@ -250,8 +260,8 @@ button:disabled {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--p-blu-chiaro);
-  color: var(--p-blu);
+  background: var(--p-germoglio);
+  color: var(--p-foresta);
   font-weight: 700;
   text-decoration: none;
 }
@@ -287,19 +297,21 @@ button:disabled {
   min-height: 54px;
   padding: 0 16px;
   border-radius: 12px;
-  color: #33405a;
+  color: #2a3a33;
   font-weight: 500;
   text-decoration: none;
 }
 
 .menu a:hover {
-  background: var(--p-blu-velo);
+  background: var(--p-velo);
   color: var(--p-ink);
 }
 
 .menu a[aria-current='page'] {
-  background: var(--p-blu);
+  background: var(--p-foresta);
   color: #fff;
+  /* tacca germoglio a sinistra: la pagina in cui sei si vede anche senza colore */
+  box-shadow: inset 5px 0 0 var(--p-germoglio);
 }
 
 .menu-prenota {
@@ -309,16 +321,16 @@ button:disabled {
   gap: 10px;
   min-height: 54px;
   margin-top: 12px;
-  border: 2px solid var(--p-blu);
+  border: 2px solid var(--p-verde);
   border-radius: 12px;
   background: var(--p-carta);
-  color: var(--p-blu);
+  color: var(--p-verde);
   font-weight: 600;
   cursor: pointer;
 }
 
 .menu-prenota:hover {
-  background: var(--p-blu-velo);
+  background: var(--p-velo);
 }
 
 .contenuto {
@@ -367,6 +379,41 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/*
+ * Il saluto della Home: fascia verde foresta con un motivo leggero di croci,
+ * quelle dell'insegna della farmacia. È l'unico elemento decorativo del
+ * portale: il motivo sfuma verso sinistra e non passa mai sotto il testo.
+ */
+.benvenuto {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 32px 30px;
+  border-radius: 20px;
+  background-color: var(--p-foresta);
+  color: #fff;
+  isolation: isolate;
+}
+
+.benvenuto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M15 9h6v6h6v6h-6v6h-6v-6H9v-6h6z' fill='%23b5d0c3' fill-opacity='0.22'/%3E%3C/svg%3E");
+  background-size: 36px 36px;
+  -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 70%);
+  mask-image: linear-gradient(to left, #000 15%, transparent 70%);
+}
+
+.benvenuto h1 {
+  color: #fff;
+}
+
+.benvenuto-data {
+  color: var(--p-germoglio);
+  font-weight: 600;
 }
 
 .titolo-con-azione {
@@ -419,8 +466,9 @@ button:disabled {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background: var(--p-blu);
-  color: #fff;
+  /* "Nuovo", "Da ritirare": verde germoglio, caldo, diverso dal verde delle azioni */
+  background: var(--p-germoglio);
+  color: var(--p-foresta);
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.6;
@@ -428,13 +476,14 @@ button:disabled {
 }
 
 .pastiglia-chiara {
-  background: var(--p-blu-chiaro);
-  color: var(--p-blu);
+  background: var(--p-menta);
+  color: var(--p-verde);
 }
 
 .pastiglia-grigia {
-  background: #e6ebf0;
-  color: #33405a;
+  background: var(--p-carta);
+  color: var(--p-tenue);
+  box-shadow: inset 0 0 0 1px var(--p-muschio);
 }
 
 .pastiglia-avviso {
@@ -506,19 +555,23 @@ button:disabled {
   width: 96px;
   padding: 12px 0;
   border-radius: 14px;
-  background: var(--p-blu-chiaro);
-  color: var(--p-blu);
+  background: var(--p-menta);
+  color: var(--p-verde);
   line-height: 1.2;
 }
 
 .calendario-evidenza {
-  background: var(--p-blu);
+  background: var(--p-foresta);
   color: #fff;
+}
+
+.calendario-evidenza .calendario-mese {
+  color: var(--p-germoglio);
 }
 
 .calendario-passato {
   background: var(--p-grigio);
-  color: #33405a;
+  color: #2a3a33;
 }
 
 .calendario-mese {
@@ -584,7 +637,7 @@ button:disabled {
   align-items: center;
   gap: 12px 16px;
   padding: 16px 0;
-  border-bottom: 1px solid #e6ebf0;
+  border-bottom: 1px solid #e4ece7;
 }
 
 .riga-documento:last-child {
@@ -619,8 +672,9 @@ button:disabled {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: var(--p-blu-chiaro);
-  color: var(--p-blu);
+  background: var(--p-menta);
+  color: var(--p-felce);
+  box-shadow: inset 0 0 0 1px var(--p-salvia);
 }
 
 .icona-altro {
@@ -656,7 +710,7 @@ button:disabled {
   gap: 8px;
   padding: 6px;
   border-radius: 14px;
-  background: #e6ebf0;
+  background: #e4ece7;
 }
 
 .commutatore button {
@@ -665,13 +719,13 @@ button:disabled {
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #33405a;
+  color: #2a3a33;
   font-weight: 600;
   cursor: pointer;
 }
 
 .commutatore button[aria-pressed='true'] {
-  background: var(--p-blu);
+  background: var(--p-verde);
   color: #fff;
 }
 
@@ -684,7 +738,7 @@ button:disabled {
 .filtri button {
   min-height: 46px;
   padding: 0 18px;
-  border: 1px solid var(--p-bordo);
+  border: 1px solid var(--p-muschio);
   border-radius: 999px;
   background: var(--p-carta);
   color: var(--p-ink);
@@ -694,8 +748,8 @@ button:disabled {
 }
 
 .filtri button[aria-pressed='true'] {
-  border-color: var(--p-blu);
-  background: var(--p-blu);
+  border-color: var(--p-verde);
+  background: var(--p-verde);
   color: #fff;
 }
 
@@ -734,7 +788,7 @@ details summary {
   align-items: center;
   gap: 12px 24px;
   padding: 16px 18px;
-  border: 2px dashed var(--p-bordo);
+  border: 2px dashed var(--p-muschio);
   border-radius: 12px;
 }
 
@@ -820,7 +874,7 @@ details summary {
   height: 40px;
   border: 0;
   border-radius: 999px;
-  background: #8a96a3;
+  background: #76847e;
   cursor: pointer;
 }
 
@@ -860,7 +914,7 @@ details summary {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(27, 36, 51, 0.42);
+  background: rgba(29, 36, 34, 0.42);
 }
 
 .velo {
@@ -934,7 +988,7 @@ details summary {
 .foglio-referto th,
 .foglio-referto td {
   padding: 7px 8px;
-  border-bottom: 1px solid #eceff3;
+  border-bottom: 1px solid #e9efeb;
   text-align: left;
 }
 
@@ -952,6 +1006,16 @@ details summary {
      elemento sotto la fascia fissa di Referto e la barra delle schede. */
   html {
     scroll-padding-bottom: 170px;
+  }
+
+  /* Fascia stretta: il motivo resta nell'angolo e non passa sotto il saluto. */
+  .benvenuto {
+    padding: 22px 20px 24px;
+  }
+
+  .benvenuto::after {
+    -webkit-mask-image: linear-gradient(200deg, #000 0%, transparent 38%);
+    mask-image: linear-gradient(200deg, #000 0%, transparent 38%);
   }
 
   body {
@@ -1220,7 +1284,7 @@ details summary {
     flex-direction: column;
     border-top: 1px solid var(--p-linea);
     background: var(--p-carta);
-    box-shadow: 0 -6px 18px rgba(27, 36, 51, 0.06);
+    box-shadow: 0 -6px 18px rgba(29, 36, 34, 0.06);
   }
 
   .lanciatore {
@@ -1263,11 +1327,11 @@ details summary {
   }
 
   .barra-schede a[aria-current='page'] {
-    color: var(--p-blu);
+    color: var(--p-verde);
   }
 
   .barra-schede a[aria-current='page'] .barra-schede-icona {
-    background: var(--p-blu-chiaro);
+    background: var(--p-menta);
   }
 
   .velo {

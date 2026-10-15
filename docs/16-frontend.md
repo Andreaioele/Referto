@@ -45,7 +45,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/servizio-chat.ts` | Invio del messaggio e lettura dello streaming |
 | `src/api.ts` | Stato del backend e rotte dei foglietti |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
-| `src/index.css` | Tema del portale (finto, blu, Public Sans), versione per telefono sotto i 760 px |
+| `src/index.css` | Tema del portale (finto, verde, Public Sans), versione per telefono sotto i 760 px |
 | `src/referto/referto.css` | Tema di Referto: widget e lettore del foglietto, separato dal portale perché è la parte che si integra in portali diversi |
 | `src/referto/Marchio.tsx` | Marchio di Referto (foglio con l'angolo piegato e la R) |
 
@@ -75,6 +75,19 @@ verde e bianco per pazienti anziani:
   `scroll-padding-bottom` evita che lo scorrimento automatico lasci elementi sotto.
 - **Testi in `rem`:** seguono la dimensione del testo scelta nel telefono o nel browser.
 - Domanda pronta «Cosa posso chiedere al medico?» al posto di «Devo preoccuparmi?».
+- **Niente blu, solo verdi** (anche il portale): scala dal più scuro al più chiaro,
+  in `:root` di `index.css`: foresta `#0b3f33` (fascia di benvenuto, menu attivo,
+  calendario), pino `#0f5143` (azioni), felce `#2c6a55` (icone), muschio
+  `#5f9580` (bordi dei controlli, 3,4:1), salvia `#b5d0c3` (dettagli), germoglio
+  `#dcecc7` (etichette "Nuovo", avatar), menta `#e3f1ea` (selezionato), nebbia
+  `#f1f5f2` (fondo). L'ambra resta per gli avvisi. Referto si distingue dal portale
+  per marchio a foglio e pulsanti a pillola, non più per colore.
+- **Dettagli:** il saluto della Home è una fascia verde foresta con un motivo
+  leggero di croci (l'insegna della farmacia) che sfuma e non passa sotto il testo;
+  tacca germoglio sul menu attivo; calendario foresta con il mese in germoglio;
+  etichette in tre verdi; icone su menta con anello salvia; filetto verde in cima;
+  contorno di fuoco doppio (bianco e foresta), visibile su ogni verde; favicon con
+  il marchio a foglio.
 
 ## Comandi
 

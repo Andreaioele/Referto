@@ -14,8 +14,8 @@ export function Home() {
 
   return (
     <>
-      <div className="titolo-pagina">
-        <p className="tenue">{oggiPerEsteso()}</p>
+      <div className="titolo-pagina benvenuto">
+        <p className="benvenuto-data">{oggiPerEsteso()}</p>
         <h1>
           {saluto()}, {paziente.nome}
         </h1>

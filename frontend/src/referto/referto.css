@@ -452,7 +452,7 @@ p.referto-errore {
 .referto-ricetta {
   padding: 10px 14px;
   border-radius: 12px;
-  background: var(--p-blu-chiaro);
+  background: var(--p-menta);
   color: var(--p-ink);
   font-family: var(--p-font);
   font-size: 1rem;
@@ -482,7 +482,7 @@ p.referto-errore {
   z-index: 50;
   display: flex;
   flex-direction: column;
-  background: #e9edf1;
+  background: #e7eee9;
 }
 
 .lettore-testa {
@@ -596,7 +596,7 @@ p.referto-errore {
   gap: 6px;
   padding: 20px 12px;
   border-right: 1px solid var(--p-linea);
-  background: #f7f9fb;
+  background: #f6f9f7;
   overflow-y: auto;
 }
 
@@ -623,7 +623,7 @@ p.referto-errore {
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #33405a;
+  color: #2a3a33;
   font-size: 1rem;
   line-height: 1.35;
   text-align: left;
@@ -643,7 +643,7 @@ p.referto-errore {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: #e6ebf0;
+  background: #e4ece7;
   font-weight: 700;
 }
 
@@ -695,7 +695,7 @@ p.referto-errore {
 .pagina-pdf canvas {
   flex: none;
   background: #fff;
-  box-shadow: 0 6px 24px rgba(27, 36, 51, 0.14);
+  box-shadow: 0 6px 24px rgba(29, 36, 34, 0.14);
 }
 
 .lettore-domande {
@@ -837,7 +837,7 @@ p.referto-errore {
     margin: 10px 14px;
     padding: 6px;
     border-radius: 14px;
-    background: #e6ebf0;
+    background: #e4ece7;
   }
 
   .lettore-schede button {
@@ -845,7 +845,7 @@ p.referto-errore {
     border: 0;
     border-radius: 10px;
     background: transparent;
-    color: #33405a;
+    color: #2a3a33;
     font-weight: 700;
     cursor: pointer;
   }
