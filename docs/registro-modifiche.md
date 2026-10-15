@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Primo diagramma archify: architettura del sistema (`docs/archify/architecture-referto-20261015-104805/`) · [[archify/README]]
 - 2026-10-15 · pietro-giovedi · Nuova cartella `docs/archify/` per i diagrammi della skill archify; regola in `CLAUDE.md` · [[archify/README]]
 - 2026-10-15 · pietro-giovedi · Portale più professionale dopo il confronto con MyChart, NHS App, Apple Salute, Doctolib e One Medical: gruppi di righe al posto delle schede, Home "Da fare", titoli in Source Serif 4, tolte decorazioni (motivo a croci, riquadri delle icone, pillole colorate) · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Niente blu: portale e widget in una scala di otto verdi (foresta, pino, felce, muschio, salvia, germoglio, menta, nebbia) con contrasti misurati; dettagli: fascia di benvenuto con motivo a croci, tacca sul menu attivo, calendario e etichette in toni di verde, contorno di fuoco doppio, favicon con il marchio · [[16-frontend]]

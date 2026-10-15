@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Referto: architettura del sistema",
+    "output": "docs/archify/architecture-referto-20261015-104805/referto.html",
+    "quality_profile": "showcase",
+    "locale": "it",
+    "repository": {
+      "url": "git@github.com:Andreaioele/Referto.git",
+      "link_mode": "local-only",
+      "revision": "06a12823df1dd796aeb84492b85c83936fd6fa43"
+    }
+  },
+  "components": [
+    { "id": "paziente", "type": "external", "icon": "person", "label": "Paziente", "sublabel": "browser, anche 70+ anni", "pos": [330, 40], "size": [180, 60],
+      "sources": [{ "path": "frontend/src/App.tsx", "line": 33, "end_line": 36 }] },
+    { "id": "portale", "type": "frontend", "label": "Portale dello studio", "sublabel": "React + Vite, dati demo", "pos": [330, 170], "size": [180, 60],
+      "sources": [{ "path": "frontend/src/App.tsx", "line": 37, "end_line": 90 }, { "path": "frontend/src/portale/Struttura.tsx", "line": 19, "end_line": 85 }] },
+    { "id": "widget", "type": "frontend", "label": "Widget Referto", "sublabel": "spiegazione in streaming", "pos": [100, 300], "size": [180, 60],
+      "sources": [{ "path": "frontend/src/referto/WidgetReferto.tsx", "line": 140, "end_line": 155 }, { "path": "frontend/src/referto/useChat.ts", "line": 20, "end_line": 45 }, { "path": "frontend/src/servizio-chat.ts", "line": 8, "end_line": 19 }] },
+    { "id": "lettore", "type": "frontend", "label": "Lettore del foglietto", "sublabel": "PDF AIFA + domande", "pos": [560, 300], "size": [180, 60],
+      "sources": [{ "path": "frontend/src/referto/LettoreFoglietto.tsx", "line": 39, "end_line": 60 }, { "path": "frontend/src/api.ts", "line": 45, "end_line": 87 }] },
+    { "id": "instradamento", "type": "cloud", "label": "Instradamento /api", "sublabel": "Vercel Services o proxy Vite", "pos": [330, 440], "size": [180, 60],
+      "sources": [{ "path": "vercel.json", "line": 1, "end_line": 34 }, { "path": "frontend/vite.config.ts", "line": 4, "end_line": 12 }] },
+    { "id": "agenti", "type": "external", "label": "Agenti Evolus", "sublabel": "strumento farmaci", "pos": [720, 440], "size": [180, 60],
+      "sources": [{ "path": "backend/src/foglietti/foglietti.controller.ts", "line": 23, "end_line": 26 }, { "path": "backend/src/crea-app.ts", "line": 12, "end_line": 22 }] },
+    { "id": "chat", "type": "backend", "label": "ChatController", "sublabel": "POST /api/chat, SSE", "tag": "10 richieste/min per IP", "pos": [40, 580], "size": [180, 64],
+      "sources": [{ "path": "backend/src/chat/chat.controller.ts", "line": 18, "end_line": 52 }, { "path": "backend/src/chat/limite-richieste.guard.ts", "line": 4, "end_line": 15 }] },
+    { "id": "foglietti", "type": "backend", "label": "FogliettiService", "sublabel": "/api/foglietti", "tag": "brani + riserva", "pos": [330, 580], "size": [180, 64],
+      "sources": [{ "path": "backend/src/foglietti/foglietti.service.ts", "line": 53, "end_line": 90 }, { "path": "backend/src/foglietti/foglietti.controller.ts", "line": 27, "end_line": 77 }] },
+    { "id": "prontuario", "type": "backend", "label": "ProntuarioService", "sublabel": "/api/farmaci, /api/salute", "tag": "farmaci: x-api-key", "pos": [620, 580], "size": [180, 64],
+      "sources": [{ "path": "backend/src/farmaci/prontuario.service.ts", "line": 33, "end_line": 59 }, { "path": "backend/src/farmaci/farmaci.controller.ts", "line": 7, "end_line": 43 }, { "path": "backend/src/sicurezza/chiave-api.guard.ts", "line": 12, "end_line": 32 }] },
+    { "id": "sessioni", "type": "backend", "label": "SessioniService", "sublabel": "/api/sessioni", "tag": "solo con MONGODB_URI", "pos": [910, 580], "size": [180, 64],
+      "sources": [{ "path": "backend/src/app.module.ts", "line": 12, "end_line": 17 }, { "path": "backend/src/sessioni/sessioni.controller.ts", "line": 8, "end_line": 87 }, { "path": "backend/src/sessioni/sessioni.service.ts", "line": 56, "end_line": 67 }] },
+    { "id": "evolus", "type": "external", "label": "Mother agent Evolus", "sublabel": "/agents/{id}/ask-stream", "pos": [100, 740], "size": [190, 60],
+      "sources": [{ "path": "backend/src/chat/evolus.client.ts", "line": 25, "end_line": 89 }, { "path": "backend/src/config.ts", "line": 27, "end_line": 33 }] },
+    { "id": "aifa", "type": "external", "label": "AIFA", "sublabel": "PDF dei foglietti", "pos": [360, 740], "size": [150, 60],
+      "sources": [{ "path": "backend/src/foglietti/foglietti.service.ts", "line": 92, "end_line": 108 }] },
+    { "id": "dati", "type": "database", "label": "backend/data", "sublabel": "prontuario AIFA, ATC (JSON)", "pos": [620, 740], "size": [180, 60],
+      "sources": [{ "path": "backend/src/config.ts", "line": 4, "end_line": 26 }, { "path": "backend/src/farmaci/prontuario.service.ts", "line": 42, "end_line": 46 }] },
+    { "id": "mongo", "type": "database", "label": "MongoDB", "sublabel": "database Referto", "pos": [910, 740], "size": [180, 60],
+      "sources": [{ "path": "backend/src/app.module.ts", "line": 12, "end_line": 14 }, { "path": "backend/src/config.ts", "line": 34, "end_line": 35 }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Browser", "wraps": ["portale", "widget", "lettore"] },
+    { "kind": "region", "label": "Backend NestJS (rotte /api)", "wraps": ["chat", "foglietti", "prontuario", "sessioni"] }
+  ],
+  "connections": [
+    { "id": "usa-portale", "from": "paziente", "to": "portale", "label": "apre", "variant": "emphasis" },
+    { "id": "apre-widget", "from": "portale", "to": "widget", "label": "Spiegamelo", "variant": "emphasis" },
+    { "id": "apre-lettore", "from": "portale", "to": "lettore", "label": "foglietto" },
+    { "id": "widget-api", "from": "widget", "to": "instradamento", "label": "POST /api/chat", "variant": "emphasis" },
+    { "id": "lettore-api", "from": "lettore", "to": "instradamento", "label": "/api/foglietti" },
+    { "id": "agenti-api", "from": "agenti", "to": "instradamento", "label": "x-api-key", "variant": "security" },
+    { "id": "api-chat", "from": "instradamento", "to": "chat", "variant": "emphasis" },
+    { "id": "api-foglietti", "from": "instradamento", "to": "foglietti" },
+    { "id": "api-prontuario", "from": "instradamento", "to": "prontuario" },
+    { "id": "api-sessioni", "from": "instradamento", "to": "sessioni", "variant": "dashed" },
+    { "id": "foglietti-prontuario", "from": "foglietti", "to": "prontuario", "label": "codice AIFA" },
+    { "id": "chat-evolus", "from": "chat", "to": "evolus", "label": "SSE", "variant": "emphasis" },
+    { "id": "foglietti-evolus", "from": "foglietti", "to": "evolus", "label": "brani" },
+    { "id": "foglietti-aifa", "from": "foglietti", "to": "aifa", "label": "scarica PDF" },
+    { "id": "prontuario-dati", "from": "prontuario", "to": "dati", "label": "legge all'avvio" },
+    { "id": "sessioni-mongo", "from": "sessioni", "to": "mongo", "label": "turni" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Percorso principale", "items": ["Spiegamelo apre il widget, che manda il referto a POST /api/chat", "Il backend inoltra al Mother agent e ritrasmette il testo in streaming (SSE)", "Le credenziali Evolus restano solo sul server"] },
+    { "dot": "amber", "title": "Riserve deterministiche", "items": ["Foglietti: se l'agente non risponde o va in timeout, si mostra il brano del foglio", "Prontuario: se il nome non è univoco non sceglie, restituisce le alternative"] },
+    { "dot": "rose", "title": "Accesso e privacy", "items": ["Rotte del browser pubbliche, con limite di 10 richieste al minuto per IP", "/api/farmaci richiede x-api-key se CHIAVE_API è impostata", "Nei log solo esiti tecnici, mai il contenuto dei messaggi"] },
+    { "dot": "slate", "title": "Fuori dal percorso del portale", "items": ["Sessioni e MongoDB si attivano solo con MONGODB_URI; il frontend non le usa ancora", "resources/ (app Python di riferimento) non viene pubblicata"] }
+  ]
+}
