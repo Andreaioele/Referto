@@ -6,6 +6,7 @@ import { ChatController } from './chat.controller';
 import { EvolusClient } from './evolus.client';
 import { MotherDiretto } from './mother-diretto';
 import { MotoreChat } from './motore-chat';
+import { ServizioChat } from './servizio-chat';
 
 @Module({
   // Limite predefinito, ridefinito sulla rotta con @Throttle: 10 messaggi al minuto per IP.
@@ -20,6 +21,8 @@ import { MotoreChat } from './motore-chat';
       useFactory: (evolus: EvolusClient, diretto: MotherDiretto) => (config.motoreChat === 'diretto' ? diretto : evolus),
       inject: [EvolusClient, MotherDiretto],
     },
+    // Usa l'ArchivioChat del modulo sessioni (globale) se MongoDB è configurato.
+    ServizioChat,
   ],
   // Lo usa anche il modulo foglietti per le domande sul foglio illustrativo.
   exports: [MotoreChat],

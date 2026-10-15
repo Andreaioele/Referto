@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { config } from '../config';
-import { MotoreChat } from './motore-chat';
+import type { TurnoStoria } from './archivio-chat';
+import { MotoreChat, type OpzioniChiedi } from './motore-chat';
 
 /** Evento della chat inviato al browser, già semplificato rispetto a quelli di Evolus. */
 export type EventoChat =
   | { tipo: 'testo'; testo: string }
-  | { tipo: 'fine'; conversazione: string | null }
+  | { tipo: 'fine'; conversazione: string | null; da_cache?: boolean }
   | { tipo: 'errore'; messaggio: string };
 
 /** Riga "data:" di /ask-stream di Evolus: pezzi di testo e, alla fine, isComplete. */
@@ -35,10 +36,27 @@ export class EvolusClient extends MotoreChat {
     return Boolean(config.evolus.apiKey && config.evolus.applicationId && config.evolus.agentId);
   }
 
-  async *chiedi(messaggio: string, conversazione: string | undefined, segnale: AbortSignal): AsyncGenerator<EventoChat> {
+  /** Il prompt vive su Evolus: la versione è l'agente. */
+  versione(): string {
+    return `evolus/${config.evolus.agentId}`;
+  }
+
+  async *chiedi(
+    messaggio: string,
+    conversazione: string | undefined,
+    segnale: AbortSignal,
+    { storia, trace }: OpzioniChiedi = {},
+  ): AsyncGenerator<EventoChat> {
     const { apiBase, apiKey, applicationId, agentId } = config.evolus;
     const inizio = Date.now();
     const secondi = () => Math.round((Date.now() - inizio) / 1000);
+    // Una conversazione Evolus ricorda già tutto; senza (spiegazione presa dalla cache) la storia va nel messaggio.
+    const contenuto = !conversazione && storia?.length ? messaggioConStoria(storia, messaggio) : messaggio;
+    if (trace) {
+      trace.modello = `agente ${agentId}`;
+      trace.modelli_provati.push(trace.modello);
+      trace.giri = 1;
+    }
     let risposta: Response;
     try {
       risposta = await fetch(`${apiBase}/agents/${agentId}/ask-stream`, {
@@ -50,18 +68,20 @@ export class EvolusClient extends MotoreChat {
           'X-Application-Id': applicationId,
         },
         // "content" è il campo che Evolus legge; "conversationId" continua la stessa conversazione.
-        body: JSON.stringify(conversazione ? { content: messaggio, conversationId: conversazione } : { content: messaggio }),
+        body: JSON.stringify(conversazione ? { content: contenuto, conversationId: conversazione } : { content: contenuto }),
         signal: segnale,
       });
     } catch (errore) {
       if (!segnale.aborted) {
         this.logger.warn(`Evolus non raggiungibile: ${(errore as Error).name}`);
+        if (trace) trace.errore = `non raggiungibile: ${(errore as Error).name}`;
         yield { tipo: 'errore', messaggio: ERRORE_GENERICO };
       }
       return;
     }
     if (!risposta.ok || !risposta.body) {
       this.logger.warn(`Evolus ha risposto HTTP ${risposta.status}`);
+      if (trace) trace.errore = `HTTP ${risposta.status}`;
       yield { tipo: 'errore', messaggio: MESSAGGI_ERRORE[risposta.status] ?? ERRORE_GENERICO };
       return;
     }
@@ -74,10 +94,16 @@ export class EvolusClient extends MotoreChat {
       } catch {
         continue;
       }
-      if (evento.content) yield { tipo: 'testo', testo: evento.content };
+      if (evento.content) {
+        if (trace && trace.primo_testo_ms === undefined) trace.primo_testo_ms = Date.now() - inizio;
+        yield { tipo: 'testo', testo: evento.content };
+      }
       if (evento.conversationId) conversazioneFinale = evento.conversationId;
       if (evento.isComplete) {
-        if (evento.error) this.logger.warn(`Evolus ha chiuso con errore "${evento.error}" dopo ${secondi()}s`);
+        if (evento.error) {
+          this.logger.warn(`Evolus ha chiuso con errore "${evento.error}" dopo ${secondi()}s`);
+          if (trace) trace.errore = evento.error;
+        }
         yield evento.error
           ? { tipo: 'errore', messaggio: ERRORE_GENERICO }
           : { tipo: 'fine', conversazione: conversazioneFinale };
@@ -86,9 +112,28 @@ export class EvolusClient extends MotoreChat {
     }
     if (!segnale.aborted) {
       this.logger.warn(`Evolus ha chiuso il flusso senza concluderlo dopo ${secondi()}s`);
+      if (trace) trace.errore = 'flusso chiuso senza conclusione';
       yield { tipo: 'errore', messaggio: ERRORE_GENERICO };
     }
   }
+}
+
+/**
+ * Il referto con la spiegazione già data e le domande precedenti, in un solo
+ * messaggio: serve quando la spiegazione viene dalla cache e su Evolus non
+ * c'è una conversazione da continuare.
+ */
+export function messaggioConStoria(storia: TurnoStoria[], domanda: string): string {
+  const [referto, ...domande] = storia;
+  const parti = [
+    'Il referto qui sotto è già stato spiegato: non spiegarlo di nuovo. Rispondi solo alla DOMANDA, ' +
+      'usando il referto e la spiegazione già data.',
+    `REFERTO:\n${referto.domanda}`,
+    `SPIEGAZIONE GIÀ DATA:\n${referto.risposta}`,
+    ...domande.map((turno) => `DOMANDA PRECEDENTE:\n${turno.domanda}\n\nRISPOSTA DATA:\n${turno.risposta}`),
+    `DOMANDA:\n${domanda}`,
+  ];
+  return parti.join('\n\n');
 }
 
 /**

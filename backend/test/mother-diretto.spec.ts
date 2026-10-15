@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { nuovaTraceMotore } from '../src/chat/archivio-chat';
 import { ChatModule } from '../src/chat/chat.module';
 import type { EventoChat } from '../src/chat/evolus.client';
 import { MotherDiretto } from '../src/chat/mother-diretto';
@@ -124,6 +125,51 @@ describe('MotherDiretto', () => {
       ['assistant', 'Prima risposta'],
       ['user', 'Domanda successiva'],
     ]);
+  });
+
+  it('con la storia dell\'archivio non rispiega il referto e registra la trace', async () => {
+    rispondi(
+      streaming({
+        choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'cercaFarmaci', arguments: '{"farmaci":[{"nome":"Cardioaspirin"}]}' } }] } }],
+      }),
+      streaming(testo('È un farmaco'), { choices: [], usage: { prompt_tokens: 900, completion_tokens: 12 } }),
+    );
+    const trace = nuovaTraceMotore('diretto');
+    const storia = [{ domanda: 'Referto con Cardioaspirin', risposta: 'SINTESI\nSpiegazione salvata' }];
+    // La conversazione indicata non è in memoria: conta la storia.
+    await eventi(mother.chiedi('Cos\'è la Cardioaspirin?', 'conversazione-salvata', new AbortController().signal, { storia, trace }));
+
+    const messaggi = (corpi[0] as { messages: Array<{ role: string; content: string }> }).messages;
+    expect(messaggi.slice(1).map((m) => [m.role, m.content])).toEqual([
+      ['user', 'Referto con Cardioaspirin'],
+      ['assistant', 'SINTESI\nSpiegazione salvata'],
+      ['user', 'Cos\'è la Cardioaspirin?'],
+    ]);
+    expect(trace).toMatchObject({
+      motore: 'diretto',
+      modello: 'DeepSeek-V4.1-Flash',
+      modelli_provati: ['DeepSeek-V4.1-Flash'],
+      giri: 2,
+      token_input: 900,
+      token_output: 12,
+      chiamate_tool: [{ nome: 'cercaFarmaci', parametri: { farmaci: [{ nome: 'Cardioaspirin' }] }, durata_ms: expect.any(Number) }],
+    });
+    expect(trace.chiamate_tool[0].risposta).toMatchObject({ risultati: [expect.objectContaining({ trovato: true })] });
+    expect(trace.primo_testo_ms).toEqual(expect.any(Number));
+  });
+
+  it('nella trace segna il modello di riserva e l\'errore tecnico', async () => {
+    rispondi(new Response('', { status: 503 }), new Response('', { status: 500 }));
+    const trace = nuovaTraceMotore('diretto');
+    await eventi(mother.chiedi('Ciao', undefined, new AbortController().signal, { trace }));
+    expect(trace).toMatchObject({ modelli_provati: ['DeepSeek-V4.1-Flash', 'DeepSeek-V4-Flash'], modello: 'DeepSeek-V4-Flash', errore: 'HTTP 500' });
+  });
+
+  it('la versione cambia con il modello', () => {
+    const prima = mother.versione();
+    expect(prima).toMatch(/^diretto\/DeepSeek-V4\.1-Flash\/[0-9a-f]{12}$/);
+    config.modello.nome = 'Altro-Modello';
+    expect(mother.versione()).not.toBe(prima);
   });
 
   it('su errore del modello manda un messaggio già scritto per la persona', async () => {

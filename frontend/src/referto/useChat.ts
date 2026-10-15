@@ -20,6 +20,8 @@ function segnalaErrore(risposta: Messaggio, messaggio: string): Messaggio {
 export function useChat() {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([])
   const [inCorso, setInCorso] = useState(false)
+  /** La spiegazione del referto è quella salvata dal backend (cache), non riscritta. */
+  const [daCache, setDaCache] = useState(false)
   const conversazione = useRef<string | null>(null)
   const controllo = useRef<AbortController | null>(null)
 
@@ -39,7 +41,10 @@ export function useChat() {
       conversazione.current,
       (evento) => {
         if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
-        else if (evento.tipo === 'fine') conversazione.current = evento.conversazione
+        else if (evento.tipo === 'fine') {
+          if (!conversazione.current) setDaCache(Boolean(evento.da_cache))
+          conversazione.current = evento.conversazione
+        }
         else aggiornaRisposta((r) => segnalaErrore(r, evento.messaggio))
       },
       segnale,
@@ -50,9 +55,10 @@ export function useChat() {
   const azzera = useCallback(() => {
     controllo.current?.abort()
     conversazione.current = null
+    setDaCache(false)
     setMessaggi([])
     setInCorso(false)
   }, [])
 
-  return { messaggi, inCorso, invia, azzera }
+  return { messaggi, inCorso, daCache, invia, azzera }
 }

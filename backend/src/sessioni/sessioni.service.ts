@@ -1,70 +1,228 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ARCHIVIO_SESSIONI, type ArchivioSessioni, type SessioneSalvata, type UtenteSalvato } from './archivio-sessioni';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { ArchivioChat, type ContestoConversazione, type TraceGenerazione } from '../chat/archivio-chat';
+import {
+  Conversazione,
+  ConversazioneDocument,
+  Spiegazione,
+  SpiegazioneDocument,
+  Trace,
+  TraceDocument,
+  Utente,
+  UtenteDocument,
+} from './schemi';
 
-/** Lunghezza massima del titolo preso dalla prima domanda. */
-const LUNGHEZZA_TITOLO = 100;
+/** L'utente di chi non si è identificato: per ora tutti (login fake). */
+export const NICKNAME_PREDEFINITO = 'paziente';
+const ARGOMENTO = /^ARGOMENTO:\s*(.+?)\s*·\s*(.+?)\s*$/m;
 
 /**
- * Regole dello storico: ogni sessione appartiene a un utente e si legge solo
- * con il suo id; una sessione senza titolo prende la prima domanda. Il
- * salvataggio è dell'archivio (`ARCHIVIO_SESSIONI`).
+ * Archivio della chat su MongoDB: spiegazioni in cache, conversazioni con le
+ * domande e trace di ogni generazione, sempre legate a un utente.
  */
 @Injectable()
-export class SessioniService {
-  constructor(@Inject(ARCHIVIO_SESSIONI) private readonly archivio: ArchivioSessioni) {}
+export class SessioniService extends ArchivioChat {
+  private utentePredefinito?: Promise<string>;
+
+  constructor(
+    @InjectModel(Utente.name) private readonly utenteModel: Model<UtenteDocument>,
+    @InjectModel(Conversazione.name) private readonly convModel: Model<ConversazioneDocument>,
+    @InjectModel(Spiegazione.name) private readonly spiegazioneModel: Model<SpiegazioneDocument>,
+    @InjectModel(Trace.name) private readonly traceModel: Model<TraceDocument>,
+  ) {
+    super();
+  }
 
   /* ── Utenti ── */
 
-  creaUtente(nickname: string): Promise<UtenteSalvato> {
-    return this.archivio.creaUtente(nickname);
+  async utente(richiesto?: string): Promise<string> {
+    if (richiesto && Types.ObjectId.isValid(richiesto) && (await this.utenteModel.exists({ _id: richiesto }))) {
+      return richiesto;
+    }
+    return this.predefinito();
   }
 
-  async trovaUtente(id: string): Promise<UtenteSalvato> {
-    const utente = await this.archivio.trovaUtente(id);
+  /** Creato alla prima richiesta, non all'avvio: se MongoDB non risponde il resto del backend parte lo stesso. */
+  private predefinito(): Promise<string> {
+    this.utentePredefinito ??= this.utenteModel
+      .findOneAndUpdate(
+        { nickname: NICKNAME_PREDEFINITO },
+        { $setOnInsert: { nickname: NICKNAME_PREDEFINITO } },
+        { upsert: true, returnDocument: 'after' },
+      )
+      .exec()
+      .then((utente) => utente._id.toString())
+      .catch((errore: unknown) => {
+        this.utentePredefinito = undefined;
+        throw errore;
+      });
+    return this.utentePredefinito;
+  }
+
+  async creaUtente(nickname: string): Promise<{ id: string; nickname: string }> {
+    const utente = await this.utenteModel.create({ nickname });
+    return { id: utente._id.toString(), nickname: utente.nickname };
+  }
+
+  /** 404 anche per un id non valido. */
+  async trovaUtente(id: string): Promise<{ id: string; nickname: string }> {
+    const utente = Types.ObjectId.isValid(id) ? await this.utenteModel.findById(id).exec() : null;
     if (!utente) throw new NotFoundException('Utente non trovato');
-    return utente;
+    return { id: utente._id.toString(), nickname: utente.nickname };
   }
 
-  /* ── Sessioni ── */
-
-  async creaSessione(utenteId: string, titolo?: string): Promise<SessioneSalvata> {
-    await this.trovaUtente(utenteId);
-    return this.archivio.creaSessione(utenteId, titolo ?? '');
+  async nickname(utente: string): Promise<string> {
+    const trovato = await this.utenteModel.findById(utente).exec();
+    return trovato?.nickname ?? NICKNAME_PREDEFINITO;
   }
 
-  async listaSessioni(utenteId: string): Promise<SessioneSalvata[]> {
-    await this.trovaUtente(utenteId);
-    return this.archivio.sessioniDi(utenteId);
+  /* ── ArchivioChat: cache, conversazioni e trace ── */
+
+  async cercaSpiegazione(utente: string, hash: string, versione: string): Promise<{ id: string; testo: string } | null> {
+    const trovata = await this.spiegazioneModel
+      .findOneAndUpdate(
+        { utente: new Types.ObjectId(utente), hash, versione },
+        { $inc: { usi: 1 }, $set: { ultimo_uso: new Date() } },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return trovata ? { id: trovata._id.toString(), testo: trovata.testo } : null;
   }
 
-  dettaglioSessione(utenteId: string, sessioneId: string): Promise<SessioneSalvata> {
-    return this.sessioneDiUtente(utenteId, sessioneId);
+  async salvaSpiegazione({ utente, hash, versione, testo }: { utente: string; hash: string; versione: string; testo: string }): Promise<string> {
+    const filtro = { utente: new Types.ObjectId(utente), hash, versione };
+    try {
+      const salvata = await this.spiegazioneModel
+        .findOneAndUpdate(filtro, { $setOnInsert: { testo } }, { upsert: true, returnDocument: 'after' })
+        .exec();
+      return salvata._id.toString();
+    } catch (errore) {
+      // Due spiegazioni dello stesso referto finite insieme: vale quella salvata per prima.
+      if ((errore as { code?: number }).code !== 11000) throw errore;
+      const esistente = await this.spiegazioneModel.findOne(filtro).orFail().exec();
+      return esistente._id.toString();
+    }
   }
 
-  async eliminaSessione(utenteId: string, sessioneId: string): Promise<void> {
-    await this.sessioneDiUtente(utenteId, sessioneId);
-    await this.archivio.eliminaSessione(sessioneId);
+  async nuovaConversazione(dati: {
+    utente: string;
+    referto: string;
+    hash: string;
+    spiegazione: { id: string; testo: string };
+    conversazioneMotore?: string;
+    trace: TraceGenerazione;
+  }): Promise<string> {
+    const utente = new Types.ObjectId(dati.utente);
+    const conversazione = new Types.ObjectId();
+    const trace = await this.traceModel.create({ ...dati.trace, utente, conversazione });
+    const argomento = ARGOMENTO.exec(dati.spiegazione.testo);
+    await this.convModel.create({
+      _id: conversazione,
+      utente,
+      titolo: argomento?.[1] ?? '',
+      area: argomento?.[2],
+      referto: { testo: dati.referto, hash: dati.hash },
+      spiegazione: {
+        testo: dati.spiegazione.testo,
+        cache: new Types.ObjectId(dati.spiegazione.id),
+        da_cache: dati.trace.da_cache,
+        trace: trace._id,
+      },
+      conversazione_motore: dati.conversazioneMotore,
+    });
+    return conversazione.toString();
   }
 
-  /* ── Turni ── */
+  async contesto(utente: string, conversazione: string): Promise<ContestoConversazione | null> {
+    const conv = await this.trovaDiUtente(utente, conversazione);
+    if (!conv) return null;
+    return {
+      storia: [
+        { domanda: conv.referto.testo, risposta: conv.spiegazione.testo },
+        ...conv.turni.map((turno) => ({ domanda: turno.messaggio, risposta: turno.risposta })),
+      ],
+      conversazioneMotore: conv.conversazione_motore,
+    };
+  }
 
-  async salvaTurno(
-    utenteId: string,
-    sessioneId: string,
-    turno: { messaggio: string; risposta: string; conversazione_evolus?: string; metadati?: Record<string, unknown> },
-  ): Promise<SessioneSalvata> {
-    const sessione = await this.sessioneDiUtente(utenteId, sessioneId);
-    const titolo = !sessione.titolo && turno.messaggio ? turno.messaggio.slice(0, LUNGHEZZA_TITOLO) : undefined;
-    return this.archivio.aggiungiTurno(sessioneId, { ...turno, timestamp: new Date() }, titolo);
+  async aggiungiTurno(dati: {
+    utente: string;
+    conversazione: string;
+    messaggio: string;
+    risposta: string;
+    conversazioneMotore?: string;
+    trace: TraceGenerazione;
+  }): Promise<void> {
+    const utente = new Types.ObjectId(dati.utente);
+    const conversazione = new Types.ObjectId(dati.conversazione);
+    const trace = await this.traceModel.create({ ...dati.trace, utente, conversazione });
+    await this.convModel
+      .updateOne(
+        { _id: conversazione, utente },
+        {
+          $push: { turni: { messaggio: dati.messaggio, risposta: dati.risposta, trace: trace._id } },
+          ...(dati.conversazioneMotore ? { $set: { conversazione_motore: dati.conversazioneMotore } } : {}),
+        },
+      )
+      .exec();
+  }
+
+  async salvaTrace({ utente, conversazione, trace }: { utente: string; conversazione?: string; trace: TraceGenerazione }): Promise<void> {
+    await this.traceModel.create({
+      ...trace,
+      utente: new Types.ObjectId(utente),
+      ...(conversazione ? { conversazione: new Types.ObjectId(conversazione) } : {}),
+    });
+  }
+
+  /* ── Storico (rotte /api/sessioni) ── */
+
+  async listaConversazioni(utente: string): Promise<ConversazioneDocument[]> {
+    return this.convModel
+      .find({ utente: new Types.ObjectId(utente) })
+      .select('-referto.testo -spiegazione.testo -turni.messaggio -turni.risposta')
+      .sort({ updatedAt: -1 })
+      .exec();
+  }
+
+  async dettaglioConversazione(utente: string, id: string): Promise<ConversazioneDocument> {
+    return this.trovaOErrore(utente, id);
+  }
+
+  async traceConversazione(utente: string, id: string): Promise<Array<Trace & { _id: Types.ObjectId; createdAt: Date }>> {
+    const conv = await this.trovaOErrore(utente, id);
+    return this.traceModel
+      .find({ conversazione: conv._id })
+      .select('-__v')
+      .sort({ createdAt: 1 })
+      .lean<Array<Trace & { _id: Types.ObjectId; createdAt: Date }>>()
+      .exec();
+  }
+
+  async rinominaConversazione(utente: string, id: string, titolo: string): Promise<ConversazioneDocument> {
+    const conv = await this.trovaOErrore(utente, id);
+    conv.titolo = titolo;
+    return conv.save();
+  }
+
+  /** Elimina la conversazione e le sue trace; la spiegazione in cache (senza il referto) resta. */
+  async eliminaConversazione(utente: string, id: string): Promise<void> {
+    const conv = await this.trovaOErrore(utente, id);
+    await this.traceModel.deleteMany({ conversazione: conv._id }).exec();
+    await conv.deleteOne();
   }
 
   /* ── Helper ── */
 
-  /** La sessione, solo se esiste ed è dell'utente: altrimenti 404 (non si dice se esiste per un altro). */
-  private async sessioneDiUtente(utenteId: string, sessioneId: string): Promise<SessioneSalvata> {
-    await this.trovaUtente(utenteId);
-    const sessione = await this.archivio.trovaSessione(sessioneId);
-    if (!sessione || sessione.utenteId !== utenteId) throw new NotFoundException('Sessione non trovata');
-    return sessione;
+  private async trovaDiUtente(utente: string, id: string): Promise<ConversazioneDocument | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+    return this.convModel.findOne({ _id: new Types.ObjectId(id), utente: new Types.ObjectId(utente) }).exec();
+  }
+
+  private async trovaOErrore(utente: string, id: string): Promise<ConversazioneDocument> {
+    const conv = await this.trovaDiUtente(utente, id);
+    if (!conv) throw new NotFoundException('Conversazione non trovata');
+    return conv;
   }
 }

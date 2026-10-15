@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { config } from '../config';
 import { cercaFarmaci } from '../farmaci/cerca-farmaci';
 import { ProntuarioService } from '../farmaci/prontuario.service';
+import type { TraceMotore } from './archivio-chat';
 import { righeDati, type EventoChat } from './evolus.client';
-import { MotoreChat } from './motore-chat';
+import { MotoreChat, type OpzioniChiedi } from './motore-chat';
 
 /** Messaggio nel formato delle API compatibili OpenAI (/chat/completions). */
 interface Messaggio {
@@ -30,6 +31,8 @@ interface Delta {
     };
     finish_reason?: string | null;
   }>;
+  /** Alcuni server lo mandano nell'ultimo pezzo. */
+  usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
 /** Lo strumento del Mother agent su Evolus (Web API "Referto-medicinali"), descritto per il modello. */
@@ -89,8 +92,9 @@ class ErroreModello extends Error {
  * modello (DeepSeek-V4.1-Flash su AMD Token Factory) e lo strumento
  * cercaFarmaci eseguito direttamente sul prontuario, senza passare dalla rete.
  *
- * Le conversazioni restano in memoria per due ore (al massimo 200): basta per
- * le domande successive nel widget; un riavvio del server le perde.
+ * Con MongoDB la storia della conversazione arriva dall'archivio (opzione
+ * storia). Senza, le conversazioni restano in memoria per due ore (al massimo
+ * 200): basta per le domande successive nel widget; un riavvio del server le perde.
  */
 @Injectable()
 export class MotherDiretto extends MotoreChat {
@@ -113,18 +117,39 @@ export class MotherDiretto extends MotoreChat {
     return this.promptLetto;
   }
 
-  async *chiedi(messaggio: string, conversazione: string | undefined, segnale: AbortSignal): AsyncGenerator<EventoChat> {
+  versione(): string {
+    const prompt = createHash('sha256').update(this.prompt()).digest('hex').slice(0, 12);
+    return `diretto/${config.modello.nome}/${prompt}`;
+  }
+
+  async *chiedi(
+    messaggio: string,
+    conversazione: string | undefined,
+    segnale: AbortSignal,
+    { storia, trace }: OpzioniChiedi = {},
+  ): AsyncGenerator<EventoChat> {
     const inizio = Date.now();
-    const id = conversazione && this.conversazioni.has(conversazione) ? conversazione : randomUUID();
-    const precedenti = this.conversazioni.get(id)?.messaggi ?? [];
+    const id = conversazione && (storia || this.conversazioni.has(conversazione)) ? conversazione : randomUUID();
+    // La storia dell'archivio vale più della memoria: sopravvive ai riavvii e alle istanze diverse di Vercel.
+    const precedenti: Messaggio[] = storia
+      ? storia.flatMap((turno): Messaggio[] => [
+          { role: 'user', content: turno.domanda },
+          { role: 'assistant', content: turno.risposta },
+        ])
+      : (this.conversazioni.get(id)?.messaggi ?? []);
     const nuovi: Messaggio[] = [{ role: 'user', content: messaggio }];
     let modello = config.modello.nome;
     let scritto = false;
+    trace?.modelli_provati.push(modello);
 
     try {
       for (let giro = 1; giro <= MASSIMO_GIRI; giro += 1) {
         const messaggi: Messaggio[] = [{ role: 'system', content: this.prompt() }, ...precedenti, ...nuovi];
         let risposta: Response;
+        if (trace) {
+          trace.giri += 1;
+          trace.modello = modello;
+        }
         try {
           risposta = await this.richiesta(modello, messaggi, giro < MASSIMO_GIRI, segnale);
         } catch (errore) {
@@ -132,6 +157,7 @@ export class MotherDiretto extends MotoreChat {
           if (errore instanceof ErroreModello && SOVRACCARICO.has(errore.stato) && !scritto && modello !== config.modello.riserva) {
             this.logger.warn(`${modello} ha risposto ${errore.message}: provo ${config.modello.riserva}`);
             modello = config.modello.riserva;
+            trace?.modelli_provati.push(modello);
             giro -= 1;
             continue;
           }
@@ -148,9 +174,14 @@ export class MotherDiretto extends MotoreChat {
           } catch {
             continue;
           }
+          if (trace && pezzo.usage) {
+            trace.token_input = (trace.token_input ?? 0) + (pezzo.usage.prompt_tokens ?? 0);
+            trace.token_output = (trace.token_output ?? 0) + (pezzo.usage.completion_tokens ?? 0);
+          }
           const delta = pezzo.choices?.[0]?.delta;
           if (delta?.content) {
             testo += delta.content;
+            if (trace && !scritto) trace.primo_testo_ms = Date.now() - inizio;
             scritto = true;
             yield { tipo: 'testo', testo: delta.content };
           }
@@ -163,22 +194,24 @@ export class MotherDiretto extends MotoreChat {
         }
 
         if (chiamate.length === 0) {
-          this.ricorda(id, [...precedenti, ...nuovi, { role: 'assistant', content: testo }]);
+          if (!storia) this.ricorda(id, [...precedenti, ...nuovi, { role: 'assistant', content: testo }]);
           this.logger.log(`Risposta di ${modello} in ${Date.now() - inizio} ms (${giro} giri)`);
           yield { tipo: 'fine', conversazione: id };
           return;
         }
         nuovi.push({ role: 'assistant', content: testo || null, tool_calls: chiamate });
         for (const chiamata of chiamate) {
-          nuovi.push({ role: 'tool', tool_call_id: chiamata.id, content: this.eseguiStrumento(chiamata) });
+          nuovi.push({ role: 'tool', tool_call_id: chiamata.id, content: this.eseguiStrumento(chiamata, trace) });
         }
       }
       this.logger.warn(`Troppi giri di strumenti dopo ${Date.now() - inizio} ms`);
+      if (trace) trace.errore = 'troppi giri di strumenti';
       yield { tipo: 'errore', messaggio: ERRORE_GENERICO };
     } catch (errore) {
       if (segnale.aborted) return;
       const sovraccarico = errore instanceof ErroreModello && SOVRACCARICO.has(errore.stato);
       this.logger.warn(`Modello ${modello} senza risposta dopo ${Date.now() - inizio} ms: ${(errore as Error).message}`);
+      if (trace) trace.errore = (errore as Error).message;
       yield { tipo: 'errore', messaggio: sovraccarico ? ERRORE_SOVRACCARICO : ERRORE_GENERICO };
     }
   }
@@ -218,8 +251,32 @@ export class MotherDiretto extends MotoreChat {
     return risposta;
   }
 
+  /** Esegue lo strumento e, se c'è una trace, ne registra parametri, risultato e durata. */
+  private eseguiStrumento(chiamata: ChiamataStrumento, trace?: TraceMotore): string {
+    const inizio = Date.now();
+    const risultato = this.cercaFarmaci(chiamata);
+    if (trace) {
+      const leggi = (testo: string): unknown => {
+        try {
+          return JSON.parse(testo);
+        } catch {
+          return testo;
+        }
+      };
+      const risposta = leggi(risultato) as { errore?: string };
+      trace.chiamate_tool.push({
+        nome: chiamata.function.name,
+        parametri: leggi(chiamata.function.arguments || '{}'),
+        risposta,
+        durata_ms: Date.now() - inizio,
+        ...(typeof risposta?.errore === 'string' ? { errore: risposta.errore } : {}),
+      });
+    }
+    return risultato;
+  }
+
   /** cercaFarmaci sul prontuario in memoria: riceve solo i nomi dei farmaci, come la rotta /api/farmaci/cerca. */
-  private eseguiStrumento(chiamata: ChiamataStrumento): string {
+  private cercaFarmaci(chiamata: ChiamataStrumento): string {
     if (chiamata.function.name !== 'cercaFarmaci') return JSON.stringify({ errore: 'Strumento sconosciuto' });
     try {
       const argomenti = JSON.parse(chiamata.function.arguments || '{}') as {

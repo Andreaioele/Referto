@@ -46,6 +46,19 @@ describe('useChat', () => {
     })
   })
 
+  it('dice se la spiegazione del referto arriva dalla cache del backend', async () => {
+    rispondeCon({ tipo: 'testo', testo: 'Spiegazione salvata' }, { tipo: 'fine', conversazione: 'c-1', da_cache: true })
+    rispondeCon({ tipo: 'testo', testo: 'Risposta nuova' }, { tipo: 'fine', conversazione: 'c-1' })
+    const { result } = renderHook(() => useChat())
+    await act(() => result.current.invia('REFERTO'))
+    expect(result.current.daCache).toBe(true)
+    // Le domande successive non cambiano l'origine della spiegazione.
+    await act(() => result.current.invia('Domanda'))
+    expect(result.current.daCache).toBe(true)
+    act(() => result.current.azzera())
+    expect(result.current.daCache).toBe(false)
+  })
+
   it('azzera annulla e ricomincia una conversazione nuova', async () => {
     rispondeCon({ tipo: 'fine', conversazione: 'c-1' })
     rispondeCon({ tipo: 'fine', conversazione: 'c-2' })

@@ -51,7 +51,8 @@ export async function statoBackend(segnale?: AbortSignal): Promise<StatoBackend>
 
 export type EventoChat =
   | { tipo: 'testo'; testo: string }
-  | { tipo: 'fine'; conversazione: string | null }
+  /** da_cache: spiegazione già preparata per questo referto, restituita senza rigenerarla. */
+  | { tipo: 'fine'; conversazione: string | null; da_cache?: boolean }
   | { tipo: 'errore'; messaggio: string }
 
 /**
@@ -59,12 +60,15 @@ export type EventoChat =
  * mano che arrivano. Garanzia: la risposta finisce sempre con un solo evento
  * "fine" oppure "errore" (anche se la rete cade o il flusso si chiude prima),
  * tranne quando `segnale` la annulla: allora non arriva più nulla. Non lancia mai.
+ * Con `classificazione` il backend sa che serve solo la riga ARGOMENTO: finisce
+ * comunque la spiegazione e la salva, ma non apre una conversazione.
  */
 export async function spiega(
   messaggio: string,
   conversazione: string | null,
   suEvento: (evento: EventoChat) => void,
   segnale: AbortSignal,
+  { classificazione = false }: { classificazione?: boolean } = {},
 ): Promise<void> {
   const errore = (testo: string) => {
     if (!interrotta(segnale)) suEvento({ tipo: 'errore', messaggio: testo })
@@ -74,7 +78,7 @@ export async function spiega(
     risposta = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-      body: JSON.stringify(conversazione ? { messaggio, conversazione } : { messaggio }),
+      body: JSON.stringify(conversazione ? { messaggio, conversazione } : classificazione ? { messaggio, classificazione } : { messaggio }),
       signal: segnale,
     })
   } catch {
@@ -245,6 +249,7 @@ export async function classifica(testo: string, segnale?: AbortSignal): Promise<
       } else if (evento.tipo === 'errore') errore = evento.messaggio
     },
     interno.signal,
+    { classificazione: true },
   ).then(() => {
     // Flusso finito senza "a capo" dopo la riga: vale la riga com'è.
     const argomento = /ARGOMENTO:\s*(.+?)\s*·\s*([^\n]+)/.exec(letto)

@@ -10,6 +10,11 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · chat-frontend · Backend: se MongoDB non si connette si riprova ogni 15 secondi (prima l'istanza restava senza archivio fino al riavvio) · [[15-backend]]
+- 2026-10-15 · chat-frontend · Backend: connessione a MongoDB pigra (con `MONGODB_URI` su Vercel tutte le rotte davano 500); nel log il motivo se non si connette (oggi: IP di Vercel non ammesso in Atlas) · [[15-backend]]
+- 2026-10-15 · chat-frontend · Chat: la spiegazione si finisce e va in cache anche se il browser chiude a metà (tempo massimo 240 s); `classificazione: true` da `classifica()` riempie la cache senza creare conversazioni; nessuna conversazione per un browser che ha già chiuso · [[15-backend]] · [[16-frontend]]
+- 2026-10-15 · chat-frontend · Unito a `staging`: le sessioni con turni dal browser e l'`ArchivioSessioni` lasciano il posto alle conversazioni della chat; restano gli utenti con nickname (`POST /api/sessioni/utenti`); `daCache` spostato sul nuovo `cliente.ts` · [[15-backend]] · [[16-frontend]]
+- 2026-10-15 · chat-frontend · Chat su MongoDB: cache della spiegazione per utente e referto (stessa versione del motore), domande con la spiegazione salvata senza rispiegare il referto, conversazioni e trace di ogni generazione salvate dal backend; rotte `/api/sessioni/conversazioni` con chiave API · [[15-backend]]
 - 2026-10-15 · pietro-giovedi-2 · Prenota una visita: "Scegli una data", "Chiama" ed "Email" sono tre modi distinti; il calendario si apre solo con "Scegli una data" e si conferma con "Prenota" · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · "Prenota una visita" funzionante (demo): scelta del referto, strutture e professionisti dell'area, calendario di prova uguale per tutti, "Chiama", "Email" e "Segna come prenotata" · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · Nuovo flusso: "Le mie strutture" e "I miei professionisti" mostrano solo visite e prenotazioni; ricerca con "Cerca strutture" e "Cerca professionisti" in "I miei documenti" (referti già classificati), "Prenota una visita" sposta il risultato nella sezione; test aggiornati ma non eseguiti · [[16-frontend]]

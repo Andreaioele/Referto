@@ -33,7 +33,8 @@ describe('classifica', () => {
     const stato = motherFinto(['ARGOMENTO: Ecografia della tiroide · Endo', 'crinologia e diabetologia\nSINTESI\n', 'Testo che non serve.'], 30)
     const risultato = await classifica('TESTO DEL REFERTO')
     expect(risultato).toEqual({ esame: 'Ecografia della tiroide', area: 'Endocrinologia e diabetologia' })
-    expect(stato.corpi).toEqual([{ messaggio: 'TESTO DEL REFERTO' }])
+    // Il backend sa che serve solo la riga ARGOMENTO: niente conversazione, ma la spiegazione va in cache.
+    expect(stato.corpi).toEqual([{ messaggio: 'TESTO DEL REFERTO', classificazione: true }])
     expect(stato.annullato).toBe(true)
   })
 

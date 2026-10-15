@@ -84,6 +84,12 @@ relative a oggi). Referto è il widget integrato nel portale.
   grandezza del testo e le domande all'agente (`/api/foglietti`, [[15-backend]]).
   Ogni risposta cita la sezione e porta il lettore a quella pagina.
 - `Chat.tsx` è stato tolto: la chat libera è il widget senza documento.
+- Cache delle spiegazioni (con MongoDB, [[15-backend]]): se il referto era già
+  stato spiegato, il backend manda la spiegazione salvata in un colpo solo e
+  l'evento `fine` ha `da_cache: true`. `useChat` lo espone come `daCache` e il
+  widget lo dice solo nei dettagli a scomparsa «Come è fatta questa
+  spiegazione». L'id della conversazione che torna in `fine` si rimanda con le
+  domande, come prima: il backend risponde senza rispiegare il referto.
 
 ## Referto separato dal portale (15/10/2026)
 
@@ -138,8 +144,11 @@ locali → elenco**.
 - **Per i tuoi referti:** ogni referto ha "Dove andare". Se il referto non è
   ancora classificato, `classifica()` (`referto/cliente.ts`) lo manda a `POST
   /api/chat` e **si ferma appena arriva la riga `ARGOMENTO: esame · area`**
-  (la prima della risposta): annulla il resto, così non si aspetta né si paga
-  la spiegazione intera. Poi `GET /api/strutture?area=...` dalla casa della
+  (la prima della risposta): annulla il resto, così non si aspetta la
+  spiegazione intera. Manda anche `classificazione: true`: il backend finisce
+  comunque la spiegazione e la mette in cache (senza aprire una conversazione),
+  così la classificazione successiva e «Spiegamelo» su quel referto sono
+  immediati. Poi `GET /api/strutture?area=...` dalla casa della
   persona ([[15-backend]]). Se l'area non si capisce o il servizio non risponde,
   la persona la sceglie da un elenco.
 - **Dal widget:** quando il Mother agent spiega un referto, il widget salva la

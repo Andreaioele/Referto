@@ -170,7 +170,7 @@ function Spiegazione({
  * e lo manda al Mother agent; senza referto chiede di incollarne il testo.
  */
 export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiegare; onChiudi: () => void }) {
-  const { messaggi, inCorso, invia, azzera } = useChat()
+  const { messaggi, inCorso, daCache, invia, azzera } = useChat()
   const [bozza, setBozza] = useState('')
   const [stato, setStato] = useState<StatoBackend | null>(null)
   const pannello = useDialogo<HTMLDivElement>(onChiudi)
@@ -270,6 +270,7 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
               <p>
                 La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del
                 medico sono copiati dal referto così come sono.
+                {daCache && ' Questo referto era già stato spiegato: la spiegazione è quella salvata, non è stata riscritta.'}
                 {stato && ` Collegato al prontuario AIFA aggiornato al ${new Date(`${stato.aggiornato}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}.`}
               </p>
             </details>
