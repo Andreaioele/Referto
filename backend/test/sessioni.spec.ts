@@ -1,10 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { getModelToken, MongooseModule } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { Model } from 'mongoose';
-import os from 'node:os';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { ChatModule } from '../src/chat/chat.module';
@@ -13,6 +12,7 @@ import { ServizioChat } from '../src/chat/servizio-chat';
 import { config } from '../src/config';
 import { configuraApp } from '../src/crea-app';
 import { Trace, TraceDocument, Utente, UtenteDocument } from '../src/sessioni/schemi';
+import { connessioneMongo } from '../src/sessioni/connessione-mongo';
 import { SessioniModule } from '../src/sessioni/sessioni.module';
 import { ChiaveApiGuard } from '../src/sicurezza/chiave-api.guard';
 
@@ -41,13 +41,14 @@ function eventi_(testo: string): Array<Record<string, unknown>> {
 const REFERTO = 'ECG: ritmo sinusale, frequenza 72 bpm, asse normale.';
 const SPIEGAZIONE = 'ARGOMENTO: Elettrocardiogramma · Cardiologia\nSINTESI\nIl cuore batte con un ritmo regolare.';
 
+const fetchOriginale = global.fetch;
+
 describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () => {
   let mongo: MongoMemoryServer;
   let app: INestApplication<App>;
   let utenti: Model<UtenteDocument>;
   let trace: Model<TraceDocument>;
   let corpi: Array<{ messages: Array<{ role: string; content: string }> }>;
-  const fetchOriginale = global.fetch;
   const originali = { motore: config.motoreChat, modello: { ...config.modello }, chiave: config.chiaveApi };
 
   const chat = (corpo: Record<string, unknown>, utente?: string) => {
@@ -69,8 +70,7 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
     Object.assign(config.modello, { apiKey: 'chiave-di-prova', nome: 'DeepSeek-V4.1-Flash', riserva: 'DeepSeek-V4-Flash' });
     const modulo = await Test.createTestingModule({
       imports: [
-        // Il driver 7 carica "os" con import() dinamico, che jest non supporta senza --experimental-vm-modules.
-        MongooseModule.forRoot(mongo.getUri(), { dbName: 'Referto', runtimeAdapters: { os } }),
+        connessioneMongo(mongo.getUri()),
         SessioniModule,
         ChatModule,
       ],
@@ -296,4 +296,36 @@ describe('Senza MONGODB_URI', () => {
     await request(app.getHttpServer()).post('/api/sessioni/utenti').send({ nickname: 'Test Referto' }).expect(404);
     await app.close();
   });
+});
+
+describe('MongoDB che non risponde', () => {
+  it('il backend parte subito e la chat risponde lo stesso, senza archivio', async () => {
+    const motore = config.motoreChat;
+    const modello = { ...config.modello };
+    config.motoreChat = 'diretto';
+    Object.assign(config.modello, { apiKey: 'chiave-di-prova' });
+    const inizio = Date.now();
+    // Porta chiusa: la connessione non riesce mai.
+    const modulo = await Test.createTestingModule({ imports: [connessioneMongo('mongodb://127.0.0.1:9/'), SessioniModule, ChatModule] })
+      .overrideGuard(LimiteRichiesteGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
+    const app = configuraApp(modulo.createNestApplication());
+    await app.init();
+    expect(Date.now() - inizio).toBeLessThan(2_000);
+
+    global.fetch = jest.fn(async () => streaming('Risposta senza archivio')) as unknown as typeof fetch;
+    try {
+      const risposta = await request(app.getHttpServer()).post('/api/chat').send({ messaggio: 'Ciao' }).expect(200);
+      expect(eventi_(risposta.text)).toEqual([
+        { tipo: 'testo', testo: 'Risposta senza archivio' },
+        { tipo: 'fine', conversazione: expect.stringMatching(/^[0-9a-f-]{36}$/) },
+      ]);
+    } finally {
+      global.fetch = fetchOriginale;
+      config.motoreChat = motore;
+      Object.assign(config.modello, modello);
+      await app.close();
+    }
+  }, 30_000);
 });
