@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { statoBackend, type StatoBackend } from './cliente'
 import { Collegamento } from '../Collegamento'
 import { Icona } from '../Icona'
@@ -191,6 +191,26 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
   const domande: Array<[Messaggio, Messaggio]> = []
   for (let i = 0; i + 1 < seguito.length; i += 2) domande.push([seguito[i], seguito[i + 1]])
 
+  // Una domanda nuova (pronta o scritta) va in cima al pannello, con la risposta
+  // sotto: si scorre lì una volta sola, quando la domanda compare.
+  const ultimaDomanda = useRef<HTMLDivElement>(null)
+  const domandeViste = useRef(domande.length)
+  useEffect(() => {
+    if (domande.length > domandeViste.current) {
+      const domanda = ultimaDomanda.current
+      const corpo = domanda?.closest<HTMLElement>('.referto-corpo')
+      if (domanda && corpo) {
+        // Dopo il disegno: la domanda a 12 px dalla cima del pannello.
+        window.requestAnimationFrame(() => {
+          const fermo = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+          const cima = corpo.scrollTop + domanda.getBoundingClientRect().top - corpo.getBoundingClientRect().top - 12
+          corpo.scrollTo?.({ top: cima, behavior: fermo ? 'auto' : 'smooth' })
+        })
+      }
+    }
+    domandeViste.current = domande.length
+  }, [domande.length])
+
   function invio(evento: FormEvent) {
     evento.preventDefault()
     const testo = bozza.trim()
@@ -252,7 +272,11 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
           )}
 
           {domande.map(([domanda, risposta], indice) => (
-            <div key={indice} className="referto-scambio">
+            <div
+              key={indice}
+              className={indice === domande.length - 1 ? 'referto-scambio referto-scambio-ultimo' : 'referto-scambio'}
+              ref={indice === domande.length - 1 ? ultimaDomanda : undefined}
+            >
               <p className="referto-domanda">{domanda.testo}</p>
               <section className={risposta.errore ? 'referto-box referto-errore' : 'referto-box'}>
                 {risposta.testo ? (

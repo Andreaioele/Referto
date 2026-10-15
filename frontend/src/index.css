@@ -1258,7 +1258,14 @@ details summary {
   font-weight: 700;
 }
 
+.referto-scambio-ultimo {
+  /* L'ultima domanda resta in cima al pannello anche con una risposta breve. */
+  min-height: 60vh;
+}
+
 .referto-scambio {
+  /* Quando ci si scorre sopra, la domanda non resta attaccata al bordo. */
+  scroll-margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
