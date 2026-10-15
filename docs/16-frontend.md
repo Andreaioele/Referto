@@ -48,6 +48,8 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/index.css` | Tema del portale (finto: gruppi di righe, un verde, Source Serif 4 per i titoli e Public Sans), versione per telefono sotto i 760 px |
 | `src/referto/referto.css` | Tema di Referto: widget e lettore del foglietto, separato dal portale perché è la parte che si integra in portali diversi |
 | `src/referto/Marchio.tsx` | Marchio di Referto (foglio con l'angolo piegato e la R) |
+| `src/referto/tipi.ts` | Cosa riceve Referto dal portale: `RefertoDaSpiegare`, `FarmacoDaLeggere` |
+| `src/portale/perReferto.ts` | Adattatore del portale dimostrativo verso i tipi di Referto |
 
 ## Tema di Referto (15/10/2026)
 
@@ -99,9 +101,35 @@ cd frontend && npm install
 npm run dev     # http://localhost:5173, con il backend avviato su :3000
 npm run build   # controllo dei tipi e build in dist/
 npm run lint    # oxlint
+npm test        # Vitest (jsdom): file *.test.ts(x) accanto al codice
 ```
 
 Su Vercel è il servizio `frontend` del progetto Services (`vercel.json` nella radice).
+
+## Referto separato dal portale (15/10/2026)
+
+Referto (`src/referto/`) si integra in portali diversi, quindi non importa nulla
+da `src/portale/`: lo impone la regola `no-restricted-imports` in
+`.oxlintrc.json` (`npm run lint` fallisce).
+
+- **Cosa riceve:** i tipi di `referto/tipi.ts`. `RefertoDaSpiegare` ha titolo,
+  data già scritta, testo (l'unica cosa che va al Mother agent), valori, note
+  del medico e la visita collegata già risolta (titolo, quando, indirizzo), solo
+  se è ancora da fare. `FarmacoDaLeggere` ha codice AIFA, confezione, nome AIFA,
+  nome della ricetta e dose scritta dal medico.
+- **Adattatore:** `portale/perReferto.ts` trasforma i dati del portale in
+  questi tipi; `App.tsx` lo chiama quando apre il widget o il lettore. Un altro
+  portale scrive il suo adattatore, Referto non cambia.
+- **CSS:** `referto.css` usa solo le sue variabili e contiene le classi di
+  Referto prima sparse nel portale (`.bottone-referto`, `.referto-velo`,
+  icona della visita, etichette "Citata nella risposta" e "Non trovato"). Dal
+  portale prende solo le classi di base: `.bottone`, `.bottone-leggero`,
+  `.tenue`, `.piccolo`, `.nascosto`, `.solo-computer`, `.solo-telefono`.
+- Testo secondario di Referto `#4b5450` (7,8:1): prima era `#55605c` (6,5:1),
+  sotto il minimo di 7:1.
+- Test: `portale/perReferto.test.ts`, `referto/domande-pronte.test.ts`,
+  `referto/WidgetReferto.test.tsx` (il widget con un Mother agent finto: manda
+  solo il testo del referto, mostra valori, note, visita e domande pronte).
 
 ## Portale dimostrativo con Referto integrato (15/10/2026)
 

@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Referto separato dal portale: tipi propri (`referto/tipi.ts`), adattatore `portale/perReferto.ts`, regola di lint che vieta import da `portale/`, CSS di Referto autonomo (corretta l'icona della visita collegata rimasta senza stile e il grigio secondario sotto 7:1); Vitest nel frontend con i primi test · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Sessioni: salvataggio dietro l'interfaccia `ArchivioSessioni` (MongoDB e memoria); i test girano sempre (prima saltati senza MongoDB), verificati anche su MongoDB 7 · [[15-backend]]
 - 2026-10-15 · pietro-giovedi · Foglietti: fonte dei fogli separata dalla loro lettura (`FonteFoglietti`, `FonteAifa`); test con fonte di prova al posto di `jest.spyOn`, nuovi test su download, memoria ed estrazione; `npm test` con `--experimental-vm-modules` · [[15-backend]]
 - 2026-10-15 · pietro-giovedi · Primo diagramma archify: architettura del sistema (`docs/archify/architecture-referto-20261015-104805/`) · [[archify/README]]

@@ -6,6 +6,8 @@
  * Le date sono relative a oggi, così la demo resta sempre attuale.
  */
 
+import type { ValoreLaboratorio } from '../referto/tipi'
+
 export interface Paziente {
   nome: string
   cognome: string
@@ -38,13 +40,6 @@ export interface Visita {
   refertoId?: string
 }
 
-export interface ValoreLaboratorio {
-  esame: string
-  risultato: string
-  unita: string
-  riferimento: string
-  fuori: boolean
-}
 
 export interface Referto {
   /** Testo del referto come lo scrive il medico: è ciò che riceve Referto. */

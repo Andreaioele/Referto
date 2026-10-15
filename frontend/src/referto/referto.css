@@ -5,7 +5,8 @@
  * Colori (contrasto misurato sul bianco):
  * - verde Referto #0f5143 (9,2:1) solo per marchio e azioni, mai per stati
  *   clinici: il verde si legge come "tutto a posto";
- * - contenuti clinici su carta bianca, testo grafite #1d2422 (15,8:1);
+ * - contenuti clinici su carta bianca, testo grafite #1d2422 (15,8:1), testo
+ *   secondario #4b5450 (7,8:1);
  * - menta #e3f1ea solo per ciò che è selezionato o attivo, mai come struttura:
  *   le tinte pallide blu-verdi sono quelle che con l'età si distinguono peggio;
  * - bordi dei controlli #76847e (3,9:1): i bordi che delimitano un comando
@@ -13,10 +14,14 @@
  * - ambra #8a4a00 (6,9:1) per i valori fuori intervallo, sempre con l'etichetta.
  * Carattere: Atkinson Hyperlegible Next (Braille Institute), pensato per chi
  * vede poco e chiaro sui numeri (1/l/I, 0/O): ospitato nell'app.
+ *
+ * Referto usa solo le sue variabili (qui sotto). Dal portale prende soltanto
+ * le classi di base dei pulsanti e di servizio (.bottone, .bottone-leggero,
+ * .tenue, .piccolo, .nascosto, .solo-computer, .solo-telefono).
  */
 :root {
   --ink: #1d2422;
-  --muted: #55605c;
+  --muted: #4b5450;
   --paper: #ffffff;
   --canvas: #f3f4f2;
   --line: #dfe4e1;
@@ -28,6 +33,27 @@
   --danger: #9f3434;
   --ambra: #8a4a00;
   --font: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Pulsanti che aprono Referto: pillola con il marchio, così si riconoscono
+   dai rettangoli del portale anche senza distinguere il colore. */
+.bottone-referto {
+  border-radius: 999px;
+  padding: 0 24px 0 16px;
+  background: var(--green);
+  font-family: var(--font);
+  font-weight: 700;
+}
+
+.bottone-referto:hover:not(:disabled) {
+  background: var(--green-dark);
+}
+
+.referto-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(26, 32, 30, 0.45);
 }
 
 /* ---------- Widget Referto ---------- */
@@ -266,6 +292,54 @@
   font-weight: 700;
 }
 
+.referto-visita-icona {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--mint);
+  color: var(--green);
+}
+
+/* Sezione del foglietto citata nell'ultima risposta. */
+.referto-citata-etichetta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--green);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.referto-citata-etichetta::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Risposta non trovata nel foglietto: testo con pallino ambra, non un colore da solo. */
+.referto-non-trovato {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ambra);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.referto-non-trovato::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .referto-scambio {
   display: flex;
   flex-direction: column;
@@ -452,9 +526,9 @@ p.referto-errore {
 .referto-ricetta {
   padding: 10px 14px;
   border-radius: 12px;
-  background: var(--p-menta);
-  color: var(--p-ink);
-  font-family: var(--p-font);
+  background: var(--mint);
+  color: var(--ink);
+  font-family: var(--font);
   font-size: 1rem;
 }
 
@@ -546,7 +620,7 @@ p.referto-errore {
   justify-content: space-between;
   gap: 10px 20px;
   padding: 10px 20px;
-  border-bottom: 1px solid var(--p-linea);
+  border-bottom: 1px solid var(--line);
   background: #fff;
 }
 
@@ -561,10 +635,10 @@ p.referto-errore {
   place-items: center;
   width: 48px;
   height: 48px;
-  border: 1px solid var(--p-bordo);
+  border: 1px solid var(--line-forte);
   border-radius: 10px;
   background: #fff;
-  color: var(--p-ink);
+  color: var(--ink);
   font-size: 1.125rem;
   font-weight: 700;
   cursor: pointer;
@@ -595,14 +669,14 @@ p.referto-errore {
   flex-direction: column;
   gap: 6px;
   padding: 20px 12px;
-  border-right: 1px solid var(--p-linea);
+  border-right: 1px solid var(--line);
   background: #f6f9f7;
   overflow-y: auto;
 }
 
 .lettore-sezioni-titolo {
   padding: 0 10px 6px;
-  color: var(--p-tenue);
+  color: var(--muted);
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -761,9 +835,9 @@ p.referto-errore {
   justify-content: space-between;
   gap: 8px 20px;
   padding: 12px 20px;
-  border-top: 1px solid var(--p-linea);
+  border-top: 1px solid var(--line);
   background: #fff;
-  color: var(--p-tenue);
+  color: var(--muted);
   font-size: 0.9375rem;
 }
 
@@ -873,7 +947,7 @@ p.referto-errore {
     gap: 8px;
     padding: 10px 14px;
     border-right: 0;
-    border-bottom: 1px solid var(--p-linea);
+    border-bottom: 1px solid var(--line);
     overflow-x: auto;
     overflow-y: hidden;
   }
@@ -889,7 +963,7 @@ p.referto-errore {
     min-height: 44px;
     max-width: 240px;
     padding: 6px 12px 6px 6px;
-    border: 1px solid var(--p-bordo);
+    border: 1px solid var(--line-forte);
     border-radius: 999px;
     background: #fff;
     font-size: 0.9375rem;

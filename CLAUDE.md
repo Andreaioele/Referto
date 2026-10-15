@@ -61,7 +61,7 @@ dell'HTML).
 
 ```bash
 cd backend && npm test && npm run parita:tutti     # test e parità con l'app Python
-cd frontend && npm run build && npm run lint
+cd frontend && npm run build && npm run lint && npm test
 cd resources && uv run --no-project --with-requirements requirements.txt python -m unittest test_app
 cd resources && uv run --no-project --with-requirements requirements.txt python web_app.py --port 7860 --model <modello> --senza-decision-model
 ```

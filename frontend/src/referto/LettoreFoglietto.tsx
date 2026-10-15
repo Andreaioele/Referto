@@ -9,11 +9,11 @@ import {
   type RispostaFoglietto,
 } from '../api'
 import { Icona } from '../Icona'
-import type { Farmaco } from '../portale/dati'
 import { useDialogo } from '../useDialogo'
 import { PaginaPdf } from './PaginaPdf'
 import { MarchioFoglio } from './Marchio'
 import { apriPdf } from './pdf'
+import type { FarmacoDaLeggere } from './tipi'
 
 interface Scambio {
   domanda: string
@@ -36,9 +36,9 @@ function nomeLeggibile(nome: string): string {
  * con le sue sezioni e, accanto, le domande all'agente di Referto. Ogni
  * risposta dice da quale sezione viene e porta il lettore a quella pagina.
  */
-export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onChiudi: () => void }) {
-  const cod = farmaco.aifa?.cod ?? ''
-  const forma = farmaco.aifa?.confezione ?? ''
+export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLeggere; onChiudi: () => void }) {
+  const cod = farmaco.codiceAifa
+  const forma = farmaco.confezione
   const [info, setInfo] = useState<InfoFoglietto | null>(null)
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null)
   const [errore, setErrore] = useState<string | null>(null)
@@ -80,7 +80,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onCh
     fineDomande.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [scambi])
 
-  const nome = info ? nomeLeggibile(info.nome) : (farmaco.aifa?.nome ?? farmaco.nome)
+  const nome = info ? nomeLeggibile(info.nome) : farmaco.nome
   const totale = info?.pagine ?? pdf?.numPages ?? 0
   const sezioni = info?.sezioni ?? []
   const sezioneCitata = sezioni.find((s) => s.numero === citata)
@@ -140,7 +140,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onCh
         <MarchioFoglio dimensione={34} variante="chiaro" />
         <div className="lettore-titolo">
           <strong id="titolo-lettore">Foglietto illustrativo di {nome}</strong>
-          <span>{info ? `${info.principio_attivo}, ${nomeLeggibile(info.ditta)}` : farmaco.nome}</span>
+          <span>{info ? `${info.principio_attivo}, ${nomeLeggibile(info.ditta)}` : farmaco.descrizione}</span>
         </div>
         <button
           type="button"
@@ -256,7 +256,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onCh
             <>
               {sezioneCitata && sezioneCitata.pagina === pagina && (
                 <p className="lettore-citata">
-                  <span className="pastiglia pastiglia-referto">Citata nella risposta</span>
+                  <span className="referto-citata-etichetta">Citata nella risposta</span>
                   Sezione {sezioneCitata.numero} · {sezioneCitata.titolo}
                 </p>
               )}
@@ -355,7 +355,7 @@ function RispostaDelFoglietto({
 }: {
   scambio: Scambio
   risposta: RispostaFoglietto
-  farmaco: Farmaco
+  farmaco: FarmacoDaLeggere
   onVai: (sezione: number, cita: boolean) => void
 }) {
   const fonti = risposta.brani.filter((b) => b.sezione === risposta.sezione)
@@ -363,9 +363,9 @@ function RispostaDelFoglietto({
   return (
     <>
       <p>{risposta.risposta}</p>
-      {risposta.trovata && SULLA_DOSE.test(scambio.domanda) && (
+      {risposta.trovata && farmaco.doseScritta && SULLA_DOSE.test(scambio.domanda) && (
         <div className="referto-ricetta">
-          Nella tua ricetta il medico ha scritto: <strong>{farmaco.dose}</strong>
+          Nella tua ricetta il medico ha scritto: <strong>{farmaco.doseScritta}</strong>
         </div>
       )}
       {risposta.trovata && sezione && (
@@ -382,7 +382,7 @@ function RispostaDelFoglietto({
           ))}
         </details>
       )}
-      {!risposta.trovata && <span className="pastiglia pastiglia-avviso">Non trovato nel foglietto</span>}
+      {!risposta.trovata && <span className="referto-non-trovato">Non trovato nel foglietto</span>}
     </>
   )
 }

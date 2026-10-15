@@ -162,20 +162,6 @@ button {
   font-size: 1rem;
 }
 
-.bottone-referto {
-  /* Pulsanti che aprono Referto: pillola con il marchio, così si riconoscono
-     dai rettangoli del portale anche senza distinguere il colore. */
-  border-radius: 999px;
-  padding: 0 24px 0 16px;
-  background: var(--green);
-  font-family: var(--font);
-  font-weight: 700;
-}
-
-.bottone-referto:hover:not(:disabled) {
-  background: var(--green-dark);
-}
-
 button:disabled {
   opacity: 0.55;
   cursor: default;
@@ -540,10 +526,6 @@ button:disabled {
 
 .pastiglia-avviso {
   color: var(--p-avviso-testo);
-}
-
-.pastiglia-referto {
-  color: var(--green);
 }
 
 .riga-titolo {
@@ -911,15 +893,11 @@ details summary {
 }
 
 /* ---------- Finestra del documento ---------- */
-.velo,
-.referto-velo {
+.velo {
   position: fixed;
   inset: 0;
   z-index: 40;
   background: rgba(26, 32, 30, 0.45);
-}
-
-.velo {
   display: grid;
   place-items: center;
   padding: 24px;
