@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · chat-frontend · Backend: se MongoDB non si connette si riprova ogni 15 secondi (prima l'istanza restava senza archivio fino al riavvio) · [[15-backend]]
 - 2026-10-15 · chat-frontend · Backend: connessione a MongoDB pigra (con `MONGODB_URI` su Vercel tutte le rotte davano 500); nel log il motivo se non si connette (oggi: IP di Vercel non ammesso in Atlas) · [[15-backend]]
 - 2026-10-15 · chat-frontend · Chat: la spiegazione si finisce e va in cache anche se il browser chiude a metà (tempo massimo 240 s); `classificazione: true` da `classifica()` riempie la cache senza creare conversazioni; nessuna conversazione per un browser che ha già chiuso · [[15-backend]] · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Unito a `staging`: le sessioni con turni dal browser e l'`ArchivioSessioni` lasciano il posto alle conversazioni della chat; restano gli utenti con nickname (`POST /api/sessioni/utenti`); `daCache` spostato sul nuovo `cliente.ts` · [[15-backend]] · [[16-frontend]]

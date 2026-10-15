@@ -182,8 +182,9 @@ leggono, rinominano ed eliminano.
   subito. Il 15/10/2026, con `MONGODB_URI` appena impostata, Nest aspettava
   MongoDB all'avvio, Vercel chiudeva la funzione («No exports found in module
   "/var/task/main.js"») e **tutte** le rotte davano 500. Se la connessione non
-  riesce, nel log c'è il motivo tecnico (`[MongoDB] Connessione non riuscita`) e
-  la chat va avanti senza archivio. Il driver riceve `runtimeAdapters: { os }`
+  riesce, nel log c'è il motivo tecnico (`[MongoDB] Connessione non riuscita`),
+  la chat va avanti senza archivio e si riprova ogni 15 secondi finché non si
+  connette (`[MongoDB] Connesso`). Il driver riceve `runtimeAdapters: { os }`
   (altrimenti lo carica con `import()` dinamico, che in jest non funziona).
 - **Atlas deve accettare Vercel:** le funzioni Vercel non hanno un IP fisso, quindi
   in Atlas → Network Access serve `0.0.0.0/0` (o gli IP statici di Vercel, piano

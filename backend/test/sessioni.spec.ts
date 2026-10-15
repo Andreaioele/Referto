@@ -1,9 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { getModelToken } from '@nestjs/mongoose';
+import { getConnectionToken, getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
-import { Model } from 'mongoose';
+import type { Connection, Model } from 'mongoose';
+import { createServer, type AddressInfo } from 'node:net';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { ChatModule } from '../src/chat/chat.module';
@@ -299,14 +300,22 @@ describe('Senza MONGODB_URI', () => {
 });
 
 describe('MongoDB che non risponde', () => {
-  it('il backend parte subito e la chat risponde lo stesso, senza archivio', async () => {
+  it('il backend parte subito, la chat risponde senza archivio e si aggancia quando MongoDB torna', async () => {
     const motore = config.motoreChat;
     const modello = { ...config.modello };
     config.motoreChat = 'diretto';
     Object.assign(config.modello, { apiKey: 'chiave-di-prova' });
+    // Una porta libera, su cui MongoDB per ora non c'è.
+    const porta = await new Promise<number>((risolvi) => {
+      const server = createServer().listen(0, () => {
+        const { port } = server.address() as AddressInfo;
+        server.close(() => risolvi(port));
+      });
+    });
     const inizio = Date.now();
-    // Porta chiusa: la connessione non riesce mai.
-    const modulo = await Test.createTestingModule({ imports: [connessioneMongo('mongodb://127.0.0.1:9/'), SessioniModule, ChatModule] })
+    const modulo = await Test.createTestingModule({
+      imports: [connessioneMongo(`mongodb://127.0.0.1:${porta}/`, 500), SessioniModule, ChatModule],
+    })
       .overrideGuard(LimiteRichiesteGuard)
       .useValue({ canActivate: () => true })
       .compile();
@@ -314,18 +323,25 @@ describe('MongoDB che non risponde', () => {
     await app.init();
     expect(Date.now() - inizio).toBeLessThan(2_000);
 
-    global.fetch = jest.fn(async () => streaming('Risposta senza archivio')) as unknown as typeof fetch;
+    let mongoTardivo: MongoMemoryServer | undefined;
+    global.fetch = jest.fn(async () => streaming('Risposta')) as unknown as typeof fetch;
     try {
-      const risposta = await request(app.getHttpServer()).post('/api/chat').send({ messaggio: 'Ciao' }).expect(200);
-      expect(eventi_(risposta.text)).toEqual([
-        { tipo: 'testo', testo: 'Risposta senza archivio' },
-        { tipo: 'fine', conversazione: expect.stringMatching(/^[0-9a-f-]{36}$/) },
-      ]);
+      const senza = await request(app.getHttpServer()).post('/api/chat').send({ messaggio: 'Ciao' }).expect(200);
+      expect(eventi_(senza.text).at(-1)).toEqual({ tipo: 'fine', conversazione: expect.stringMatching(/^[0-9a-f-]{36}$/) });
+
+      // MongoDB arriva (come quando Atlas comincia ad accettare Vercel): al tentativo successivo la chat salva.
+      mongoTardivo = await MongoMemoryServer.create({ instance: { port: porta } });
+      const connessione = modulo.get<Connection>(getConnectionToken());
+      const limite = Date.now() + 15_000;
+      while (connessione.readyState !== 1 && Date.now() < limite) await new Promise((r) => setTimeout(r, 100));
+      const con = await request(app.getHttpServer()).post('/api/chat').send({ messaggio: 'Ciao di nuovo' }).expect(200);
+      expect(eventi_(con.text).at(-1)).toMatchObject({ tipo: 'fine', conversazione: expect.stringMatching(/^[0-9a-f]{24}$/) });
     } finally {
       global.fetch = fetchOriginale;
       config.motoreChat = motore;
       Object.assign(config.modello, modello);
       await app.close();
+      await mongoTardivo?.stop();
     }
-  }, 30_000);
+  }, 60_000);
 });
