@@ -73,7 +73,7 @@ export class Trace {
   @Prop({ type: Types.ObjectId, ref: 'Conversazione', index: true })
   conversazione?: Types.ObjectId;
 
-  @Prop({ required: true, enum: ['spiegazione', 'domanda'] })
+  @Prop({ required: true, enum: ['spiegazione', 'classificazione', 'domanda'] })
   tipo: string;
 
   @Prop({ required: true, enum: ['ok', 'errore', 'interrotta'] })

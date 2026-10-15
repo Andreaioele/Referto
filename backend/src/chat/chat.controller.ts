@@ -44,8 +44,12 @@ export class ChatController {
     res.flushHeaders();
 
     const interruzione = new AbortController();
-    res.on('close', () => interruzione.abort());
     const attesa = setInterval(() => res.write(': attesa\n\n'), INTERVALLO_ATTESA_MS);
+    // Il browser ha chiuso: niente più scritture (una spiegazione può continuare per finire in cache).
+    res.on('close', () => {
+      clearInterval(attesa);
+      interruzione.abort();
+    });
     try {
       const eventi = this.servizio.rispondi({ ...richiesta, utente }, interruzione.signal);
       for await (const evento of eventi) {

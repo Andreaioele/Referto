@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Length, Matches } from 'class-validator';
 
 export const LUNGHEZZA_MASSIMA_MESSAGGIO = 30000;
 
@@ -21,4 +21,12 @@ export class ChatDto {
     message: 'conversazione non valida',
   })
   conversazione?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Al browser serve solo la riga ARGOMENTO del referto: la spiegazione si genera e va in cache, ma non nasce una conversazione.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  classificazione?: boolean;
 }

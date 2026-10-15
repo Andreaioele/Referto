@@ -144,8 +144,11 @@ locali → elenco**.
 - **Per i tuoi referti:** ogni referto ha "Dove andare". Se il referto non è
   ancora classificato, `classifica()` (`referto/cliente.ts`) lo manda a `POST
   /api/chat` e **si ferma appena arriva la riga `ARGOMENTO: esame · area`**
-  (la prima della risposta): annulla il resto, così non si aspetta né si paga
-  la spiegazione intera. Poi `GET /api/strutture?area=...` dalla casa della
+  (la prima della risposta): annulla il resto, così non si aspetta la
+  spiegazione intera. Manda anche `classificazione: true`: il backend finisce
+  comunque la spiegazione e la mette in cache (senza aprire una conversazione),
+  così la classificazione successiva e «Spiegamelo» su quel referto sono
+  immediati. Poi `GET /api/strutture?area=...` dalla casa della
   persona ([[15-backend]]). Se l'area non si capisce o il servizio non risponde,
   la persona la sceglie da un elenco.
 - **Dal widget:** quando il Mother agent spiega un referto, il widget salva la

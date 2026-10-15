@@ -8,9 +8,11 @@ import os from 'node:os';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { ChatModule } from '../src/chat/chat.module';
+import { LimiteRichiesteGuard } from '../src/chat/limite-richieste.guard';
+import { ServizioChat } from '../src/chat/servizio-chat';
 import { config } from '../src/config';
 import { configuraApp } from '../src/crea-app';
-import { Utente, UtenteDocument } from '../src/sessioni/schemi';
+import { Trace, TraceDocument, Utente, UtenteDocument } from '../src/sessioni/schemi';
 import { SessioniModule } from '../src/sessioni/sessioni.module';
 import { ChiaveApiGuard } from '../src/sicurezza/chiave-api.guard';
 
@@ -29,7 +31,7 @@ function streaming(...testi: string[]): Response {
   return new Response(corpo, { status: 200 });
 }
 
-function eventi(testo: string): Array<Record<string, unknown>> {
+function eventi_(testo: string): Array<Record<string, unknown>> {
   return testo
     .split('\n')
     .filter((riga) => riga.startsWith('data: '))
@@ -43,6 +45,7 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
   let mongo: MongoMemoryServer;
   let app: INestApplication<App>;
   let utenti: Model<UtenteDocument>;
+  let trace: Model<TraceDocument>;
   let corpi: Array<{ messages: Array<{ role: string; content: string }> }>;
   const fetchOriginale = global.fetch;
   const originali = { motore: config.motoreChat, modello: { ...config.modello }, chiave: config.chiaveApi };
@@ -78,10 +81,15 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
           inject: [Reflector],
         },
       ],
-    }).compile();
+    })
+      // Il limite per IP si prova in chat.spec.ts; qui le richieste sono più di 10 al minuto.
+      .overrideGuard(LimiteRichiesteGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
     app = configuraApp(modulo.createNestApplication());
     await app.init();
     utenti = modulo.get(getModelToken(Utente.name));
+    trace = modulo.get(getModelToken(Trace.name));
   }, 120_000);
 
   beforeEach(() => {
@@ -103,7 +111,7 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
 
   it('salva la spiegazione e la restituisce dalla cache se lo stesso referto torna', async () => {
     rispondi(streaming('ARGOMENTO: Elettrocardiogramma · Cardiologia\n', 'SINTESI\nIl cuore batte con un ritmo regolare.'));
-    const prima = eventi((await chat({ messaggio: REFERTO })).text);
+    const prima = eventi_((await chat({ messaggio: REFERTO })).text);
     const finePrima = prima.at(-1) as { tipo: string; conversazione: string; da_cache: boolean };
     expect(finePrima).toMatchObject({ tipo: 'fine', da_cache: false });
     expect(finePrima.conversazione).toMatch(/^[0-9a-f]{24}$/);
@@ -111,7 +119,7 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
 
     // Stesso referto con spazi e a capo diversi: nessuna chiamata al modello.
     global.fetch = jest.fn() as unknown as typeof fetch;
-    const seconda = eventi((await chat({ messaggio: `  ${REFERTO.replace(/ /g, '\n')}  ` })).text);
+    const seconda = eventi_((await chat({ messaggio: `  ${REFERTO.replace(/ /g, '\n')}  ` })).text);
     expect(global.fetch).not.toHaveBeenCalled();
     expect(seconda[0]).toEqual({ tipo: 'testo', testo: SPIEGAZIONE });
     const fineSeconda = seconda.at(-1) as { conversazione: string };
@@ -127,10 +135,10 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
 
   it('risponde alle domande con la spiegazione salvata, senza rispiegare il referto', async () => {
     global.fetch = jest.fn() as unknown as typeof fetch;
-    const conversazione = (eventi((await chat({ messaggio: REFERTO })).text).at(-1) as { conversazione: string }).conversazione;
+    const conversazione = (eventi_((await chat({ messaggio: REFERTO })).text).at(-1) as { conversazione: string }).conversazione;
 
     rispondi(streaming('Vuol dire che il cuore batte regolare.'));
-    const risposta = eventi((await chat({ messaggio: 'Cosa vuol dire ritmo sinusale?', conversazione })).text);
+    const risposta = eventi_((await chat({ messaggio: 'Cosa vuol dire ritmo sinusale?', conversazione })).text);
     expect(risposta.at(-1)).toEqual({ tipo: 'fine', conversazione });
     const messaggi = corpi[0].messages.map(({ role, content }) => ({ role, content }));
     expect(messaggi.slice(1)).toEqual([
@@ -169,10 +177,10 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
     config.chiaveApi = 'segreto-di-prova';
     const referto = 'RX torace: non si osservano addensamenti.';
     rispondi(new Response('{}', { status: 500 }));
-    expect(eventi((await chat({ messaggio: referto })).text).at(-1)).toMatchObject({ tipo: 'errore' });
+    expect(eventi_((await chat({ messaggio: referto })).text).at(-1)).toMatchObject({ tipo: 'errore' });
 
     rispondi(streaming('ARGOMENTO: Radiografia del torace · Pneumologia\n'));
-    const fine = eventi((await chat({ messaggio: referto })).text).at(-1);
+    const fine = eventi_((await chat({ messaggio: referto })).text).at(-1);
     expect(fine).toMatchObject({ tipo: 'fine', da_cache: false });
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
@@ -188,16 +196,66 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
     await request(app.getHttpServer()).post('/api/sessioni/utenti').send({ nickname: 'A' }).expect(400);
   });
 
+  const conversazioni = async () => (await request(app.getHttpServer()).get('/api/sessioni/conversazioni').expect(200)).body as unknown[];
+
+  it('se il browser chiude a metà la spiegazione continua e finisce in cache, senza conversazione', async () => {
+    const referto = 'Ecografia addome: fegato di dimensioni regolari.';
+    rispondi(streaming('ARGOMENTO: Ecografia dell\'addome · Gastroenterologia ed endoscopia digestiva\n', 'SINTESI\n', 'Il fegato è regolare.'));
+    const prima = (await conversazioni()).length;
+    const browser = new AbortController();
+    const eventi = app.get(ServizioChat).rispondi({ messaggio: referto }, browser.signal);
+    expect((await eventi.next()).value).toMatchObject({ tipo: 'testo' });
+    // Come fa la classificazione dopo la riga ARGOMENTO: il browser chiude e il controller smette di leggere.
+    browser.abort();
+    await eventi.return(undefined);
+
+    expect((await conversazioni()).length).toBe(prima);
+    // La generazione è finita: trace "ok" anche se il browser non l'ha vista.
+    expect(await trace.findOne({ tipo: 'spiegazione' }).sort({ createdAt: -1 }).lean()).toMatchObject({ esito: 'ok', da_cache: false });
+    global.fetch = jest.fn() as unknown as typeof fetch;
+    const dopo = eventi_((await chat({ messaggio: referto })).text);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(dopo[0]).toEqual({
+      tipo: 'testo',
+      testo: 'ARGOMENTO: Ecografia dell\'addome · Gastroenterologia ed endoscopia digestiva\nSINTESI\nIl fegato è regolare.',
+    });
+    expect(dopo.at(-1)).toMatchObject({ tipo: 'fine', da_cache: true });
+  });
+
+  it('la classificazione usa e riempie la cache ma non crea conversazioni', async () => {
+    const referto = 'Visita oculistica: visus 10/10 in entrambi gli occhi.';
+    rispondi(streaming('ARGOMENTO: Visita oculistica · Oculistica\n', 'SINTESI\nLa vista è buona.'));
+    const prima = (await conversazioni()).length;
+    const generata = eventi_((await chat({ messaggio: referto, classificazione: true })).text);
+    expect(generata.at(-1)).toEqual({ tipo: 'fine', conversazione: null, da_cache: false });
+
+    global.fetch = jest.fn() as unknown as typeof fetch;
+    const dallaCache = eventi_((await chat({ messaggio: referto, classificazione: true })).text);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(dallaCache.at(-1)).toEqual({ tipo: 'fine', conversazione: null, da_cache: true });
+    expect((await conversazioni()).length).toBe(prima);
+    const tracce = await trace.find({ tipo: 'classificazione' }).sort({ createdAt: 1 }).lean();
+    expect(tracce.map(({ esito, da_cache, conversazione }) => ({ esito, da_cache, conversazione }))).toEqual([
+      { esito: 'ok', da_cache: false, conversazione: undefined },
+      { esito: 'ok', da_cache: true, conversazione: undefined },
+    ]);
+
+    // Poi "Spiegamelo" sullo stesso referto: immediato, e questa volta con la conversazione.
+    const spiegazione = eventi_((await chat({ messaggio: referto })).text);
+    expect(spiegazione.at(-1)).toMatchObject({ tipo: 'fine', da_cache: true, conversazione: expect.stringMatching(/^[0-9a-f]{24}$/) });
+    expect((await conversazioni()).length).toBe(prima + 1);
+  });
+
   it('tiene separati gli utenti: cache e conversazioni non si condividono', async () => {
     const altro = (await utenti.create({ nickname: 'Mario' }))._id.toString();
     rispondi(streaming(SPIEGAZIONE));
-    const fine = eventi((await chat({ messaggio: REFERTO }, altro)).text).at(-1) as { conversazione: string; da_cache: boolean };
+    const fine = eventi_((await chat({ messaggio: REFERTO }, altro)).text).at(-1) as { conversazione: string; da_cache: boolean };
     expect(fine.da_cache).toBe(false);
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
     // L'utente predefinito non vede né continua la conversazione di Mario.
     await request(app.getHttpServer()).get(`/api/sessioni/conversazioni/${fine.conversazione}`).expect(404);
-    expect(eventi((await chat({ messaggio: 'E poi?', conversazione: fine.conversazione })).text)).toEqual([
+    expect(eventi_((await chat({ messaggio: 'E poi?', conversazione: fine.conversazione })).text)).toEqual([
       { tipo: 'errore', messaggio: 'Questa conversazione non è più disponibile. Riapri il referto per ricominciare.' },
     ]);
 
@@ -209,7 +267,7 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
 
   it('rinomina ed elimina una conversazione con le sue trace', async () => {
     global.fetch = jest.fn() as unknown as typeof fetch;
-    const conversazione = (eventi((await chat({ messaggio: REFERTO })).text).at(-1) as { conversazione: string }).conversazione;
+    const conversazione = (eventi_((await chat({ messaggio: REFERTO })).text).at(-1) as { conversazione: string }).conversazione;
     const rinominata = await request(app.getHttpServer())
       .patch(`/api/sessioni/conversazioni/${conversazione}`)
       .send({ titolo: 'ECG di marzo' })

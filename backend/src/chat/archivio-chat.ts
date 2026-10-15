@@ -33,7 +33,8 @@ export function nuovaTraceMotore(motore: string): TraceMotore {
 
 /** La trace completa di una generazione, come viene salvata. */
 export interface TraceGenerazione extends TraceMotore {
-  tipo: 'spiegazione' | 'domanda';
+  /** "classificazione": spiegazione chiesta solo per la riga ARGOMENTO, senza conversazione. */
+  tipo: 'spiegazione' | 'classificazione' | 'domanda';
   esito: 'ok' | 'errore' | 'interrotta';
   /** Spiegazione restituita dalla cache, senza chiamare il modello. */
   da_cache: boolean;

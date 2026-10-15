@@ -135,6 +135,18 @@ mostra la riga così com'è; in futuro può leggerla per "Dove andare".
   `fine` ha `da_cache: true`. Altrimenti la si genera, la si salva in cache
   (solo se finita senza errori) e `fine` ha `da_cache: false`. In tutti e due i
   casi nasce una conversazione nuova, il cui id (ObjectId) torna in `fine`.
+- **La spiegazione si finisce anche se il browser chiude.** La generazione non
+  usa il segnale del browser ma un tempo massimo di 240 secondi (sotto i 300 di
+  una funzione Vercel): se la connessione si chiude a metà, il backend legge il
+  resto senza mandarlo, salva la spiegazione in cache e solo dopo chiude la
+  risposta (così Vercel non ferma la funzione). La prossima richiesta dello
+  stesso referto è immediata. Se il browser ha già chiuso non nasce nessuna
+  conversazione (nessuno ne userebbe l'id): resta solo la trace, con esito `ok`.
+- **`classificazione: true`** (lo manda `classifica()` del frontend, a cui
+  serve solo la riga ARGOMENTO): come una spiegazione, cache compresa, ma senza
+  conversazione; `fine` ha `conversazione: null` e la trace ha `tipo:
+  "classificazione"`. La prima classificazione costa una spiegazione intera
+  (una volta per referto); dopo, classificazione e «Spiegamelo» sono immediati.
 - **Messaggi con `conversazione` = domande.** Il motore riceve la storia
   salvata (referto, spiegazione, domande e risposte precedenti) e risponde solo
   alla domanda: il referto non viene rispiegato. Il motore diretto la mette nei
@@ -151,9 +163,8 @@ mostra la riga così com'è; in futuro può leggerla per "Dove andare".
   «Archivio non disponibile», senza contenuti); la conversazione resta quella
   del motore (UUID), che si continua senza archivio.
 - Il controller accetta come `conversazione` un ObjectId o un UUID.
-- La classificazione del frontend (`classifica()` in `cliente.ts`) chiude il
-  flusso appena arriva la riga ARGOMENTO: lascia una trace `interrotta` e non
-  riempie la cache. Se il referto è già in cache la classificazione è immediata.
+- Le domande invece si fermano quando il browser chiude: la risposta a metà
+  non si salva (trace `interrotta`).
 
 ## Sessioni e storico (`src/sessioni/`)
 
