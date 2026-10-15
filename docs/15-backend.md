@@ -74,7 +74,8 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   modello è sovraccarico (HTTP 429, 502, 503, 504) o non inizia a rispondere
   entro `MODELLO_ATTESA_MS` (predefinito 20 secondi) prima di aver scritto
   qualcosa, si riprova con `MODELLO_MOTHER_RISERVA` (predefinito
-  `DeepSeek-V4-Flash`).
+  `DeepSeek-V4-Flash`), che si aspetta fino a 90 secondi. Se sono sovraccarichi
+  tutti e due la persona legge «Il servizio di spiegazione è sovraccarico».
 - In produzione su Vercel dal 15/10/2026: `MOTORE_CHAT=diretto` e
   `RADEON_API_KEY` impostate per Production (non per Preview).
 - Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web

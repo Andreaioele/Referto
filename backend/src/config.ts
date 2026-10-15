@@ -45,7 +45,7 @@ export const config = {
     nome: process.env.MODELLO_MOTHER ?? 'DeepSeek-V4.1-Flash',
     /** Usato se il primo è sovraccarico (HTTP 429, 502, 503, 504 o nessuna risposta in 20 s) prima di aver scritto qualcosa. */
     riserva: process.env.MODELLO_MOTHER_RISERVA ?? 'DeepSeek-V4-Flash',
-    /** Millisecondi entro cui il modello deve iniziare a rispondere, altrimenti si passa alla riserva. */
+    /** Millisecondi entro cui il primo modello deve iniziare a rispondere, altrimenti si passa alla riserva (che si aspetta 90 s). */
     attesaPrimaRispostaMs: Number(process.env.MODELLO_ATTESA_MS ?? 20_000),
   },
   promptMother: process.env.PROMPT_MOTHER_FILE ?? fileDati('prompt-mother.md'),

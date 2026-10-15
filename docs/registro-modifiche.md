@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · chat-frontend · Mother diretto: il modello di riserva si aspetta fino a 90 secondi (non 20) · [[15-backend]]
 - 2026-10-15 · chat-frontend · Mother diretto attivo su Vercel; passa al modello di riserva anche su 504 o dopo 20 secondi senza risposta · [[15-backend]]
 - 2026-10-15 · chat-frontend · Mother agent ricostruito nel backend (stesso prompt e modello, cercaFarmaci locale), attivabile con `MOTORE_CHAT=diretto` · [[15-backend]]
 - 2026-10-15 · chat-frontend · Domande sul foglietto: se l'agente non risponde entro 75 secondi o dà errore si risponde con il brano del foglio (prima: errore 500 per timeout) · [[15-backend]]

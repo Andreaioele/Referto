@@ -69,6 +69,8 @@ const STRUMENTI = [
 const SOVRACCARICO = new Set([429, 502, 503, 504]);
 /** Codice usato quando il modello non inizia a rispondere entro config.modello.attesaPrimaRispostaMs (oggi V4.1 a volte dà 504 dopo un minuto). */
 const SCADUTO = 504;
+/** Il modello di riserva è l'ultima possibilità: lo si aspetta di più. */
+const ATTESA_RISERVA_MS = 90_000;
 const MASSIMO_GIRI = 3;
 const MASSIMO_CONVERSAZIONI = 200;
 const DURATA_CONVERSAZIONE_MS = 2 * 60 * 60 * 1000;
@@ -183,8 +185,9 @@ export class MotherDiretto extends MotoreChat {
 
   private async richiesta(modello: string, messaggi: Messaggio[], conStrumenti: boolean, segnale: AbortSignal): Promise<Response> {
     // Il limite vale solo fino all'arrivo della risposta: lo streaming poi può durare quanto serve.
+    const limite = modello === config.modello.riserva ? ATTESA_RISERVA_MS : config.modello.attesaPrimaRispostaMs;
     const attesa = new AbortController();
-    const timer = setTimeout(() => attesa.abort(), config.modello.attesaPrimaRispostaMs);
+    const timer = setTimeout(() => attesa.abort(), limite);
     let risposta: Response;
     try {
       risposta = await fetch(`${config.modello.apiBase}/chat/completions`, {
