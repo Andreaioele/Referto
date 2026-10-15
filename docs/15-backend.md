@@ -60,6 +60,27 @@ tiene aperta la connessione mentre il modello lavora.
 - Il messaggio, cioè il testo del referto, arriva a Evolus: è ammesso (`CLAUDE.md`),
   purché nei log del backend resti solo l'esito tecnico.
 
+## Mother agent ricostruito nel backend (`src/chat/mother-diretto.ts`)
+
+Alternativa a Evolus, scelta con `MOTORE_CHAT=diretto` (predefinito: `evolus`).
+Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
+(`src/chat/motore-chat.ts`); `/api/salute` dice quale (`motore_chat`).
+
+- Stesso prompt: `data/prompt-mother.md`, copia del corpo di
+  `resources/evolus/agenti/mother.md` (un test controlla che siano uguali:
+  quando si cambia il prompt vanno aggiornati tutti e due).
+- Stesso modello: `DeepSeek-V4.1-Flash` su AMD Token Factory (API compatibile
+  OpenAI, `/chat/completions` in streaming), chiave in `RADEON_API_KEY`. Se il
+  modello è sovraccarico (HTTP 429, 502, 503) prima di aver scritto qualcosa si
+  riprova con `MODELLO_MOTHER_RISERVA` (predefinito `DeepSeek-V4-Flash`).
+- Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web
+  API su Evolus, ma la ricerca avviene sul prontuario in memoria
+  (`src/farmaci/cerca-farmaci.ts`, la stessa della rotta `/api/farmaci/cerca`).
+- Le conversazioni restano in memoria per due ore (al massimo 200): un
+  riavvio, o una seconda istanza su Vercel, le perde.
+- Manca rispetto a Evolus: il glossario della base di conoscenza citato dal
+  prompt e l'OCR di PDF e foto (oggi il frontend manda solo testo).
+
 ## Agenti su Evolus (`resources/evolus/`)
 
 Su Evolus restano due agenti: **Referto Mother agent** (risponde alla chat,

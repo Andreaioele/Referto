@@ -1,6 +1,6 @@
 import { BadGatewayException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { extractText, getDocumentProxy } from 'unpdf';
-import { EvolusClient } from '../chat/evolus.client';
+import { MotoreChat } from '../chat/motore-chat';
 import { ProntuarioService } from '../farmaci/prontuario.service';
 import type { Prodotto } from '../farmaci/prontuario.types';
 import { scegliBrani, trovaSezioni, type Brano, type Foglio } from './sezioni';
@@ -47,7 +47,7 @@ export class FogliettiService {
 
   constructor(
     private readonly prontuario: ProntuarioService,
-    private readonly evolus: EvolusClient,
+    private readonly motore: MotoreChat,
   ) {}
 
   /** Il foglio illustrativo del farmaco AIFA `cod`, scaricato una sola volta. */
@@ -112,11 +112,11 @@ export class FogliettiService {
    * errore o non finisce entro ATTESA_AGENTE_MS: in quei casi si usa la riserva.
    */
   private async chiediAgente(messaggio: string): Promise<string | null> {
-    if (!this.evolus.configurato()) return null;
+    if (!this.motore.configurato()) return null;
     const inizio = Date.now();
     let testo = '';
     try {
-      for await (const evento of this.evolus.chiedi(messaggio, undefined, AbortSignal.timeout(ATTESA_AGENTE_MS))) {
+      for await (const evento of this.motore.chiedi(messaggio, undefined, AbortSignal.timeout(ATTESA_AGENTE_MS))) {
         if (evento.tipo === 'testo') testo += evento.testo;
         else if (evento.tipo === 'errore') return null;
       }

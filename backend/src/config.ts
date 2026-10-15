@@ -31,6 +31,22 @@ export const config = {
     applicationId: process.env.EVOLUS_APPLICATION_ID ?? '',
     agentId: process.env.EVOLUS_AGENT_ID ?? '85b39c17-6e3e-46a6-9f1c-c4c13c68cc77',
   },
+  /**
+   * Chi risponde alla chat e alle domande sui foglietti: "evolus" (il Mother
+   * agent sulla piattaforma Evolus) oppure "diretto" (lo stesso agente
+   * ricostruito qui, che chiama il modello su AMD Token Factory).
+   */
+  motoreChat: (process.env.MOTORE_CHAT === 'diretto' ? 'diretto' : 'evolus') as 'diretto' | 'evolus',
+  /** Modello chiamato direttamente (API compatibile OpenAI). Chiave solo lato server. */
+  modello: {
+    apiBase: process.env.MODELLO_API_BASE ?? 'https://developer.amd.com.cn/radeon/api/v1',
+    apiKey: process.env.RADEON_API_KEY ?? '',
+    /** Lo stesso modello del Mother agent su Evolus (modelKey own/deepseek-v4.1-flash). */
+    nome: process.env.MODELLO_MOTHER ?? 'DeepSeek-V4.1-Flash',
+    /** Usato se il primo è sovraccarico (HTTP 429, 502, 503) prima di aver scritto qualcosa. */
+    riserva: process.env.MODELLO_MOTHER_RISERVA ?? 'DeepSeek-V4-Flash',
+  },
+  promptMother: process.env.PROMPT_MOTHER_FILE ?? fileDati('prompt-mother.md'),
   /** Stringa di connessione MongoDB (database Referto). */
   mongoUri: process.env.MONGODB_URI ?? '',
 };

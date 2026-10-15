@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { config } from '../config';
+import { MotoreChat } from './motore-chat';
 
 /** Evento della chat inviato al browser, già semplificato rispetto a quelli di Evolus. */
 export type EventoChat =
@@ -24,7 +25,9 @@ const ERRORE_GENERICO = 'Il servizio di spiegazione non ha risposto. Riprova tra
 
 /** Inoltra i messaggi al Mother agent di Evolus (endpoint /ask-stream) e ne legge la risposta in streaming. */
 @Injectable()
-export class EvolusClient {
+export class EvolusClient extends MotoreChat {
+  readonly nome = 'evolus';
+
   // Solo esiti tecnici (stato HTTP, codice d'errore, durata): mai il contenuto dei messaggi.
   private readonly logger = new Logger('Evolus');
 

@@ -1,7 +1,8 @@
 import { Body, Controller, Get, HttpCode, NotFoundException, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { CercaFarmaciDto } from './dto/cerca-farmaci.dto';
-import { ProdottoDto, RispostaCercaDto, RisultatoDto } from './dto/risposte.dto';
+import { cercaFarmaci } from './cerca-farmaci';
+import { ProdottoDto, RispostaCercaDto } from './dto/risposte.dto';
 import { ProntuarioService } from './prontuario.service';
 
 @ApiTags('farmaci')
@@ -22,13 +23,7 @@ export class FarmaciController {
   })
   @ApiOkResponse({ type: RispostaCercaDto })
   cerca(@Body() richiesta: CercaFarmaciDto): RispostaCercaDto {
-    const limite = richiesta.limite_alternative ?? 5;
-    const risultati: RisultatoDto[] = richiesta.farmaci.map(({ nome, principio_attivo }) => {
-      const esito = this.prontuario.cerca(nome, principio_attivo ?? '', limite);
-      return esito ? { nome, trovato: true, ...esito } : { nome, trovato: false };
-    });
-    const { fonte, aggiornato } = this.prontuario.info();
-    return { fonte: { fonte, aggiornato }, risultati };
+    return cercaFarmaci(this.prontuario, richiesta.farmaci, richiesta.limite_alternative ?? 5);
   }
 
   @Get(':cod')
