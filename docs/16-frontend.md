@@ -80,3 +80,9 @@ relative a oggi). Referto è il widget integrato nel portale.
   grandezza del testo e le domande all'agente (`/api/foglietti`, [[15-backend]]).
   Ogni risposta cita la sezione e porta il lettore a quella pagina.
 - `Chat.tsx` è stato tolto: la chat libera è il widget senza documento.
+- Cache delle spiegazioni (con MongoDB, [[15-backend]]): se il referto era già
+  stato spiegato, il backend manda la spiegazione salvata in un colpo solo e
+  l'evento `fine` ha `da_cache: true`. `useChat` lo espone come `daCache` e il
+  widget lo dice solo nei dettagli a scomparsa «Come è fatta questa
+  spiegazione». L'id della conversazione che torna in `fine` si rimanda con le
+  domande, come prima: il backend risponde senza rispiegare il referto.

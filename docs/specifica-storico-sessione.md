@@ -1,12 +1,20 @@
 ---
 tags: [area/specifica]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Specifica: Storico referti per sessione
 
 Torna a [[00-indice]] · Riferimenti: [[08-referti-e-farmaci-aifa]],
 [[15-backend]], [[16-frontend]].
+
+> **Stato al 15/10/2026.** Il backend è implementato con un disegno diverso
+> da quello sotto: i turni **non** li salva il frontend, li salva il backend
+> dentro `POST /api/chat` (con cache delle spiegazioni per utente e trace di
+> ogni generazione); le rotte sono `/api/sessioni/utente` e
+> `/api/sessioni/conversazioni[/:id[/trace]]` e chiedono la chiave API. Login
+> con nickname e barra dello storico nel frontend non sono ancora fatti.
+> Dettagli aggiornati in [[15-backend]].
 
 ## Obiettivo
 

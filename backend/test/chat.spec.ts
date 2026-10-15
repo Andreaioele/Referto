@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { righeDati } from '../src/chat/evolus.client';
+import { messaggioConStoria, righeDati } from '../src/chat/evolus.client';
 import { config } from '../src/config';
 import { configuraApp } from '../src/crea-app';
 
@@ -33,6 +33,22 @@ describe('righeDati', () => {
       righe.push(riga);
     }
     expect(righe).toEqual(['{"content":"Ciao"}', '{"isComplete":true}']);
+  });
+});
+
+describe('messaggioConStoria', () => {
+  it('mette referto, spiegazione e domande precedenti prima della domanda', () => {
+    const testo = messaggioConStoria(
+      [
+        { domanda: 'RX torace', risposta: 'SINTESI\nNiente di rilevante.' },
+        { domanda: 'Cosa vuol dire?', risposta: 'Che è normale.' },
+      ],
+      'E il cuore?',
+    );
+    expect(testo).toContain('non spiegarlo di nuovo');
+    expect(testo.indexOf('REFERTO:\nRX torace')).toBeLessThan(testo.indexOf('SPIEGAZIONE GIÀ DATA:\nSINTESI'));
+    expect(testo).toContain('DOMANDA PRECEDENTE:\nCosa vuol dire?\n\nRISPOSTA DATA:\nChe è normale.');
+    expect(testo.endsWith('DOMANDA:\nE il cuore?')).toBe(true);
   });
 });
 

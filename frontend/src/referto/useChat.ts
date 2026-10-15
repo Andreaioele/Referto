@@ -16,10 +16,15 @@ function segnalaErrore(risposta: Messaggio, messaggio: string): Messaggio {
     : { ...risposta, testo: messaggio, errore: true }
 }
 
-/** Conversazione con il Mother agent (POST /api/chat): la prima domanda è il referto, le altre lo continuano. */
+/**
+ * Conversazione con il Mother agent (POST /api/chat): la prima domanda è il
+ * referto, le altre lo continuano. Il backend salva la conversazione e, se il
+ * referto è già stato spiegato, restituisce la spiegazione salvata (daCache).
+ */
 export function useChat() {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([])
   const [inCorso, setInCorso] = useState(false)
+  const [daCache, setDaCache] = useState(false)
   const conversazione = useRef<string | null>(null)
   const controllo = useRef<AbortController | null>(null)
 
@@ -42,6 +47,7 @@ export function useChat() {
           if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
           else if (evento.tipo === 'fine') {
             concluso = true
+            if (!conversazione.current) setDaCache(Boolean(evento.da_cache))
             conversazione.current = evento.conversazione
           } else {
             concluso = true
@@ -63,7 +69,8 @@ export function useChat() {
     conversazione.current = null
     setMessaggi([])
     setInCorso(false)
+    setDaCache(false)
   }, [])
 
-  return { messaggi, inCorso, invia, azzera }
+  return { messaggi, inCorso, daCache, invia, azzera }
 }

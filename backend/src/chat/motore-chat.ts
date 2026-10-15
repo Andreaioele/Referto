@@ -1,4 +1,15 @@
+import type { TraceMotore, TurnoStoria } from './archivio-chat';
 import type { EventoChat } from './evolus.client';
+
+export interface OpzioniChiedi {
+  /**
+   * Referto, spiegazione e domande già fatte, letti dall'archivio: il motore
+   * li usa al posto della propria memoria e non rispiega il referto.
+   */
+  storia?: TurnoStoria[];
+  /** Raccoglie i dati tecnici della generazione (modello, tempi, strumenti). */
+  trace?: TraceMotore;
+}
 
 /**
  * Chi risponde alla chat (Mother agent): su Evolus (EvolusClient) o
@@ -11,6 +22,14 @@ export abstract class MotoreChat {
 
   abstract configurato(): boolean;
 
+  /** Motore, modello e prompt: cambia quando cambia il modo di spiegare, e con lei la cache. */
+  abstract versione(): string;
+
   /** Risposta in streaming: pezzi di testo, poi "fine" (con la conversazione) o "errore". */
-  abstract chiedi(messaggio: string, conversazione: string | undefined, segnale: AbortSignal): AsyncGenerator<EventoChat>;
+  abstract chiedi(
+    messaggio: string,
+    conversazione: string | undefined,
+    segnale: AbortSignal,
+    opzioni?: OpzioniChiedi,
+  ): AsyncGenerator<EventoChat>;
 }

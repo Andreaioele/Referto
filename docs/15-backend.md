@@ -27,14 +27,13 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 | `POST /api/farmaci/cerca` | Collega fino a 20 nomi al prontuario AIFA | sì |
 | `GET /api/farmaci/:cod` | Un farmaco per codice AIFA, con categoria e link a foglietto e RCP | sì |
 | `GET /api/salute` | Stato e data del prontuario | no |
-| `POST /api/chat` | Inoltra un messaggio al Mother agent di Evolus e ritrasmette la risposta in streaming | no (limite per IP) |
-| `POST /api/sessioni/utenti` | Crea utente (nickname → id) | no |
-| `GET /api/sessioni/utenti/:id` | Verifica che un utente esista | no |
-| `POST /api/sessioni` | Crea sessione di chat (header `X-Utente-Id`) | no |
-| `GET /api/sessioni` | Lista sessioni dell'utente | no |
-| `GET /api/sessioni/:id` | Dettaglio sessione con turni | no |
-| `POST /api/sessioni/:id/turni` | Salva un turno (domanda + risposta) | no |
-| `DELETE /api/sessioni/:id` | Elimina una sessione | no |
+| `POST /api/chat` | Inoltra un messaggio al Mother agent e ritrasmette la risposta in streaming; con MongoDB usa la cache delle spiegazioni e salva conversazioni e trace | no (limite per IP) |
+| `GET /api/sessioni/utente` | L'utente corrente (header `X-Utente-Id`, se no l'utente predefinito) | sì |
+| `GET /api/sessioni/conversazioni` | Conversazioni dell'utente, senza testi | sì |
+| `GET /api/sessioni/conversazioni/:id` | Referto, spiegazione e domande, senza rigenerare | sì |
+| `GET /api/sessioni/conversazioni/:id/trace` | Trace di ogni generazione della conversazione | sì |
+| `PATCH /api/sessioni/conversazioni/:id` | Rinomina (`{ titolo }`) | sì |
+| `DELETE /api/sessioni/conversazioni/:id` | Elimina la conversazione e le sue trace | sì |
 | `GET /api/docs`, `/api/docs-json` | Documentazione OpenAPI (da importare come Web API in Evolus) | no |
 
 Chiave: intestazione `x-api-key` uguale alla variabile `CHIAVE_API`. Se non è
@@ -82,8 +81,12 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
 - Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web
   API su Evolus, ma la ricerca avviene sul prontuario in memoria
   (`src/farmaci/cerca-farmaci.ts`, la stessa della rotta `/api/farmaci/cerca`).
-- Le conversazioni restano in memoria per due ore (al massimo 200): un
-  riavvio, o una seconda istanza su Vercel, le perde.
+- Con MongoDB la storia di ogni domanda arriva dall'archivio (opzione
+  `storia` di `chiedi`), quindi vale anche dopo un riavvio o su un'altra
+  istanza di Vercel. Senza MongoDB le conversazioni restano in memoria per due
+  ore (al massimo 200): un riavvio, o una seconda istanza su Vercel, le perde.
+- `versione()` = `diretto/<modello>/<12 caratteri dello SHA-256 del prompt>`:
+  cambiare prompt o modello invalida la cache delle spiegazioni.
 - Manca rispetto a Evolus: il glossario della base di conoscenza citato dal
   prompt e l'OCR di PDF e foto (oggi il frontend manda solo testo).
 
@@ -114,11 +117,42 @@ mostra la riga così com'è; in futuro può leggerla per "Dove andare".
 - Credenziali da `EVOLUS_API_KEY`/`EVOLUS_APPLICATION_ID` o dalla configurazione
   MCP locale, mai nel repository.
 
+## Cache delle spiegazioni, conversazioni e trace (`src/chat/servizio-chat.ts`)
+
+`ServizioChat` sta tra la rotta `/api/chat` e il motore. Usa l'`ArchivioChat`
+(`src/chat/archivio-chat.ts`) che il modulo sessioni fornisce solo con
+`MONGODB_URI`; senza, la chat va dritta al motore come prima.
+
+- **Primo messaggio (nessuna `conversazione`) = referto.** Impronta: SHA-256
+  del testo con gli spazi normalizzati (`improntaReferto`). Se lo stesso utente
+  ha già una spiegazione per quell'impronta e per la stessa `versione()` del
+  motore, la si manda in un solo evento `testo` senza chiamare il modello, e
+  `fine` ha `da_cache: true`. Altrimenti la si genera, la si salva in cache
+  (solo se finita senza errori) e `fine` ha `da_cache: false`. In tutti e due i
+  casi nasce una conversazione nuova, il cui id (ObjectId) torna in `fine`.
+- **Messaggi con `conversazione` = domande.** Il motore riceve la storia
+  salvata (referto, spiegazione, domande e risposte precedenti) e risponde solo
+  alla domanda: il referto non viene rispiegato. Il motore diretto la mette nei
+  messaggi del modello; Evolus continua la sua conversazione se c'è, altrimenti
+  (spiegazione dalla cache) riceve storia e domanda in un solo messaggio
+  (`messaggioConStoria`). Una conversazione di un altro utente o inesistente dà
+  l'errore «Questa conversazione non è più disponibile».
+- **Trace di ogni generazione**, anche errori, interruzioni (il browser chiude)
+  e risposte dalla cache: motore, versione, modello e modelli provati (riserva),
+  giri, durata, tempo al primo testo, token (se il server li manda), chiamate a
+  `cercaFarmaci` con parametri, risultato e durata, esito ed errore tecnico,
+  lunghezze di messaggio e risposta. Nessun testo del referto o della risposta.
+- Se MongoDB non risponde la chat continua senza salvare (nel log
+  «Archivio non disponibile», senza contenuti); la conversazione resta quella
+  del motore (UUID), che si continua senza archivio.
+- Il controller accetta come `conversazione` un ObjectId o un UUID.
+
 ## Sessioni e storico (`src/sessioni/`)
 
-Modulo NestJS con Mongoose per MongoDB (database `Referto`). Salva utenti
-(nickname, login fake), sessioni di chat e turni (domanda + risposta). Evita di
-richiamare il modello per sessioni già analizzate.
+Modulo NestJS con Mongoose per MongoDB (database `Referto`), globale: la chat ne
+usa l'`ArchivioChat` (`SessioniService`) senza importarlo. Le conversazioni le
+scrive solo il backend dentro `POST /api/chat`; le rotte `/api/sessioni` le
+leggono, rinominano ed eliminano.
 
 - `@nestjs/mongoose` resta alla 11.x: la 12 è solo ESM e il runtime delle
   funzioni Vercel non la carica con `require` (errore `ERR_REQUIRE_ESM`, backend
@@ -127,10 +161,29 @@ richiamare il modello per sessioni già analizzate.
 - Stringa di connessione in `MONGODB_URI` (variabile d'ambiente). Se mancante,
   il modulo non viene caricato e le rotte non esistono: gli altri moduli non ne
   risentono.
-- Collezioni: `utenti` (nickname, timestamps) e `sessioni` (utente, titolo,
-  array di turni con messaggio, risposta, timestamp, metadati).
-- Autenticazione: header `X-Utente-Id` con l'ObjectId dell'utente. Nessun
-  token né password (hackathon).
+- Collezioni:
+  - `utenti`: nickname. L'utente predefinito `paziente` nasce alla prima
+    richiesta (non all'avvio, così il backend parte anche se MongoDB non
+    risponde).
+  - `spiegazioni`: la cache. Utente, `hash` del referto, `versione` del motore,
+    testo della spiegazione, `usi` e `ultimo_uso`; indice unico su
+    utente + hash + versione. Il testo del referto qui non c'è.
+  - `conversazioni`: utente, `titolo` e `area` (dalla riga ARGOMENTO),
+    `referto` (testo e hash), `spiegazione` (testo, `da_cache`, riferimenti a
+    cache e trace), `conversazione_motore` (Evolus) e `turni` (domanda,
+    risposta, trace).
+  - `trace`: una per generazione, con utente e, se c'è, conversazione.
+- Utente: header `X-Utente-Id` con l'ObjectId di un utente esistente; se manca
+  o non esiste si usa l'utente predefinito. Nessun token né password
+  (hackathon). La cache e le conversazioni sono sempre per utente.
+- Le rotte `/api/sessioni` restituiscono il testo dei referti, quindi chiedono
+  la chiave API (`CHIAVE_API`); la chat resta aperta al browser.
+- Eliminare una conversazione elimina le sue trace, non la spiegazione in
+  cache (che non contiene il referto).
+- Test: `test/sessioni.spec.ts` gira su un MongoDB in memoria
+  (`mongodb-memory-server-core`, il binario si scarica al primo avvio). Il
+  driver 7 carica `os` con `import()` dinamico, che jest non supporta: il test
+  passa `runtimeAdapters: { os }`.
 - Nei log solo ID e timestamp, mai il contenuto dei turni
   ([[09-trace-e-privacy]]).
 

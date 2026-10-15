@@ -2,7 +2,8 @@
 
 export type EventoChat =
   | { tipo: 'testo'; testo: string }
-  | { tipo: 'fine'; conversazione: string | null }
+  /** da_cache: spiegazione già preparata per questo referto, restituita senza rigenerarla. */
+  | { tipo: 'fine'; conversazione: string | null; da_cache?: boolean }
   | { tipo: 'errore'; messaggio: string }
 
 export async function inviaMessaggio(

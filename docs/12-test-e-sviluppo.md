@@ -1,6 +1,6 @@
 ---
 tags: [area/sviluppo]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Test e sviluppo locale
@@ -36,7 +36,10 @@ Oppure con un ambiente nel repo: `uv venv --python 3.11 .venv` e
 | `MedicationTests`, `UnivocalMedicationTests`, `ArchiveTests` | [[08-referti-e-farmaci-aifa]] |
 
 Il backend ha test propri (Jest): `cd backend && npm test`, più il confronto con
-Python `npm run parita:tutti` ([[15-backend]]). Il frontend si controlla con
+Python `npm run parita:tutti` ([[15-backend]]). I test della chat con
+MongoDB usano un database in memoria (`mongodb-memory-server-core`): nessun
+`MONGODB_URI` necessario, il binario di MongoDB (~66 MB) si scarica in
+`~/.cache` la prima volta. Il frontend si controlla con
 `cd frontend && npm run build && npm run lint` ([[16-frontend]]).
 
 Ogni nuova funzione arriva con i suoi test, nello stile esistente

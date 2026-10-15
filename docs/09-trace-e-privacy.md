@@ -1,6 +1,6 @@
 ---
 tags: [area/core]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-15
 ---
 
 # Trace, dati e privacy
@@ -18,6 +18,25 @@ fallite: `traces/<data>/<trace_id>.json` con stato, durata, passi
   `traced_step()` e `record_model_call()` (in `performance_metrics.py`) vi scrivono.
 - La sezione **Cronologia** (strumenti per il team) mostra le trace grezze;
   **I miei referti** ne è la vista per il paziente ([[08-referti-e-farmaci-aifa]]).
+
+## Trace e conversazioni del backend (MongoDB)
+
+Il backend NestJS ([[15-backend]]), se `MONGODB_URI` è impostata, salva nel
+database `Referto`, sempre legati a un utente:
+
+- `trace`: una per ogni generazione della chat (spiegazione o domanda, anche
+  errori, interruzioni e risposte dalla cache). Solo dati tecnici: motore,
+  modello, tempi, token, chiamate a `cercaFarmaci` (nomi dei farmaci e
+  risultato), esito, lunghezze. **Niente testo del referto né della risposta.**
+- `conversazioni`: testo del referto, spiegazione e domande con le risposte
+  (servono per rispondere alle domande senza rispiegare il referto).
+- `spiegazioni`: la cache; solo l'impronta SHA-256 del referto e il testo della
+  spiegazione.
+
+Il database è un servizio del prodotto come Evolus e Vercel (`CLAUDE.md`); nei
+log del backend restano solo esiti tecnici. Le rotte che leggono le
+conversazioni chiedono la chiave API. Eliminare una conversazione elimina
+anche le sue trace.
 
 ## Cosa resta su disco e cosa esce dal computer
 
