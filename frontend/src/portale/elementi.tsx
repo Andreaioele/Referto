@@ -97,7 +97,7 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
   return nuda ? <div className="visita-nuda">{contenuto}</div> : <section className="scheda">{contenuto}</section>
 }
 
-const ICONE_DOCUMENTO = { referto: 'documento', ricetta: 'fattura', fattura: 'fattura' } as const
+const ICONE_DOCUMENTO = { referto: 'documento', ricetta: 'pillola', fattura: 'fattura' } as const
 const NOMI_TIPO = { referto: 'Referto', ricetta: 'Ricetta', fattura: 'Fattura' }
 
 /** Una riga dell'elenco dei documenti, con "Spiegamelo" per i referti. */

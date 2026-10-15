@@ -304,3 +304,9 @@ più: la sezione ha solo `aria-label`, la card è una.
 - Le altre righe di strutture e professionisti (ricerca, prenotazioni, medici)
   restano `RigaStruttura`, con telefono e mappa come icone.
 - Test: `portale/SchedaStudio.test.tsx` (con la data fissata al 15 ottobre 2026).
+
+### Icone dei documenti (15/10/2026)
+
+In "I miei documenti" (`ICONE_DOCUMENTO` in `portale/elementi.tsx`) le ricette
+hanno l'icona della medicina (`pillola`, la stessa di "Le mie prescrizioni"):
+prima avevano quella delle fatture. Referti: `documento`; fatture: `fattura`.
