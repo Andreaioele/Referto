@@ -360,4 +360,11 @@ export const classificazioniGiaFatte: Record<string, { esame: string; area: stri
 }
 
 /** Dove si trova lo studio delle visite del portale (indirizzo inventato, a Milano). */
-export const SEDE_STUDIO = { indirizzo: 'Via Valle Serena 1, Milano', lat: 45.4785, lon: 9.2101, telefono: '+39 02 0000 0000' }
+export const SEDE_STUDIO = {
+  indirizzo: 'Via Valle Serena 1, Milano',
+  lat: 45.4785,
+  lon: 9.2101,
+  telefono: '+39 02 0000 0000',
+  /** Orari di apertura (inventati), per esteso e in breve. */
+  orari: { giorni: 'dal lunedì al venerdì', giorniBrevi: 'lun–ven', ore: '8:00–19:00' },
+}

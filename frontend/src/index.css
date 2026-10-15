@@ -1874,6 +1874,263 @@ p.referto-errore {
   margin-top: 4px;
 }
 
+/* ---------- Card dello studio in "Le mie strutture" (mockup su Claude Design) ---------- */
+.studio-scheda {
+  padding: 28px 32px;
+  border-radius: 18px;
+}
+
+.studio {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.studio p {
+  margin: 0;
+}
+
+.studio-testa {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.studio-icona {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--p-blu-chiaro);
+  color: var(--p-blu);
+}
+
+.studio-dati {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 19px;
+}
+
+.studio-dati h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.studio-riga {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-riga svg {
+  flex: none;
+  color: var(--p-tenue);
+}
+
+.studio-prossima {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--p-blu-chiaro);
+  color: var(--p-blu-scuro);
+  font-size: 19px;
+}
+
+.studio-prossima-icona {
+  display: flex;
+  color: var(--p-blu);
+}
+
+.studio-prossima > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.studio-prossima-etichetta {
+  color: var(--p-blu);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.studio-prossima-data {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.studio-storia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 19px;
+}
+
+.studio-mostra {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--p-blu);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.studio-elenco {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--p-linea);
+  list-style: none;
+}
+
+.studio-elenco[hidden] {
+  display: none;
+}
+
+.studio-elenco li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--p-linea);
+  font-size: 18px;
+}
+
+.studio-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--p-linea);
+}
+
+.studio-azioni .bottone,
+.studio-azioni .bottone-leggero {
+  min-height: 56px;
+  padding: 0 24px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.studio-azioni .bottone-leggero {
+  border-width: 2px;
+}
+
+.studio-prenota {
+  margin-left: auto;
+}
+
+.studio-telefono {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--p-sfondo);
+  font-size: 19px;
+}
+
+.studio-telefono strong {
+  font-size: 22px;
+}
+
+@media (max-width: 760px) {
+  .studio-scheda {
+    padding: 20px 18px;
+    border-color: var(--p-bordo);
+    border-radius: 16px;
+  }
+
+  .studio {
+    gap: 18px;
+  }
+
+  .studio-testa {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .studio-icona {
+    width: 52px;
+    height: 52px;
+  }
+
+  .studio-dati,
+  .studio-storia {
+    font-size: 18px;
+  }
+
+  .studio-dati h3 {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .studio-prossima {
+    padding: 16px;
+    font-size: 18px;
+  }
+
+  .studio-prossima-icona {
+    display: none;
+  }
+
+  .studio-prossima-etichetta {
+    font-size: 16px;
+  }
+
+  .studio-prossima-data {
+    font-size: 22px;
+  }
+
+  .studio-elenco li {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 17px;
+  }
+
+  .studio-azioni {
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 18px;
+  }
+
+  .studio-azioni .bottone,
+  .studio-azioni .bottone-leggero {
+    width: 100%;
+    padding: 0 16px;
+  }
+
+  /* Sul telefono il pulsante blu è "Chiama"; "Prenota" diventa leggero. */
+  .studio-azioni .studio-prenota {
+    margin-left: 0;
+    border: 2px solid var(--p-bordo);
+    background: var(--p-carta);
+    color: var(--p-ink);
+  }
+
+  .studio-azioni .studio-prenota:hover {
+    background: var(--p-sfondo);
+    color: var(--p-ink);
+  }
+}
+
 /* ---------- Prenota una visita (demo) ---------- */
 .menu-prenota {
   text-decoration: none;

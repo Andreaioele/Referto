@@ -68,6 +68,19 @@ const TRACCIATI = {
   ),
   messaggio: <path d="M4 5h16v11H8l-4 4z" />,
   chiudi: <path d="M6 6l12 12M18 6L6 18" />,
+  edificio: (
+    <>
+      <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+      <path d="M16 9h2a2 2 0 0 1 2 2v10" />
+      <path d="M3 21h18M10 7v4M8 9h4M9 21v-4h2v4" />
+    </>
+  ),
+  prenota: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4M12 14v4M10 16h4" />
+    </>
+  ),
   invia: <path d="M4 12l16-8-6 16-2-7z" />,
   indietro: <path d="M15 6l-6 6 6 6" />,
   avanti: <path d="M9 6l6 6-6 6" />,

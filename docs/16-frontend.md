@@ -46,6 +46,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/referto/tipi.ts` | Cosa riceve Referto dal portale: `RefertoDaSpiegare`, `FarmacoDaLeggere` |
 | `src/portale/perReferto.ts` | Adattatore del portale dimostrativo verso i tipi di Referto |
 | `src/portale/Strutture.tsx`, `Professionisti.tsx`, `MieiLuoghi.tsx`, `prenotazioni.ts`, `distanza.ts` | "Le mie strutture" e "I miei professionisti" (solo luoghi e medici delle proprie visite e prenotazioni) |
+| `src/portale/SchedaStudio.tsx` | Card dello studio in "Le mie strutture": prossima visita, storico, Chiama, Mappa, Prenota |
 | `src/referto/StruttureVicine.tsx`, `strutture-testi.ts`, `classificazioni.ts` | Strutture per referto e per tipo, testi, classificazioni già fatte |
 | `src/referto/FinestraMappa.tsx`, `mappa.ts` | Mappa di una struttura in una finestra del portale (Leaflet + OpenStreetMap) |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
@@ -278,3 +279,25 @@ strutture"/"Cerca professionisti" in "I miei documenti".
 - Test: `referto/FinestraMappa.test.tsx` (apertura, Esc, "Chiudi", clic fuori,
   fuoco, errore, chiusura prima del caricamento) e `referto/mappa.test.ts`
   (Leaflet vero in jsdom: tile OpenStreetMap, segnaposto, attribuzione).
+
+### Card dello studio in "Le mie strutture" (15/10/2026)
+
+Rifatta dal mockup "Card struttura · Referto" su Claude Design (artboard
+computer e telefono). `portale/SchedaStudio.tsx` sostituisce la riga dello
+studio (`RigaStruttura` con la nota lunga) e il titolo "Le tue visite" non c'è
+più: la sezione ha solo `aria-label`, la card è una.
+
+- **In alto:** icona, nome, "Ambulatorio · a 3 km da casa", indirizzo e orari
+  (`SEDE_STUDIO.orari` in `dati.ts`, inventati: per esteso sul computer,
+  "lun–ven" sul telefono).
+- **Prossima visita** in un riquadro azzurro con la data per esteso
+  ("Venerdì 23 ottobre 2026", `dataConGiorno` in `date.ts`) e il tipo di visita.
+- **Storico:** "Ultima visita: …" e "Vedi tutte le 7 visite", che apre l'elenco
+  dalla più lontana nel futuro alla più vecchia; le prossime sono "(prenotata)".
+- **Pulsanti con etichetta**, alti 56 px: sul computer "Chiama" (mostra numero
+  e orari sotto i pulsanti), "Mappa" (`FinestraMappa`) e, a destra, "Prenota
+  un'altra visita" (blu, porta a `/prenota`). Sul telefono uno sotto l'altro a
+  tutta larghezza: "Chiama 02 0000 0000" in blu (link `tel:`), poi Mappa e Prenota.
+- Le altre righe di strutture e professionisti (ricerca, prenotazioni, medici)
+  restano `RigaStruttura`, con telefono e mappa come icone.
+- Test: `portale/SchedaStudio.test.tsx` (con la data fissata al 15 ottobre 2026).

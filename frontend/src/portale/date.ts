@@ -29,10 +29,15 @@ export function anno(giorni: number): string {
   return String(dataDa(giorni).getFullYear())
 }
 
+/** "Venerdì 23 ottobre 2026" */
+export function dataConGiorno(giorni: number): string {
+  const testo = dataDa(giorni).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  return testo.charAt(0).toUpperCase() + testo.slice(1)
+}
+
 /** "Mercoledì 14 ottobre 2026" */
 export function oggiPerEsteso(): string {
-  const testo = dataDa(0).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-  return testo.charAt(0).toUpperCase() + testo.slice(1)
+  return dataConGiorno(0)
 }
 
 /** "Tra 8 giorni", "Domani", "Oggi" */

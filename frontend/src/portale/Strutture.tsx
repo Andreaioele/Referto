@@ -1,25 +1,14 @@
-import { RigaStruttura } from '../referto/StruttureVicine'
-import { prossimeVisite, SEDE_STUDIO, STUDIO, visiteFatte } from './dati'
-import { dataLunga } from './date'
-import { comeStruttura } from './distanza'
 import { CercaDaiReferti, ElencoPrenotazioni } from './MieiLuoghi'
 import { usePrenotazioni } from './prenotazioni'
+import { SchedaStudio } from './SchedaStudio'
 
 /**
  * "Le mie strutture": solo i luoghi dove hai fatto o prenotato una visita. Lo
- * studio del portale (dalle visite) e le strutture prenotate dalla ricerca in
- * "I miei documenti" (Cerca strutture -> Prenota una visita).
+ * studio del portale (card con le visite, `SchedaStudio`) e le strutture
+ * prenotate dalla ricerca in "I miei documenti" (Cerca strutture -> Prenota una visita).
  */
 export function Strutture() {
   const prenotazioni = usePrenotazioni().filter((p) => p.categoria === 'strutture')
-  const prossima = prossimeVisite[0]
-  const ultima = visiteFatte[0]
-  const nota = [
-    prossima && `Prossima visita: ${prossima.titolo.toLowerCase()}, ${dataLunga(prossima.giorni)}`,
-    ultima && `ultima: ${ultima.titolo.toLowerCase()}, ${dataLunga(ultima.giorni)}`,
-  ]
-    .filter(Boolean)
-    .join('; ')
 
   return (
     <>
@@ -28,24 +17,8 @@ export function Strutture() {
         <p className="tenue">I luoghi dove hai fatto o prenotato una visita.</p>
       </div>
 
-      <section className="scheda" aria-labelledby="titolo-studio">
-        <div className="scheda-testa">
-          <h2 id="titolo-studio">Le tue visite</h2>
-        </div>
-        <ul className="strutture-elenco">
-          <RigaStruttura
-            struttura={comeStruttura({
-              id: 'studio',
-              tipo: 'ambulatorio',
-              nome: STUDIO,
-              indirizzo: SEDE_STUDIO.indirizzo,
-              lat: SEDE_STUDIO.lat,
-              lon: SEDE_STUDIO.lon,
-              telefono: SEDE_STUDIO.telefono,
-            })}
-            nota={`${prossimeVisite.length + visiteFatte.length} visite. ${nota}.`}
-          />
-        </ul>
+      <section className="scheda studio-scheda" aria-label="Le tue visite">
+        <SchedaStudio />
       </section>
 
       <section className="scheda" aria-labelledby="titolo-prenotate">
