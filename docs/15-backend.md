@@ -76,8 +76,9 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   qualcosa, si riprova con `MODELLO_MOTHER_RISERVA` (predefinito
   `DeepSeek-V4-Flash`), che si aspetta fino a 90 secondi. Se sono sovraccarichi
   tutti e due la persona legge «Il servizio di spiegazione è sovraccarico».
-- In produzione su Vercel dal 15/10/2026: `MOTORE_CHAT=diretto` e
-  `RADEON_API_KEY` impostate per Production (non per Preview).
+- Su Vercel dal 15/10/2026: `MOTORE_CHAT=diretto` e `RADEON_API_KEY`
+  impostate per Production e Preview (tutti i rami). Per le anteprime la CLI
+  vuole il ramo vuoto: `vercel env add NOME preview "" --value … --yes`.
 - Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web
   API su Evolus, ma la ricerca avviene sul prontuario in memoria
   (`src/farmaci/cerca-farmaci.ts`, la stessa della rotta `/api/farmaci/cerca`).
