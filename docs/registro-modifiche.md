@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi-2 · Prenota una visita: "Scegli una data", "Chiama" ed "Email" sono tre modi distinti; il calendario si apre solo con "Scegli una data" e si conferma con "Prenota" · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · "Prenota una visita" funzionante (demo): scelta del referto, strutture e professionisti dell'area, calendario di prova uguale per tutti, "Chiama", "Email" e "Segna come prenotata" · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · Nuovo flusso: "Le mie strutture" e "I miei professionisti" mostrano solo visite e prenotazioni; ricerca con "Cerca strutture" e "Cerca professionisti" in "I miei documenti" (referti già classificati), "Prenota una visita" sposta il risultato nella sezione; test aggiornati ma non eseguiti · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · Overture Maps come terza fonte delle strutture di Milano (file pubblici letti con DuckDB, senza chiavi): studi specialistici e ambulatori privati, filtri di qualità e doppioni; tutte le 19 aree hanno professionisti (prima 13 ne erano senza) · [[15-backend]]

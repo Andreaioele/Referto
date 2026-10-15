@@ -70,11 +70,14 @@ describe('Le mie strutture e I miei professionisti', () => {
 
     // La pagina apre il calendario con il professionista già scelto; si sceglie l'orario e si segna come prenotata.
     render(<Prenota />)
-    expect(screen.getByText(/Scegli giorno e ora: Dott. Nicola Triglione/)).toBeTruthy()
+    expect(screen.getByText(/Come vuoi prenotare con Dott. Nicola Triglione/)).toBeTruthy()
+    // Tre modi distinti: Email apre la posta, Scegli una data apre il calendario.
+    expect(screen.getByRole('link', { name: 'Email' }).getAttribute('href')).toMatch(/^mailto:\?subject=Richiesta%20di%20visita/)
+    fireEvent.click(screen.getByRole('button', { name: 'Scegli una data' }))
     const libero = screen.getByRole('group', { name: /Orari di/ }).querySelector('button:not([disabled])') as HTMLButtonElement
     fireEvent.click(libero)
-    expect(screen.getByRole('link', { name: 'Email' }).getAttribute('href')).toMatch(/^mailto:\?subject=Richiesta%20di%20visita/)
-    fireEvent.click(screen.getByRole('button', { name: 'Segna come prenotata' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Prenota' }))
+    expect(screen.getByText('Prenotata.')).toBeTruthy()
     cleanup()
     render(<Professionisti />)
     expect(screen.getByText('Dott. Nicola Triglione')).toBeTruthy()

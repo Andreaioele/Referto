@@ -217,14 +217,16 @@ Sostituisce le due sezioni descritte sopra con la ricerca dentro le pagine.
 1. **Per quale referto?** I referti con la loro area (già classificata).
 2. **Dove o con chi:** professionisti e strutture dell'area, dal più vicino a
    casa (`StruttureDelReferto`, pulsante "Scegli l'orario").
-3. **Giorno e ora** (`portale/SceltaOrario.tsx`): calendario di prova
-   (`portale/calendario.ts`), uguale per tutti e slegato dalla realtà: i
-   prossimi dieci giorni feriali, sei orari al giorno, alcuni sempre occupati.
-   Scelto l'orario: "Chiama" (`tel:` con il numero vero della struttura, se
-   c'è), "Email" (apre la posta con oggetto e testo già scritti, destinatario da
-   inserire: nei dati non ci sono email) e "Segna come prenotata", che mette la
-   visita (con giorno e ora) in "Le mie strutture" o "I miei professionisti".
-   Strutture e professionisti sono reali, la prenotazione no: non avvisa nessuno.
+3. **Come prenotare** (`portale/SceltaOrario.tsx`): tre modi distinti, se ne
+   sceglie uno.
+   - **"Scegli una data":** apre il calendario di prova (`portale/calendario.ts`),
+     uguale per tutti e slegato dalla realtà (prossimi dieci giorni feriali, sei
+     orari, alcuni sempre occupati); scelto l'orario, "Prenota" mette la visita
+     (con giorno e ora) in "Le mie strutture" o "I miei professionisti". Non
+     avvisa nessuno: è una demo.
+   - **"Chiama":** `tel:` con il numero vero della struttura, se c'è.
+   - **"Email":** apre la posta locale con oggetto e testo già scritti;
+     l'indirizzo va aggiunto (nei dati non ci sono email).
 
 Da "I miei documenti", "Prenota una visita" su un risultato porta a `/prenota`
 con il referto e la struttura già scelti (`preparaPrenotazione` in

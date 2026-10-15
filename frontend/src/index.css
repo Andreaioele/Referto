@@ -1895,6 +1895,11 @@ p.referto-errore {
   color: #fff;
 }
 
+.prenota-non-disponibile {
+  color: var(--p-tenue);
+  cursor: default;
+}
+
 @media (max-width: 760px) {
   body {
     font-size: 18px;

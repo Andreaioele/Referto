@@ -12,8 +12,8 @@ import { SceltaOrario } from './SceltaOrario'
 /**
  * "Prenota una visita" (demo): 1. scegli un referto; 2. Referto mostra subito
  * strutture e professionisti della sua area (classificazione già fatta), dal
- * più vicino a casa; 3. scegli giorno e ora sul calendario di prova, poi
- * "Chiama" o "Email". Strutture e professionisti sono reali, il calendario no.
+ * più vicino a casa; 3. prenoti in uno di tre modi: "Scegli una data" (calendario
+ * di prova), "Chiama" o "Email". Strutture e professionisti sono reali, il calendario no.
  */
 export function Prenota() {
   const { refertoAttivo } = useAzioni()
@@ -30,7 +30,6 @@ export function Prenota() {
 
   const scegli = (categoria: Categoria) => ({
     prenotate: new Set<string>(),
-    etichetta: 'Scegli l’orario',
     onPrenota: (struttura: StrutturaVicina) => {
       setScelta({ struttura, categoria })
       window.setTimeout(() => document.getElementById('passo-orario')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
@@ -41,7 +40,7 @@ export function Prenota() {
     <>
       <div className="titolo-pagina">
         <h1>Prenota una visita</h1>
-        <p className="tenue">Scegli un referto: ti mostriamo strutture e medici adatti vicino a casa, poi giorno e ora.</p>
+        <p className="tenue">Scegli un referto: ti mostriamo strutture e medici adatti vicino a casa, poi prenoti con una data, una telefonata o un'email.</p>
       </div>
 
       {!refertoAttivo ? (
@@ -94,7 +93,7 @@ export function Prenota() {
 
           {referto && scelta && (
             <section className="scheda" id="passo-orario" aria-labelledby="titolo-orario">
-              <h2 className="nascosto">3. Giorno e ora</h2>
+              <h2 className="nascosto">3. Come prenotare</h2>
               <SceltaOrario
                 key={scelta.struttura.id}
                 struttura={scelta.struttura}
