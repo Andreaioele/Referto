@@ -14,6 +14,7 @@ import {
   type StrutturaVicina,
   type TipoStruttura,
 } from './cliente'
+import { FinestraMappa } from './FinestraMappa'
 import { distanzaLeggibile, nessunRisultato, titoloGruppo } from './strutture-testi'
 import type { PuntoDiPartenza, RefertoDaSpiegare } from './tipi'
 
@@ -70,7 +71,7 @@ export interface Prenotabile {
 
 /**
  * Una struttura: nome, tipo, distanza, indirizzo, e i pulsanti per chiamare,
- * vederla sulla mappa e (nella ricerca) prenotare una visita.
+ * vederla sulla mappa (in una finestra del portale) e (nella ricerca) prenotare una visita.
  */
 export function RigaStruttura({
   struttura,
@@ -86,6 +87,8 @@ export function RigaStruttura({
   azioni?: ReactNode
 }) {
   const telefono = struttura.telefono?.replace(/[^\d+]/g, '')
+  const indirizzo = `${struttura.indirizzo}${struttura.quartiere ? ` (${struttura.quartiere})` : ''}`
+  const [mappaAperta, setMappaAperta] = useState(false)
   return (
     <li className="struttura">
       <span className="icona-documento">
@@ -96,10 +99,7 @@ export function RigaStruttura({
         <span className="tenue">
           {struttura.professione ?? NOMI_TIPO[struttura.tipo]}, {distanzaLeggibile(struttura.distanzaKm)}
         </span>
-        <span>
-          {struttura.indirizzo}
-          {struttura.quartiere ? ` (${struttura.quartiere})` : ''}
-        </span>
+        <span>{indirizzo}</span>
         {struttura.orari && <span className="tenue piccolo">Orari: {struttura.orari}</span>}
         {nota && <span className="struttura-nota">{nota}</span>}
       </div>
@@ -117,17 +117,18 @@ export function RigaStruttura({
             Chiama
           </a>
         )}
-        <a
+        <button
+          type="button"
           className="bottone-leggero"
-          href={`https://www.openstreetmap.org/?mlat=${struttura.lat}&mlon=${struttura.lon}#map=18/${struttura.lat}/${struttura.lon}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`Mappa: ${struttura.nome} (si apre in una nuova scheda)`}
+          aria-haspopup="dialog"
+          aria-label={`Mappa: ${struttura.nome}`}
+          onClick={() => setMappaAperta(true)}
         >
           Mappa
-        </a>
+        </button>
         {azioni}
       </div>
+      {mappaAperta && <FinestraMappa luogo={{ ...struttura, indirizzo }} onChiudi={() => setMappaAperta(false)} />}
     </li>
   )
 }

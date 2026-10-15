@@ -39,6 +39,7 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Widget: se il servizio non risponde (es. 503 senza credenziali Evolus) compaiono due messaggi di errore di fila, "Il servizio non è disponibile…" e "La risposta si è interrotta…": il messaggio d'errore finisce nel testo libero della risposta | `WidgetReferto.tsx` (`Spiegazione`) | [[16-frontend]] |
 | Risolto: backend fermo su Vercel (`ERR_REQUIRE_ESM` con `@nestjs/mongoose` 12, solo ESM); tornati alla 11.0.4 | `backend/package.json` | [[15-backend]] |
 | Risolto: un PDF AIFA può contenere un foglio per formulazione (Dibase: 10 fogli in 54 pagine); ora si sceglie quello della confezione prescritta | `sezioni.ts` | [[15-backend]] |
+| `npm audit` segnala `pdfjs-dist` 5.x (GHSA-hq66-cqwq-w95j, esecuzione di JavaScript aprendo un PDF malevolo); la correzione è la 6.x, con modifiche incompatibili. I PDF aperti sono i foglietti AIFA | `frontend/package.json` | [[16-frontend]] |
 
 ## Prossimi passi proposti
 
