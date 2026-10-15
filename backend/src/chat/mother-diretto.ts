@@ -207,11 +207,13 @@ export class MotherDiretto extends MotoreChat {
             trace.token_output = (trace.token_output ?? 0) + (pezzo.usage.completion_tokens ?? 0);
           }
           const delta = pezzo.choices?.[0]?.delta;
-          if (delta?.content) {
-            testo += delta.content;
+          // Prima di chiamare uno strumento il modello a volte manda solo righe vuote: non vanno alla persona.
+          const contenuto = scritto ? delta?.content : delta?.content?.trimStart();
+          if (contenuto) {
+            testo += contenuto;
             if (trace && !scritto) trace.primo_testo_ms = Date.now() - inizio;
             scritto = true;
-            yield { tipo: 'testo', testo: delta.content };
+            yield { tipo: 'testo', testo: contenuto };
           }
           for (const parte of delta?.tool_calls ?? []) {
             const chiamata = (chiamate[parte.index] ??= { id: '', type: 'function', function: { name: '', arguments: '' } });

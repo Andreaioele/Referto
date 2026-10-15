@@ -94,6 +94,12 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   insieme a `cercaFarmaci`), e prima di rispondere a «che cosa vuol dire…».
   Della definizione il modello usa solo che cosa è la cosa nominata. Nelle
   risposte alle domande cita la fonte con il link.
+  Provato nell'anteprima Vercel il 16/10/2026: nella spiegazione di una
+  radiografia ha chiamato lo strumento per 3 termini, tutti trovati, e per
+  «ilo polmonare» anche nella domanda. Per «lobo inferiore» invece non l'ha
+  chiamato e ha aggiunto nozioni generali; da qui la regola «chiama sempre,
+  anche se pensi di saperlo». La fonte dello strato curato si legge
+  «Glossario di Referto».
 - Con MongoDB la storia di ogni domanda arriva dall'archivio (opzione
   `storia` di `chiedi`), quindi vale anche dopo un riavvio o su un'altra
   istanza di Vercel. Senza MongoDB le conversazioni restano in memoria per due

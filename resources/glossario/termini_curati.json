@@ -1,5 +1,6 @@
 {
-  "fonte": "Redazione Referto (bozza da far revisionare a un medico)",
+  "fonte": "Glossario di Referto",
+  "revisione": "Bozza della redazione, da far revisionare a un medico.",
   "nota": "Termini frequenti nei referti (laboratorio, immagini, cuore, occhi, parole generali), scritti prima di misurare la copertura. Definizioni brevi in italiano semplice: dicono che cosa è o che cosa misura, mai che cosa significa per la salute.",
   "termini": [
     {"nome": "emocromo", "sinonimi": ["esame emocromocitometrico", "emocromo completo"], "definizione": "Esame del sangue che conta le cellule del sangue: globuli rossi, globuli bianchi e piastrine."},

@@ -160,13 +160,17 @@ describe('MotherDiretto', () => {
 
   it('esegue cercaTermine sul glossario e lo registra nella trace', async () => {
     rispondi(
-      streaming({
+      // Le righe vuote prima della chiamata allo strumento non arrivano alla persona.
+      streaming(testo('\n\n\n'), {
         choices: [{ delta: { tool_calls: [{ index: 0, id: 't1', function: { name: 'cercaTermine', arguments: '{"termini":["consolidazioni","zxqwv"]}' } }] } }],
       }),
       streaming(testo('Una consolidazione è una zona del polmone…')),
     );
     const trace = nuovaTraceMotore('diretto');
-    await eventi(mother.chiedi('Cos\'è una consolidazione?', undefined, new AbortController().signal, { trace }));
+    const risultato = await eventi(mother.chiedi('Cos\'è una consolidazione?', undefined, new AbortController().signal, { trace }));
+    expect(risultato.filter((e) => e.tipo === 'testo').map((e) => (e as { testo: string }).testo).join('')).toBe(
+      'Una consolidazione è una zona del polmone…',
+    );
 
     expect((corpi[0] as { tools: Array<{ function: { name: string } }> }).tools.map((s) => s.function.name)).toEqual([
       'cercaFarmaci',

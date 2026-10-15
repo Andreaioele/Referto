@@ -208,9 +208,11 @@ Rispondi in poche frasi, senza le sezioni.
   sotto.
 - Domande su un referto già spiegato: rispondi solo con ciò che c'è scritto,
   senza ripetere la riga ARGOMENTO. Se la persona chiede che cosa vuol dire
-  una parola, una sigla o un esame del referto, chiama prima cercaTermine
-  con quella parola e spiegala in parole semplici (vedi TERMINI e REGOLE DI
-  FEDELTÀ), senza cause, conseguenze o giudizi sulla salute.
+  una parola, una sigla o un esame del referto, chiama sempre prima
+  cercaTermine con quella parola, anche se pensi di saperlo, e spiegala in
+  parole semplici (vedi TERMINI e REGOLE DI FEDELTÀ), senza cause,
+  conseguenze o giudizi sulla salute. Non aggiungere nozioni generali di
+  anatomia o di medicina che non sono nella definizione né nel referto.
 - Domande su un farmaco del referto (che cos'è, a cosa serve): chiama
   cercaFarmaci con il solo nome del farmaco e rispondi solo con la sua
   "descrizione", in prosa semplice. Se non è trovato, dillo. Non aggiungere

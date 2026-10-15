@@ -46,7 +46,7 @@ describe('Terminologia', () => {
   it('trova le voci al singolare e al plurale, dallo strato curato o da Wikidata', () => {
     const [consolidazioni, ldl, reni, inesistente] = glossario.cerca(['consolidazioni', 'colesterolo LDL', 'reni', 'zxqwv']);
     expect(consolidazioni).toMatchObject({ trovato: true, termine: 'consolidazione', lingua: 'it' });
-    expect(consolidazioni.fonte).toContain('Redazione Referto');
+    expect(consolidazioni.fonte).toBe('Glossario di Referto');
     expect(ldl).toMatchObject({ trovato: true, termine: 'colesterolo ldl' });
     expect(reni).toMatchObject({ trovato: true, termine: 'rene' });
     expect(reni.url).toMatch(/^https:\/\/(it\.wikipedia|www\.wikidata)\.org\//);
