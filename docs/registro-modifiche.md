@@ -11,6 +11,8 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
 - 2026-10-15 · chat-frontend · Portale: nuova card dello studio in «Le mie strutture» dal mockup su Claude Design (prossima visita in evidenza, orari, storico a scomparsa, Chiama/Mappa/Prenota con etichetta; versione telefono a pulsanti pieni) · [[16-frontend]]
+- 2026-10-15 · pietro-giovedi-2 · Widget Referto: il salto alla domanda è immediato (prima dello scorrimento animato) · [[16-frontend]]
+- 2026-10-15 · pietro-giovedi-2 · Widget Referto: cliccando una domanda pronta (o inviandone una) il pannello scorre alla domanda, in cima, con la risposta sotto · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · Strutture e professionisti: "Chiama" e "Mappa" come icone; se il dato manca il pulsante resta, spento · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Portale: «Mappa» apre una finestra nel portale (Leaflet + tile OpenStreetMap, caricati solo quando serve) invece di una nuova scheda; Esc o «Chiudi» per tornare, a tutto schermo sul telefono · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Backend: se MongoDB non si connette si riprova ogni 15 secondi (prima l'istanza restava senza archivio fino al riavvio) · [[15-backend]]
