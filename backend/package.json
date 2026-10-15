@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "start:dev": "node --env-file-if-exists=.env -r ts-node/register src/main.ts",
-    "test": "jest",
+    "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js",
     "atc": "ts-node scripts/costruisci-atc.ts",
     "parita": "python3 scripts/casi_parita.py",
     "parita:tutti": "python3 scripts/casi_parita.py --tutti /tmp/parita-tutti.json && ts-node scripts/verifica-parita.ts /tmp/parita-tutti.json"

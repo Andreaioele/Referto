@@ -171,6 +171,9 @@ cd backend && npm install && npm test && npm run start:dev   # porta 3000
 Nest 11 (CommonJS) e non 12: Nest 12 è solo ESM e complica Jest. Dettagli in
 `backend/README.md`.
 
+`npm test` avvia Jest con `node --experimental-vm-modules`: `unpdf` carica
+pdf.js con un import dinamico, che dentro Jest funziona solo con questa opzione.
+
 ## Limiti
 
 - Nessuna tolleranza agli errori di battitura ("Cardioaspirina").
@@ -186,8 +189,15 @@ Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
 | `GET /api/foglietti/:cod/pdf` | Il PDF ufficiale AIFA dallo stesso dominio |
 | `POST /api/foglietti/:cod/domande` | `{ domanda, forma? }` → risposta, sezione citata, brani usati (10 al minuto per IP) |
 
-- Il PDF si scarica da AIFA alla prima richiesta e resta in memoria (30 farmaci);
-  il testo si legge con `unpdf`.
+- **Fonte dei foglietti** (15/10/2026): `FogliettiService` legge i fogli solo
+  dall'interfaccia `FonteFoglietti` (`fonte-foglietti.ts`, token
+  `FONTE_FOGLIETTI`), che dato un farmaco restituisce PDF, numero di pagine e
+  testo di ogni pagina, oppure lancia `FogliettoNonDisponibile` (diventa 502).
+  In produzione è `FonteAifa` (`fonte-aifa.ts`): scarica il PDF da AIFA alla
+  prima richiesta (30 s di attesa), controlla che sia un PDF, legge il testo con
+  `unpdf` e lo tiene in memoria (30 farmaci; richieste contemporanee aspettano
+  lo stesso download, un download fallito non resta in memoria). Nei test la
+  fonte si sostituisce con `.overrideProvider(FONTE_FOGLIETTI)`.
 - `sezioni.ts` (deterministico): trova le sei sezioni dello schema europeo; se
   il PDF ha un foglio per formulazione (es. Dibase: 54 pagine) sceglie quello
   che corrisponde a `forma`, la confezione prescritta. `scegliBrani` sceglie i
@@ -195,7 +205,9 @@ Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
 - Solo quei brani vanno al Mother agent, che deve citare la sezione
   (`SEZIONE: n`, controllata da `interpreta`). Senza agente, se dà errore o se
   non finisce entro 75 secondi risponde il brano stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
-- Test: `test/foglietti.spec.ts`.
+- Test: `test/foglietti.spec.ts` (rotte, sezioni, riserva, con una fonte di
+  prova) e `test/fonte-aifa.spec.ts` (download, memoria, errori, estrazione da
+  un PDF vero generato nel test).
 
 ## Avvio in locale con le credenziali
 

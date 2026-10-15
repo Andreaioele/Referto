@@ -5,7 +5,8 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { config } from '../src/config';
 import { configuraApp } from '../src/crea-app';
-import { FogliettiService, interpreta, NON_TROVATA } from '../src/foglietti/foglietti.service';
+import { interpreta, NON_TROVATA } from '../src/foglietti/foglietti.service';
+import { FONTE_FOGLIETTI, FogliettoNonDisponibile, type FonteFoglietti } from '../src/foglietti/fonte-foglietti';
 import { scegliBrani, trovaSezioni } from '../src/foglietti/sezioni';
 
 // Foglio illustrativo di prova con la struttura dei PDF AIFA (testo inventato).
@@ -125,13 +126,27 @@ describe('interpreta', () => {
   });
 });
 
+/** Fonte dei foglietti di prova: restituisce le PAGINE scritte qui sopra, oppure fallisce come AIFA irraggiungibile. */
+const fonte: FonteFoglietti & { disponibile: boolean; letti: string[] } = {
+  disponibile: true,
+  letti: [],
+  async leggi(farmaco) {
+    this.letti.push(farmaco.cod);
+    if (!this.disponibile) throw new FogliettoNonDisponibile('HTTP 500');
+    return { pdf: new TextEncoder().encode('%PDF-prova'), pagine: PAGINE.length, testo: PAGINE };
+  },
+};
+
 describe('API /api/foglietti', () => {
   let app: INestApplication<App>;
   const fetchOriginale = global.fetch;
   const evolusOriginale = { ...config.evolus };
 
   beforeAll(async () => {
-    const modulo = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const modulo = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(FONTE_FOGLIETTI)
+      .useValue(fonte)
+      .compile();
     app = configuraApp(modulo.createNestApplication());
     await app.init();
   });
@@ -140,22 +155,39 @@ describe('API /api/foglietti', () => {
     global.fetch = fetchOriginale;
     Object.assign(config.evolus, evolusOriginale);
     config.chiaveApi = '';
-    jest.restoreAllMocks();
+    fonte.disponibile = true;
+    fonte.letti = [];
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('risponde 404 per un codice che non è nel prontuario, anche con la chiave API attiva', async () => {
+  it('risponde 404 per un codice che non è nel prontuario, anche con la chiave API attiva, senza chiedere alla fonte', async () => {
     config.chiaveApi = 'segreto-di-prova';
     await request(app.getHttpServer()).get('/api/foglietti/999999').expect(404);
     await request(app.getHttpServer()).get('/api/foglietti/abc/pdf').expect(404);
+    expect(fonte.letti).toEqual([]);
   });
 
-  it('risponde 502 se AIFA non restituisce il PDF', async () => {
-    global.fetch = jest.fn(async () => new Response('errore', { status: 500 })) as unknown as typeof fetch;
+  it('risponde 502 se la fonte non restituisce il foglio', async () => {
+    fonte.disponibile = false;
     await request(app.getHttpServer()).get('/api/foglietti/027161').expect(502);
+    await request(app.getHttpServer()).get('/api/foglietti/027161/pdf').expect(502);
+    await request(app.getHttpServer()).post('/api/foglietti/027161/domande').send({ domanda: 'Come si conserva?' }).expect(502);
+  });
+
+  it('restituisce farmaco, pagine e sezioni del foglio', async () => {
+    const risposta = await request(app.getHttpServer()).get('/api/foglietti/027161').expect(200);
+    expect(risposta.body).toMatchObject({ cod: '027161', pagine: 3, titolo_foglio: 'PROVAMED 5 mg compresse' });
+    expect(risposta.body.sezioni.map((s: { numero: number }) => s.numero)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(fonte.letti).toEqual(['027161']);
+  });
+
+  it('serve il PDF della fonte dallo stesso dominio', async () => {
+    const risposta = await request(app.getHttpServer()).get('/api/foglietti/027161/pdf').expect(200);
+    expect(risposta.headers['content-type']).toBe('application/pdf');
+    expect(Buffer.from(risposta.body).toString()).toBe('%PDF-prova');
   });
 
   it('valida la domanda', async () => {
@@ -168,13 +200,6 @@ describe('API /api/foglietti', () => {
 
   it('se l’agente va in timeout risponde con il brano del foglio invece di dare errore', async () => {
     Object.assign(config.evolus, { apiKey: 'chiave-di-prova', applicationId: 'app-di-prova' });
-    const servizio = app.get(FogliettiService);
-    jest.spyOn(servizio, 'foglietto').mockImplementation(async () => ({
-      farmaco: { nome: 'PROVAMED' } as never,
-      pdf: new Uint8Array(),
-      pagine: 3,
-      testo: PAGINE,
-    }));
     global.fetch = jest.fn(async () => {
       const flusso = new ReadableStream<Uint8Array>({
         start(controller) {
@@ -192,13 +217,6 @@ describe('API /api/foglietti', () => {
 
   it('senza agente configurato risponde con il brano del foglio (riserva deterministica)', async () => {
     Object.assign(config.evolus, { apiKey: '', applicationId: '' });
-    const servizio = app.get(FogliettiService);
-    jest.spyOn(servizio, 'foglietto').mockImplementation(async () => ({
-      farmaco: { nome: 'PROVAMED' } as never,
-      pdf: new Uint8Array(),
-      pagine: 3,
-      testo: PAGINE,
-    }));
     const risposta = await request(app.getHttpServer())
       .post('/api/foglietti/027161/domande')
       .send({ domanda: 'Come si conserva?' })

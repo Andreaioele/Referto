@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Foglietti: fonte dei fogli separata dalla loro lettura (`FonteFoglietti`, `FonteAifa`); test con fonte di prova al posto di `jest.spyOn`, nuovi test su download, memoria ed estrazione; `npm test` con `--experimental-vm-modules` · [[15-backend]]
 - 2026-10-15 · pietro-giovedi · Primo diagramma archify: architettura del sistema (`docs/archify/architecture-referto-20261015-104805/`) · [[archify/README]]
 - 2026-10-15 · pietro-giovedi · Nuova cartella `docs/archify/` per i diagrammi della skill archify; regola in `CLAUDE.md` · [[archify/README]]
 - 2026-10-15 · pietro-giovedi · Portale più professionale dopo il confronto con MyChart, NHS App, Apple Salute, Doctolib e One Medical: gruppi di righe al posto delle schede, Home "Da fare", titoli in Source Serif 4, tolte decorazioni (motivo a croci, riquadri delle icone, pillole colorate) · [[16-frontend]]

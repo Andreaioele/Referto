@@ -1,16 +1,13 @@
-import { BadGatewayException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { extractText, getDocumentProxy } from 'unpdf';
+import { BadGatewayException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EvolusClient } from '../chat/evolus.client';
 import { ProntuarioService } from '../farmaci/prontuario.service';
 import type { Prodotto } from '../farmaci/prontuario.types';
+import { FONTE_FOGLIETTI, FogliettoNonDisponibile, type FonteFoglietti, type PdfFoglietto } from './fonte-foglietti';
 import { scegliBrani, trovaSezioni, type Brano, type Foglio } from './sezioni';
 
-/** PDF del foglio illustrativo scaricato da AIFA, con il testo di ogni pagina. */
-export interface FogliettoLetto {
+/** Il foglio illustrativo di un farmaco del prontuario, con il testo di ogni pagina. */
+export interface FogliettoLetto extends PdfFoglietto {
   farmaco: Prodotto;
-  pdf: Uint8Array;
-  pagine: number;
-  testo: string[];
 }
 
 export interface RispostaDomanda {
@@ -26,16 +23,14 @@ export interface RispostaDomanda {
 }
 
 const CODICE = /^\d{6}$/;
-const MASSIMO_IN_MEMORIA = 30;
-const ATTESA_AIFA_MS = 30_000;
 // Oltre questo tempo la persona riceve il brano del foglio invece della risposta dell'agente.
 const ATTESA_AGENTE_MS = 75_000;
 const CHIUSURA_AGENTE = /Questa è una spiegazione automatica[\s\S]*$/;
 export const NON_TROVATA = 'Non ho trovato questa informazione nel foglietto. Puoi chiedere al medico o al farmacista.';
 
 /**
- * Fogli illustrativi ufficiali AIFA: download del PDF (tenuto in memoria),
- * sezioni e risposte alle domande. La risposta dell'agente usa solo i brani
+ * Fogli illustrativi ufficiali AIFA: sezioni e risposte alle domande. Il PDF
+ * arriva dalla fonte dei foglietti (`FONTE_FOGLIETTI`, in produzione AIFA). La risposta dell'agente usa solo i brani
  * del foglio scelti qui in modo deterministico e deve dire da quale sezione
  * viene; se l'agente non risponde, si mostra il brano stesso.
  */
@@ -43,25 +38,25 @@ export const NON_TROVATA = 'Non ho trovato questa informazione nel foglietto. Pu
 export class FogliettiService {
   // Solo esiti tecnici: mai le domande o le risposte.
   private readonly logger = new Logger('Foglietti');
-  private readonly letti = new Map<string, Promise<FogliettoLetto>>();
 
   constructor(
     private readonly prontuario: ProntuarioService,
     private readonly evolus: EvolusClient,
+    @Inject(FONTE_FOGLIETTI) private readonly fonte: FonteFoglietti,
   ) {}
 
-  /** Il foglio illustrativo del farmaco AIFA `cod`, scaricato una sola volta. */
-  foglietto(cod: string): Promise<FogliettoLetto> {
+  /** Il foglio illustrativo del farmaco AIFA `cod`: 404 se il codice non è nel prontuario, 502 se la fonte non lo dà. */
+  async foglietto(cod: string): Promise<FogliettoLetto> {
     const farmaco = CODICE.test(cod) ? this.prontuario.farmaco(cod) : null;
     if (!farmaco) throw new NotFoundException(`Nessun farmaco AIFA con codice ${cod}`);
-    let lettura = this.letti.get(cod);
-    if (!lettura) {
-      lettura = this.leggi(farmaco);
-      lettura.catch(() => this.letti.delete(cod));
-      this.letti.set(cod, lettura);
-      if (this.letti.size > MASSIMO_IN_MEMORIA) this.letti.delete(this.letti.keys().next().value as string);
+    try {
+      return { farmaco, ...(await this.fonte.leggi(farmaco)) };
+    } catch (errore) {
+      if (errore instanceof FogliettoNonDisponibile) {
+        throw new BadGatewayException('Il foglietto illustrativo non è disponibile in questo momento.');
+      }
+      throw errore;
     }
-    return lettura;
   }
 
   /** Il foglio della formulazione `forma` (un PDF AIFA può contenerne più di uno), diviso in sezioni. */
@@ -89,24 +84,6 @@ export class FogliettiService {
     return { ...interpreta(testo, brani), brani };
   }
 
-  private async leggi(farmaco: Prodotto): Promise<FogliettoLetto> {
-    const inizio = Date.now();
-    let pdf: Uint8Array;
-    try {
-      const risposta = await fetch(farmaco.foglietto_url, { signal: AbortSignal.timeout(ATTESA_AIFA_MS) });
-      pdf = new Uint8Array(await risposta.arrayBuffer());
-      if (!risposta.ok || !èPdf(pdf)) throw new Error(`HTTP ${risposta.status}`);
-    } catch (errore) {
-      this.logger.warn(`Foglietto ${farmaco.cod} non scaricato da AIFA: ${(errore as Error).message}`);
-      throw new BadGatewayException('Il foglietto illustrativo non è disponibile in questo momento.');
-    }
-    // pdf.js si prende il buffer che riceve: gli si passa una copia.
-    const documento = await getDocumentProxy(pdf.slice());
-    const { totalPages, text } = await extractText(documento, { mergePages: false });
-    this.logger.log(`Foglietto ${farmaco.cod}: ${totalPages} pagine, ${Date.now() - inizio} ms`);
-    return { farmaco, pdf, pagine: totalPages, testo: text };
-  }
-
   /**
    * Testo completo della risposta dell'agente, o null se non è configurato, dà
    * errore o non finisce entro ATTESA_AGENTE_MS: in quei casi si usa la riserva.
@@ -126,10 +103,6 @@ export class FogliettiService {
     }
     return testo.trim() || null;
   }
-}
-
-function èPdf(dati: Uint8Array): boolean {
-  return dati.length > 4 && String.fromCharCode(...dati.slice(0, 4)) === '%PDF';
 }
 
 /** Messaggio per il Mother agent: la domanda e i soli brani del foglio da usare. */
