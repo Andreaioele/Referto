@@ -6,7 +6,8 @@ import { StruttureDelReferto } from '../referto/StruttureVicine'
 import { documenti, type Documento } from './dati'
 import { RigaDocumento } from './elementi'
 import { casaDelPaziente, refertoDaSpiegare } from './perReferto'
-import { prenota, usePrenotazioni } from './prenotazioni'
+import { naviga } from '../percorsi'
+import { preparaPrenotazione, usePrenotazioni } from './prenotazioni'
 
 const FILTRI: Array<{ valore: 'tutti' | Documento['tipo']; nome: string }> = [
   { valore: 'tutti', nome: 'Tutti' },
@@ -100,14 +101,11 @@ export function Documenti() {
                     categoria={aperta}
                     prenotabile={{
                       prenotate: new Set(prenotazioni.filter((p) => p.categoria === aperta).map((p) => p.struttura.id)),
-                      onPrenota: (struttura: StrutturaVicina) =>
-                        prenota({
-                          categoria: aperta,
-                          struttura,
-                          refertoId: referto.id,
-                          refertoTitolo: referto.titolo,
-                          area: referto.classificazione?.area,
-                        }),
+                      // Porta al calendario di "Prenota una visita" con la struttura già scelta.
+                      onPrenota: (struttura: StrutturaVicina) => {
+                        preparaPrenotazione({ refertoId: referto.id, categoria: aperta, struttura })
+                        naviga(`/prenota?referto=${encodeURIComponent(referto.id)}`)
+                      },
                     }}
                   />
                 )}

@@ -53,10 +53,10 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
               {pagina.nome}
             </Collegamento>
           ))}
-          <button type="button" className="menu-prenota">
+          <Collegamento href="/prenota" className="menu-prenota" aria-current={percorso === '/prenota' ? 'page' : undefined}>
             <Icona nome="piu" dimensione={22} />
             Prenota una visita
-          </button>
+          </Collegamento>
         </nav>
         <main className="contenuto">{children}</main>
       </div>

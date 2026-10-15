@@ -13,6 +13,8 @@ export interface Prenotazione {
   refertoId: string
   refertoTitolo: string
   area?: string
+  /** Giorno e ora scelti sul calendario di prova ("2026-10-20T10:00"), se scelti. */
+  quando?: string
   /** Data della richiesta, ISO. */
   richiesta: string
 }
@@ -42,6 +44,22 @@ function salva(nuovo: Prenotazione[]): void {
 export function prenota(p: Omit<Prenotazione, 'id' | 'richiesta'>): void {
   if (elenco.some((x) => x.struttura.id === p.struttura.id && x.categoria === p.categoria)) return
   salva([...elenco, { ...p, id: `${p.categoria}-${p.struttura.id}`, richiesta: new Date().toISOString() }])
+}
+
+/**
+ * Struttura scelta in "I miei documenti" con "Prenota una visita": la pagina
+ * /prenota la apre subito sul calendario. Vale una volta sola.
+ */
+let sceltaInAttesa: { refertoId: string; categoria: Categoria; struttura: StrutturaVicina } | null = null
+
+export function preparaPrenotazione(scelta: { refertoId: string; categoria: Categoria; struttura: StrutturaVicina }): void {
+  sceltaInAttesa = scelta
+}
+
+export function prendiPrenotazioneInAttesa(refertoId: string | null) {
+  const scelta = sceltaInAttesa && sceltaInAttesa.refertoId === refertoId ? sceltaInAttesa : null
+  sceltaInAttesa = null
+  return scelta
 }
 
 export function annullaPrenotazione(id: string): void {

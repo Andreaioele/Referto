@@ -59,10 +59,10 @@ export function Home() {
         </section>
       )}
 
-      <button type="button" className="bottone solo-telefono">
+      <Collegamento href="/prenota" className="bottone solo-telefono">
         <Icona nome="piu" dimensione={22} />
         Prenota una visita
-      </button>
+      </Collegamento>
 
       <section className="scheda" aria-labelledby="titolo-documenti">
         <div className="scheda-testa">

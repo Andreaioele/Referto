@@ -219,6 +219,29 @@ Sostituisce le due sezioni descritte sopra con la ricerca dentro le pagine.
 - Test aggiornati in `portale/Pagine.test.tsx`, `WidgetReferto.test.tsx`,
   `perReferto.test.ts` (non ancora eseguiti).
 
+### Prenota una visita (demo, 15/10/2026)
+
+"Prenota una visita" (menu, Home e Visite sul telefono) apre `/prenota`
+(`portale/Prenota.tsx`):
+
+1. **Per quale referto?** I referti con la loro area (già classificata).
+2. **Dove o con chi:** professionisti e strutture dell'area, dal più vicino a
+   casa (`StruttureDelReferto`, pulsante "Scegli l'orario").
+3. **Come prenotare** (`portale/SceltaOrario.tsx`): tre modi distinti, se ne
+   sceglie uno.
+   - **"Scegli una data":** apre il calendario di prova (`portale/calendario.ts`),
+     uguale per tutti e slegato dalla realtà (prossimi dieci giorni feriali, sei
+     orari, alcuni sempre occupati); scelto l'orario, "Prenota" mette la visita
+     (con giorno e ora) in "Le mie strutture" o "I miei professionisti". Non
+     avvisa nessuno: è una demo.
+   - **"Chiama":** `tel:` con il numero vero della struttura, se c'è.
+   - **"Email":** apre la posta locale con oggetto e testo già scritti;
+     l'indirizzo va aggiunto (nei dati non ci sono email).
+
+Da "I miei documenti", "Prenota una visita" su un risultato porta a `/prenota`
+con il referto e la struttura già scelti (`preparaPrenotazione` in
+`portale/prenotazioni.ts`). Test in `portale/Pagine.test.tsx`.
+
 ### Mappa dentro il portale (15/10/2026)
 
 "Mappa" non apre più OpenStreetMap in una nuova scheda: apre una finestra
