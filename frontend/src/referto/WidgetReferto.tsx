@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { statoBackend, type StatoBackend } from './cliente'
 import { Collegamento } from '../Collegamento'
 import { Icona } from '../Icona'
@@ -192,20 +192,17 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
   for (let i = 0; i + 1 < seguito.length; i += 2) domande.push([seguito[i], seguito[i + 1]])
 
   // Una domanda nuova (pronta o scritta) va in cima al pannello, con la risposta
-  // sotto: si scorre lì una volta sola, quando la domanda compare.
+  // sotto: ci si salta una volta sola, quando la domanda compare.
   const ultimaDomanda = useRef<HTMLDivElement>(null)
   const domandeViste = useRef(domande.length)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (domande.length > domandeViste.current) {
       const domanda = ultimaDomanda.current
       const corpo = domanda?.closest<HTMLElement>('.referto-corpo')
+      // Salto diretto, prima del disegno: la domanda a 12 px dalla cima del pannello.
       if (domanda && corpo) {
-        // Dopo il disegno: la domanda a 12 px dalla cima del pannello.
-        window.requestAnimationFrame(() => {
-          const fermo = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-          const cima = corpo.scrollTop + domanda.getBoundingClientRect().top - corpo.getBoundingClientRect().top - 12
-          corpo.scrollTo?.({ top: cima, behavior: fermo ? 'auto' : 'smooth' })
-        })
+        const cima = corpo.scrollTop + domanda.getBoundingClientRect().top - corpo.getBoundingClientRect().top - 12
+        corpo.scrollTo?.({ top: cima, behavior: 'instant' })
       }
     }
     domandeViste.current = domande.length

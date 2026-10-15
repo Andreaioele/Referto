@@ -80,7 +80,7 @@ relative a oggi). Referto è il widget integrato nel portale.
   aggiunge dati verificabili copiati dal referto (valori fuori intervallo con
   citazione, note del medico, visita prenotata). Il consenso in «I miei dati»
   nasconde tutti i pulsanti di Referto (salvato in `localStorage`).
-  Una domanda nuova (pronta o scritta) scorre in cima al pannello, con la
+  Una domanda nuova (pronta o scritta) salta subito in cima al pannello, con la
   risposta sotto: l'ultimo scambio ha un'altezza minima (`.referto-scambio-ultimo`)
   così c'è spazio per portarlo in alto anche quando la risposta è corta.
 - Foglietto (`src/referto/LettoreFoglietto.tsx`): il PDF ufficiale AIFA,
