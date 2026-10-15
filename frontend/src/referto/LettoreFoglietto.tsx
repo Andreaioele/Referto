@@ -1,26 +1,11 @@
-import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import {
-  domandaFoglietto,
-  ErroreServizio,
-  infoFoglietto,
-  urlPdfFoglietto,
-  type InfoFoglietto,
-  type RispostaFoglietto,
-} from '../api'
 import { Icona } from '../Icona'
 import { useDialogo } from '../useDialogo'
-import { PaginaPdf } from './PaginaPdf'
+import { urlPdfFoglietto, type RispostaFoglietto } from './cliente'
 import { MarchioFoglio } from './Marchio'
-import { apriPdf } from './pdf'
+import { PaginaPdf } from './PaginaPdf'
 import type { FarmacoDaLeggere } from './tipi'
-
-interface Scambio {
-  domanda: string
-  stato: 'attesa' | 'pronta' | 'errore'
-  risposta?: RispostaFoglietto
-  errore?: string
-}
+import { useFoglietto, type Scambio } from './useFoglietto'
 
 const DOMANDE_PRONTE = ['A cosa serve?', 'Come lo prendo?', 'Se dimentico una dose?', 'Posso prenderlo con altri medicinali?']
 const ZOOM = { minimo: 75, massimo: 175, passo: 25 }
@@ -35,94 +20,39 @@ function nomeLeggibile(nome: string): string {
  * Lettore del foglio illustrativo ufficiale AIFA, dentro il portale: il PDF
  * con le sue sezioni e, accanto, le domande all'agente di Referto. Ogni
  * risposta dice da quale sezione viene e porta il lettore a quella pagina.
+ * Dati, pagina e domande sono in useFoglietto; qui c'è solo la vista.
  */
 export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLeggere; onChiudi: () => void }) {
+  const foglietto = useFoglietto(farmaco)
+  const { info, pdf, errore, pagina, totale, sezioni, sezioneCitata, sezioniDellaPagina, scambi, inAttesa } = foglietto
   const cod = farmaco.codiceAifa
-  const forma = farmaco.confezione
-  const [info, setInfo] = useState<InfoFoglietto | null>(null)
-  const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null)
-  const [errore, setErrore] = useState<string | null>(null)
-  const [pagina, setPagina] = useState(1)
   const [zoom, setZoom] = useState(100)
-  const [citata, setCitata] = useState<number | null>(null)
   const [vista, setVista] = useState<'leggi' | 'domande'>('leggi')
   const [domandeAperte, setDomandeAperte] = useState(true)
-  const [scambi, setScambi] = useState<Scambio[]>([])
   const [bozza, setBozza] = useState('')
   const finestra = useDialogo<HTMLDivElement>(onChiudi)
   const fineDomande = useRef<HTMLDivElement>(null)
-  const controllo = useRef<AbortController | null>(null)
-
-  useEffect(() => {
-    const segnale = new AbortController()
-    let documento: PDFDocumentProxy | null = null
-    Promise.all([infoFoglietto(cod, forma, segnale.signal), apriPdf(urlPdfFoglietto(cod))])
-      .then(([dati, aperto]) => {
-        documento = aperto
-        if (segnale.signal.aborted) return void aperto.destroy()
-        setInfo(dati)
-        setPdf(aperto)
-        // Si apre sul foglio della formulazione prescritta, non per forza sulla prima pagina del PDF.
-        setPagina(dati.sezioni[0]?.pagina ?? 1)
-      })
-      .catch((e: unknown) => {
-        if (segnale.signal.aborted) return
-        setErrore(e instanceof ErroreServizio ? e.message : 'Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.')
-      })
-    return () => {
-      segnale.abort()
-      void documento?.destroy()
-      controllo.current?.abort()
-    }
-  }, [cod, forma])
 
   useEffect(() => {
     fineDomande.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [scambi])
 
   const nome = info ? nomeLeggibile(info.nome) : farmaco.nome
-  const totale = info?.pagine ?? pdf?.numPages ?? 0
-  const sezioni = info?.sezioni ?? []
-  const sezioneCitata = sezioni.find((s) => s.numero === citata)
-  const inAttesa = scambi.some((s) => s.stato === 'attesa')
 
   function vaiAllaSezione(numero: number, cita = false) {
-    const sezione = sezioni.find((s) => s.numero === numero)
-    if (!sezione) return
-    setPagina(sezione.pagina)
-    setCitata(cita ? numero : null)
+    foglietto.vaiAllaSezione(numero, cita)
     setVista('leggi')
   }
 
-  async function chiedi(domanda: string) {
-    const testo = domanda.trim()
-    if (!testo || inAttesa) return
-    setBozza('')
-    setScambi((attuali) => [...attuali, { domanda: testo, stato: 'attesa' }])
-    controllo.current = new AbortController()
-    try {
-      const risposta = await domandaFoglietto(cod, testo, forma, controllo.current.signal)
-      setScambi((attuali) => attuali.map((s, i) => (i === attuali.length - 1 ? { ...s, stato: 'pronta', risposta } : s)))
-      if (risposta.sezione) {
-        const sezione = sezioni.find((s) => s.numero === risposta.sezione)
-        if (sezione) {
-          setPagina(sezione.pagina)
-          setCitata(sezione.numero)
-        }
-      }
-    } catch (e) {
-      if (controllo.current.signal.aborted) return
-      const messaggio = e instanceof ErroreServizio ? e.message : 'Collegamento interrotto. Riprova tra poco.'
-      setScambi((attuali) => attuali.map((s, i) => (i === attuali.length - 1 ? { ...s, stato: 'errore', errore: messaggio } : s)))
-    }
+  function chiedi(domanda: string) {
+    if (foglietto.chiedi(domanda)) setBozza('')
   }
 
   function invio(evento: FormEvent) {
     evento.preventDefault()
-    void chiedi(bozza)
+    chiedi(bozza)
   }
 
-  const sezioniDellaPagina = sezioni.filter((s) => s.pagina === pagina)
 
   return (
     <div
@@ -164,7 +94,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
 
       <div className="lettore-strumenti">
         <div className="lettore-gruppo">
-          <button type="button" className="quadrato" aria-label="Pagina precedente" disabled={pagina <= 1} onClick={() => setPagina((p) => p - 1)}>
+          <button type="button" className="quadrato" aria-label="Pagina precedente" disabled={pagina <= 1} onClick={foglietto.paginaPrecedente}>
             <Icona nome="indietro" dimensione={22} />
           </button>
           <span className="lettore-pagina" aria-live="polite">
@@ -182,7 +112,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
             className="quadrato"
             aria-label="Pagina successiva"
             disabled={!totale || pagina >= totale}
-            onClick={() => setPagina((p) => p + 1)}
+            onClick={foglietto.paginaSuccessiva}
           >
             <Icona nome="avanti" dimensione={22} />
           </button>
@@ -300,7 +230,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
           <div className="referto-piede">
             <div className="referto-suggerimenti">
               {DOMANDE_PRONTE.map((domanda) => (
-                <button key={domanda} type="button" className="referto-chip" disabled={inAttesa || !info} onClick={() => void chiedi(domanda)}>
+                <button key={domanda} type="button" className="referto-chip" disabled={inAttesa || !info} onClick={() => chiedi(domanda)}>
                   {domanda}
                 </button>
               ))}

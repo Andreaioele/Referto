@@ -41,9 +41,8 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/App.tsx` | Pagine del portale e finestre sopra (widget, foglietto, documento) |
 | `src/portale/` | Portale dimostrativo: pagine, dati di esempio, date, menu |
 | `src/referto/WidgetReferto.tsx`, `useChat.ts`, `spiegazione.ts` | Widget Referto e chat con il Mother agent |
-| `src/referto/LettoreFoglietto.tsx`, `PaginaPdf.tsx`, `pdf.ts` | Lettore del foglietto AIFA con le domande |
-| `src/servizio-chat.ts` | Invio del messaggio e lettura dello streaming |
-| `src/api.ts` | Stato del backend e rotte dei foglietti |
+| `src/referto/LettoreFoglietto.tsx`, `useFoglietto.ts`, `PaginaPdf.tsx`, `pdf.ts` | Lettore del foglietto AIFA con le domande: stato in `useFoglietto`, vista nel componente |
+| `src/referto/cliente.ts` | Client di Referto verso `/api`: spiegazione in streaming, foglietti, stato del backend; errori già scritti per la persona |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
 | `src/index.css` | Tema del portale (finto: gruppi di righe, un verde, Source Serif 4 per i titoli e Public Sans), versione per telefono sotto i 760 px |
 | `src/referto/referto.css` | Tema di Referto: widget e lettore del foglietto, separato dal portale perché è la parte che si integra in portali diversi |
@@ -130,6 +129,27 @@ da `src/portale/`: lo impone la regola `no-restricted-imports` in
 - Test: `portale/perReferto.test.ts`, `referto/domande-pronte.test.ts`,
   `referto/WidgetReferto.test.tsx` (il widget con un Mother agent finto: manda
   solo il testo del referto, mostra valori, note, visita e domande pronte).
+
+## Client di Referto e stato del lettore (15/10/2026)
+
+- **`referto/cliente.ts`** sostituisce `src/api.ts` e `src/servizio-chat.ts`
+  (li usava solo Referto). Chi lo usa non legge stati HTTP né righe SSE:
+  - `spiega()` passa i pezzi di testo e **finisce sempre con un solo evento**
+    `fine` o `errore`, anche se la rete cade o il flusso si chiude prima
+    ("La risposta si è interrotta", "Collegamento interrotto"); se la richiesta
+    è annullata non arriva più nulla. Non lancia mai.
+  - `apriFoglietto()` restituisce dati e PDF aperto insieme; se una delle due
+    parti fallisce chiude il PDF già aperto.
+  - `chiediAlFoglietto()` e `statoBackend()`; gli errori sono `ErroreServizio`
+    con il messaggio per la persona, scritto una volta sola per ogni stato
+    (429, 404, 502, altri).
+- **`useChat`** trasforma soltanto gli eventi in messaggi.
+- **`referto/useFoglietto.ts`**: caricamento, pagina (sempre tra 1 e il
+  totale), domande, citazione che porta alla pagina, annullamento e chiusura
+  del PDF alla chiusura. `LettoreFoglietto` tiene solo zoom, schede e bozza.
+- Test: `referto/cliente.test.ts` (streaming spezzato, errori, annullamento,
+  messaggi per stato, PDF chiuso se i dati falliscono),
+  `referto/useFoglietto.test.tsx`, `referto/useChat.test.tsx`.
 
 ## Portale dimostrativo con Referto integrato (15/10/2026)
 

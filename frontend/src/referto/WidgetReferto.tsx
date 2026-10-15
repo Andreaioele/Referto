@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { statoBackend, type StatoBackend } from '../api'
+import { statoBackend, type StatoBackend } from './cliente'
 import { Collegamento } from '../Collegamento'
 import { Icona } from '../Icona'
 import { useDialogo } from '../useDialogo'

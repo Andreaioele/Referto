@@ -1,6 +1,6 @@
 ---
 tags: [area/specifica]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Specifica: Storico referti per sessione
@@ -250,9 +250,10 @@ frontend/src/
 - Alla fine di ogni streaming: salva il turno con
   `POST /api/sessioni/:id/turni`.
 
-**`servizio-chat.ts`:**
-- La funzione `inviaMessaggio()` non cambia (il salvataggio è nel componente,
-  non nel servizio).
+**`referto/cliente.ts`:**
+- La funzione `spiega()` (prima `inviaMessaggio()` in `servizio-chat.ts`, unita
+  al client di Referto il 15/10/2026) non cambia: il salvataggio è nel
+  componente, non nel client.
 
 ### Flusso: riapertura di una sessione
 
