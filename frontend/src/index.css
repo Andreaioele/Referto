@@ -422,18 +422,16 @@ button:disabled {
 }
 
 /* ---------- Gruppi di righe ---------- */
-.gruppo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
+/* Il gruppo è il riquadro (.gruppo-corpo); il titolo è la sua intestazione. */
 .gruppo-testa {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 4px 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--p-linea);
+  background: var(--p-blu-velo);
 }
 
 .gruppo-testa h2 {
@@ -463,9 +461,15 @@ button:disabled {
   overflow: hidden;
 }
 
-/* Il gruppo con le cose da fare: cornice blu, è la prima cosa da guardare. */
-.gruppo-prioritario .gruppo-corpo {
+/* Il gruppo con le cose da fare: cornice blu e intestazione azzurra più
+   decisa, è la prima cosa da guardare. */
+.gruppo-prioritario {
   border: 2px solid var(--p-blu);
+}
+
+.gruppo-prioritario .gruppo-testa {
+  border-bottom-color: #c5d3e8;
+  background: var(--p-blu-chiaro);
 }
 
 .riga {
@@ -1127,6 +1131,10 @@ details summary {
 
   .riga {
     padding: 18px 16px;
+  }
+
+  .gruppo-testa {
+    padding: 14px 16px;
   }
 
   .riga-documento {

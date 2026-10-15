@@ -7,8 +7,8 @@ import { anno, dataLunga, giornoSettimana, meseBreve, numeroGiorno, traQuanto } 
 import { MarchioReferto } from './Struttura'
 
 /**
- * Un gruppo di righe con il titolo sopra (come le liste raggruppate di Apple
- * Salute): il portale è fatto di righe in gruppi, non di schede separate.
+ * Un gruppo di righe in un riquadro, con il titolo nell'intestazione del
+ * riquadro: titolo e contenuto si leggono come una cosa sola.
  */
 export function Gruppo({
   id,
@@ -28,7 +28,7 @@ export function Gruppo({
   children: ReactNode
 }) {
   return (
-    <section className={prioritario ? 'gruppo gruppo-prioritario' : 'gruppo'} aria-labelledby={id}>
+    <section className={prioritario ? 'gruppo gruppo-corpo gruppo-prioritario' : 'gruppo gruppo-corpo'} aria-labelledby={id}>
       <div className="gruppo-testa">
         <h2 id={id}>
           {icona && <Icona nome={icona} dimensione={24} />}
@@ -36,7 +36,7 @@ export function Gruppo({
         </h2>
         {collegamento && <Collegamento href={collegamento.href}>{collegamento.testo}</Collegamento>}
       </div>
-      <div className="gruppo-corpo">{children}</div>
+      {children}
     </section>
   )
 }

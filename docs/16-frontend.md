@@ -78,8 +78,9 @@ verde e bianco per pazienti anziani:
 - Domanda pronta «Cosa posso chiedere al medico?» al posto di «Devo preoccuparmi?».
 - **Portale "da portale vero" (15/10/2026, dopo un confronto con MyChart, NHS App,
   Apple Salute, Doctolib e One Medical):** pagina neutra `#f4f5f4`, contenuti in
-  **gruppi di righe** su carta bianca (titolo del gruppo sopra, righe separate da
-  filetti, componente `Gruppo` in `portale/elementi.tsx`) invece di schede
+  **gruppi di righe** su carta bianca (titolo del gruppo nell'intestazione del
+  riquadro, su fondo azzurro, righe separate da filetti, componente `Gruppo` in
+  `portale/elementi.tsx`) invece di schede
   separate; testo tenue `#4b5450` (7,8:1), bordi dei controlli `#76847e`.
   Titoli delle pagine, nome dello studio e giorno delle visite in
   **Source Serif 4** (carta intestata dello studio, come One Medical), il resto
