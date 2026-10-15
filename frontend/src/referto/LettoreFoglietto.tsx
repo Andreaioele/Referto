@@ -12,6 +12,7 @@ import { Icona } from '../Icona'
 import type { Farmaco } from '../portale/dati'
 import { useDialogo } from '../useDialogo'
 import { PaginaPdf } from './PaginaPdf'
+import { MarchioFoglio } from './Marchio'
 import { apriPdf } from './pdf'
 
 interface Scambio {
@@ -136,12 +137,10 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onCh
           <Icona nome="indietro" dimensione={22} />
           <span className="solo-computer">Torna alle prescrizioni</span>
         </button>
-        <span className="referto-marchio piccolo-marchio" aria-hidden="true">
-          R
-        </span>
+        <MarchioFoglio dimensione={34} variante="chiaro" />
         <div className="lettore-titolo">
-          <strong id="titolo-lettore">Foglietto illustrativo · {nome}</strong>
-          <span>{info ? `${info.principio_attivo} · ${nomeLeggibile(info.ditta)}` : farmaco.nome}</span>
+          <strong id="titolo-lettore">Foglietto illustrativo di {nome}</strong>
+          <span>{info ? `${info.principio_attivo}, ${nomeLeggibile(info.ditta)}` : farmaco.nome}</span>
         </div>
         <button
           type="button"
@@ -268,9 +267,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: Farmaco; onCh
 
         <aside className="lettore-domande" aria-label="Domande su questo foglietto">
           <div className="lettore-domande-testa">
-            <span className="referto-marchio piccolo-marchio" aria-hidden="true">
-              R
-            </span>
+            <MarchioFoglio dimensione={34} variante="scuro" />
             <div>
               <strong>Domande su questo foglietto</strong>
               <span>Rispondo solo con ciò che c'è scritto</span>

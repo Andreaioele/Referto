@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Restyling del widget Referto: carattere Atkinson Hyperlegible Next e Public Sans ospitati nell'app; verde solo per marchio e azioni, contenuti su carta bianca, bordi dei controlli oltre 3:1; nuovo marchio a foglio e pulsanti a pillola; spiegazione come foglio unico e domande come citazioni; al telefono «Capire un referto» diventa una fascia fissa (copriva i pulsanti); testi in rem; CSS di Referto separato (`referto/referto.css`) · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Domande sul foglietto: se l'agente non risponde entro 75 secondi o dà errore si risponde con il brano del foglio (prima: errore 500 per timeout) · [[15-backend]]
 - 2026-10-15 · chat-frontend · Backend: `@nestjs/mongoose` 11.0.4 (CommonJS) al posto della 12 (solo ESM), che su Vercel bloccava l'avvio di tutto il backend · [[15-backend]]
 - 2026-10-15 · chat-frontend · Frontend rifatto come portale dimostrativo di uno studio medico con Referto integrato (widget, lettore PDF del foglietto con domande, versione per telefono) · [[16-frontend]]

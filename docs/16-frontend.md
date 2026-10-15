@@ -18,7 +18,7 @@ scritta resta e l'errore la segue. La data del prontuario (`GET /api/salute`) è
 nei dettagli a scomparsa «Come è fatta questa spiegazione». Le
 schermate dell'app Python (`resources/templates/`, `resources/static/`) vanno
 portate qui una alla volta, con gli stessi principi: poche informazioni alla
-volta, testi grandi, stesso tema ([[05-webapp-e-interfaccia]]).
+volta, testi grandi, tema di Referto descritto sotto ([[05-webapp-e-interfaccia]]).
 
 ## Collegamento con il backend
 
@@ -45,7 +45,36 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/servizio-chat.ts` | Invio del messaggio e lettura dello streaming |
 | `src/api.ts` | Stato del backend e rotte dei foglietti |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
-| `src/index.css` | Tema del portale e tema di Referto, versione per telefono sotto i 760 px |
+| `src/index.css` | Tema del portale (finto, blu, Public Sans), versione per telefono sotto i 760 px |
+| `src/referto/referto.css` | Tema di Referto: widget e lettore del foglietto, separato dal portale perché è la parte che si integra in portali diversi |
+| `src/referto/Marchio.tsx` | Marchio di Referto (foglio con l'angolo piegato e la R) |
+
+## Tema di Referto (15/10/2026)
+
+Scelte dopo l'analisi con la skill `frontend-design` e una ricerca sui colori
+verde e bianco per pazienti anziani:
+
+- **Carattere:** Atkinson Hyperlegible Next (Braille Institute), pensato per chi
+  vede poco e chiaro sui numeri (1/l/I, 0/O). Il portale usa Public Sans. Tutti e
+  due ospitati nell'app (`@fontsource`), niente servizi esterni.
+- **Colori** (`:root` in `referto.css`, contrasto misurato sul bianco): verde
+  `#0f5143` (9,2:1) solo per marchio e azioni, **mai per stati clinici** (il
+  verde si legge come "tutto a posto"); contenuti su carta bianca, testo
+  `#1d2422`; menta `#e3f1ea` solo per ciò che è selezionato, mai come struttura
+  (con l'età le tinte pallide blu-verdi si distinguono peggio); bordi dei
+  controlli `#76847e` (3,9:1, sopra il minimo di 3:1); ambra `#8a4a00` per i
+  valori fuori intervallo, sempre con l'etichetta.
+- **Riconoscibilità:** Referto si distingue dal portale anche per forma, non
+  solo per colore: marchio a foglio su ogni pulsante che lo apre e pulsanti a
+  pillola (il portale ha rettangoli arrotondati).
+- **Il widget è un foglio da leggere:** la spiegazione è un unico foglio con
+  sezioni separate da spazio e filetti, non una pila di schede; le domande del
+  paziente lo continuano ("Le tue domande", domanda come citazione, non fumetti).
+- **Telefono:** «Capire un referto» è una fascia fissa sopra la barra delle
+  schede, non un pulsante sospeso (copriva i pulsanti della pagina);
+  `scroll-padding-bottom` evita che lo scorrimento automatico lasci elementi sotto.
+- **Testi in `rem`:** seguono la dimensione del testo scelta nel telefono o nel browser.
+- Domanda pronta «Cosa posso chiedere al medico?» al posto di «Devo preoccuparmi?».
 
 ## Comandi
 

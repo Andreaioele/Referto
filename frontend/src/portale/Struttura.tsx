@@ -4,15 +4,16 @@ import { Collegamento } from '../Collegamento'
 import { useAzioni } from '../azioni'
 import { paziente, STUDIO } from './dati'
 import { PAGINE } from './pagine'
+import { MarchioFoglio } from '../referto/Marchio'
 
 
-/** Il segno "R" di Referto, usato su ogni pulsante che apre il widget. */
-export function MarchioReferto({ grande = false }: { grande?: boolean }) {
-  return (
-    <span className={grande ? 'marchio-r marchio-r-grande' : 'marchio-r'} aria-hidden="true">
-      R
-    </span>
-  )
+/**
+ * Il marchio di Referto (foglio con l'angolo piegato), su ogni pulsante che apre
+ * il widget. Piccolo dentro i pulsanti verdi (foglio bianco), grande su fondo
+ * chiaro (foglio verde).
+ */
+export function MarchioReferto({ grande = false, variante }: { grande?: boolean; variante?: 'chiaro' | 'scuro' }) {
+  return <MarchioFoglio dimensione={grande ? 44 : 24} variante={variante ?? (grande ? 'scuro' : 'chiaro')} />
 }
 
 /** Testata, menu (a sinistra sul computer, in basso sul telefono) e pulsante fisso di Referto. */
@@ -64,7 +65,7 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
       <div className="aggancio">
         {refertoAttivo && (
           <button type="button" className="lanciatore" onClick={() => spiega()}>
-            <MarchioReferto grande />
+            <MarchioFoglio dimensione={32} variante="chiaro" />
             Capire un referto
           </button>
         )}

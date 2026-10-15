@@ -6,6 +6,7 @@ import { visita as trovaVisita, type Documento } from '../portale/dati'
 import { dataLunga, giornoEData } from '../portale/date'
 import { useDialogo } from '../useDialogo'
 import { leggiSpiegazione, senzaChiusura } from './spiegazione'
+import { MarchioFoglio } from './Marchio'
 import { useChat, type Messaggio } from './useChat'
 
 const LUNGHEZZA_MASSIMA = 30000
@@ -35,18 +36,19 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
     <>
       {spiegazione.argomento && (
         <p className="referto-argomento">
-          {spiegazione.argomento.esame} · {spiegazione.argomento.area}
+          <strong>{spiegazione.argomento.esame}</strong>
+          <span>Area: {spiegazione.argomento.area.toLowerCase()}</span>
         </p>
       )}
       {vuota && inCorso && <Caricamento testo="Sto leggendo il referto… può servire un minuto." />}
       {sintesi && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <h3>In breve</h3>
           <p>{sintesi}</p>
         </section>
       )}
       {fuori.length > 0 && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <h3>I valori fuori dall'intervallo</h3>
           {fuori.map((valore) => (
             <div key={valore.esame} className="referto-valore">
@@ -58,25 +60,25 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
                 <span className="tenue">intervallo: {valore.riferimento}</span>
               </div>
               <span className="referto-citazione">
-                Dal referto: «{valore.esame} {valore.risultato} {valore.unita} · {valore.riferimento}»
+                Dal referto: «{valore.esame} {valore.risultato} {valore.unita}, intervallo {valore.riferimento}»
               </span>
             </div>
           ))}
         </section>
       )}
       {semplice && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <h3>In parole semplici</h3>
           <p>{semplice}</p>
         </section>
       )}
       {spiegazione.libero && !sintesi && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <p>{senzaChiusura(spiegazione.libero)}</p>
         </section>
       )}
       {(referto?.noteMedico || indicazioni) && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <h3>Cosa ha scritto il medico</h3>
           {referto?.noteMedico ? (
             <>
@@ -89,13 +91,13 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
         </section>
       )}
       {farmaci && (
-        <section className="referto-box">
+        <section className="referto-sezione">
           <h3>Farmaci citati nel referto</h3>
           <p>{farmaci}</p>
         </section>
       )}
       {visitaCollegata && visitaCollegata.giorni >= 0 && (sintesi || !inCorso) && (
-        <section className="referto-box referto-visita">
+        <section className="referto-sezione referto-visita">
           <span className="icona-tonda">
             <Icona nome="calendario" dimensione={22} />
           </span>
@@ -107,13 +109,13 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
         </section>
       )}
       {nellIntervallo.length > 0 && (
-        <details className="referto-box">
+        <details className="referto-sezione referto-sezione-chiusa">
           <summary>Gli altri {nellIntervallo.length} valori sono nell'intervallo</summary>
           <p>{nellIntervallo.map((v) => v.esame).join(', ')}.</p>
         </details>
       )}
       {limiti && !LIMITI_ASSENTI.test(limiti) && (
-        <details className="referto-box">
+        <details className="referto-sezione referto-sezione-chiusa">
           <summary>Limiti del referto</summary>
           <p>{limiti}</p>
         </details>
@@ -127,7 +129,7 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
 function domandePronte(documento?: Documento): string[] {
   const fuori = documento?.referto?.valori?.filter((v) => v.fuori) ?? []
   const prima = fuori.length > 0 ? `Cosa vuol dire «${fuori[fuori.length - 1].esame}»?` : 'Me lo spieghi più semplice?'
-  return [prima, 'Devo preoccuparmi?']
+  return [prima, 'Cosa posso chiedere al medico?']
 }
 
 /**
@@ -169,9 +171,7 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
     <div className="referto-velo" onClick={(e) => e.target === e.currentTarget && onChiudi()}>
       <div className="referto-pannello" role="dialog" aria-modal="true" aria-labelledby="titolo-referto" ref={pannello}>
         <div className="referto-testa">
-          <span className="referto-marchio" aria-hidden="true">
-            R
-          </span>
+          <MarchioFoglio dimensione={40} variante="chiaro" />
           <div className="referto-testa-testo">
             <strong id="titolo-referto">Referto</strong>
             <span>Ti spiego il referto in parole semplici</span>
@@ -184,10 +184,7 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
           <Icona nome="documento" dimensione={20} />
           {documento ? (
             <span>
-              Stai leggendo:{' '}
-              <strong>
-                {documento.titolo} · {dataLunga(documento.giorni)}
-              </strong>
+              Stai leggendo: <strong>{documento.titolo}</strong> del {dataLunga(documento.giorni)}
             </span>
           ) : (
             <span>Il referto che incolli tu</span>
@@ -214,31 +211,38 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
               </button>
             </form>
           ) : (
-            primaRisposta && <Spiegazione risposta={primaRisposta} documento={documento} inCorso={inCorso && seguito.length === 0} />
-          )}
+            <article className="referto-foglio" aria-label="Spiegazione del referto">
+              {primaRisposta && (
+                <Spiegazione risposta={primaRisposta} documento={documento} inCorso={inCorso && seguito.length === 0} />
+              )}
 
-          {domande.map(([domanda, risposta], indice) => (
-            <div key={indice} className="referto-scambio">
-              <p className="referto-domanda">{domanda.testo}</p>
-              <section className={risposta.errore ? 'referto-box referto-errore' : 'referto-box'}>
-                {risposta.testo ? (
-                  <p>{senzaChiusura(risposta.testo)}</p>
-                ) : (
-                  <Caricamento testo="Sto cercando la risposta nel referto…" />
-                )}
-              </section>
-            </div>
-          ))}
+              {domande.length > 0 && (
+                <section className="referto-sezione referto-domande">
+                  <h3>Le tue domande</h3>
+                  {domande.map(([domanda, risposta], indice) => (
+                    <div key={indice} className="referto-scambio">
+                      <p className="referto-domanda">{domanda.testo}</p>
+                      {risposta.testo ? (
+                        <p className={risposta.errore ? 'referto-risposta referto-errore' : 'referto-risposta'}>
+                          {senzaChiusura(risposta.testo)}
+                        </p>
+                      ) : (
+                        <Caricamento testo="Sto cercando la risposta nel referto…" />
+                      )}
+                    </div>
+                  ))}
+                </section>
+              )}
 
-          {iniziato && (
-            <details className="referto-box referto-dettagli">
-              <summary>Come è fatta questa spiegazione</summary>
-              <p>
-                La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del
-                medico sono copiati dal referto così come sono.
-                {stato && ` Collegato al prontuario AIFA aggiornato al ${new Date(`${stato.aggiornato}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}.`}
-              </p>
-            </details>
+              <details className="referto-sezione referto-sezione-chiusa referto-dettagli">
+                <summary>Come è fatta questa spiegazione</summary>
+                <p>
+                  La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del
+                  medico sono copiati dal referto così come sono.
+                  {stato && ` Collegato al prontuario AIFA aggiornato al ${new Date(`${stato.aggiornato}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}.`}
+                </p>
+              </details>
+            </article>
           )}
 
           <div className="referto-sicurezza">

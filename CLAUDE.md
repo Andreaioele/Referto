@@ -39,9 +39,11 @@ Convenzioni delle note in `docs/come-usare-questa-documentazione.md`.
   referto; farmaci e indicazioni solo se scritti dal medico.
 - Ogni dato generato dal modello deve essere verificabile (citazione o fonte
   ufficiale) o avere una riserva deterministica.
-- Interfaccia usabile da una persona di 70 anni: stesso tema, poche
-  informazioni alla volta, dettagli tecnici a scomparsa
-  (`docs/05-webapp-e-interfaccia.md`).
+- Interfaccia usabile da una persona di 70 anni: poche informazioni alla
+  volta, dettagli tecnici a scomparsa, testi in `rem`, contrasto almeno 7:1 per i
+  testi e 3:1 per i bordi dei controlli. Tema di Referto in
+  `frontend/src/referto/referto.css` e `docs/16-frontend.md`: verde solo per
+  marchio e azioni, mai per stati clinici.
 - Mai dati sanitari in Git: traces, risultati, profilo e `.env` restano fuori
   (`.gitignore`). Il testo dei referti può andare ai servizi esterni del
   prodotto (Evolus, Vercel); nei log solo esiti tecnici, mai il contenuto.
