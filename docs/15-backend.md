@@ -35,6 +35,9 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 | `GET /api/sessioni/:id` | Dettaglio sessione con turni | no |
 | `POST /api/sessioni/:id/turni` | Salva un turno (domanda + risposta) | no |
 | `DELETE /api/sessioni/:id` | Elimina una sessione | no |
+| `GET /api/strutture?area=&categoria=&lat=&lon=&limite=` | Per l'area del referto (come la scrive il Mother agent): `categoria=strutture` (luoghi, predefinita) o `professionisti` (medici e studi), per gruppo, dal più vicino | no |
+| `GET /api/strutture?tipo=&lat=&lon=&limite=` | Strutture di un tipo (medici di famiglia, farmacie, laboratori...), dalla più vicina | no |
+| `GET /api/strutture/aree` | Le 19 aree della classificazione, con fonti e data dei dati | no |
 | `GET /api/docs`, `/api/docs-json` | Documentazione OpenAPI (da importare come Web API in Evolus) | no |
 
 Chiave: intestazione `x-api-key` uguale alla variabile `CHIAVE_API`. Se non è
@@ -133,6 +136,16 @@ richiamare il modello per sessioni già analizzate.
   token né password (hackathon).
 - Nei log solo ID e timestamp, mai il contenuto dei turni
   ([[09-trace-e-privacy]]).
+- **Archivio** (15/10/2026): `SessioniService` tiene le regole (la sessione è
+  dell'utente, il titolo viene dalla prima domanda, 100 caratteri) e salva
+  tramite l'interfaccia `ArchivioSessioni` (`archivio-sessioni.ts`, token
+  `ARCHIVIO_SESSIONI`). Due archivi: `ArchivioMongo` (Mongoose, usato dal
+  backend con `SessioniModule.conMongo()`) e `ArchivioInMemoria` (solo test,
+  `SessioniModule.inMemoria()`).
+- Test: `test/sessioni.spec.ts` gira sempre sull'archivio in memoria e, se c'è
+  `MONGODB_URI`, anche su MongoDB attraverso il backend completo. Per provarlo in
+  locale: `docker run -d --rm -p 27099:27017 mongo:7` e
+  `MONGODB_URI=mongodb://localhost:27099 npm test`.
 
 Specifica completa: [[specifica-storico-sessione]].
 
@@ -223,6 +236,75 @@ Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
   (`SEZIONE: n`, controllata da `interpreta`). Senza agente, se dà errore o se
   non finisce entro 75 secondi risponde il brano stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
 - Test: `test/foglietti.spec.ts`.
+
+## Strutture di Milano (`src/strutture/`, 15/10/2026)
+
+Per la sezione "Le mie strutture" del portale ([[16-frontend]]). La demo è
+limitata alla **città di Milano** e cerca solo in un file locale: niente Google
+Maps/Places, e il Mother agent non cerca strutture.
+
+Flusso: referto → Mother agent → classificazione (riga `ARGOMENTO: esame ·
+area`, elenco chiuso di 19 aree in `data/prompt-mother.md`) → `GET
+/api/strutture?area=...` → elenco per distanza dalla casa della persona.
+
+- **Dati:** `data/strutture-milano.json` (7.687 voci, circa 2 MB), costruito da
+  `npm run strutture` (`scripts/costruisci-strutture.ts`), da tre fonti aperte e
+  gratuite, senza chiavi né account:
+  - Comune di Milano (dati.comune.milano.it): 988 medici di famiglia e 115
+    pediatri attivi (un medico con i suoi ambulatori, **senza** data di nascita
+    né codice regionale), 422 farmacie, 35 consultori, 16 strutture di
+    riabilitazione, 3 servizi per le dipendenze, 16 centri trasfusionali, 35
+    ospedali e case di cura con i reparti (posti letto, ultimo anno: 2023). I nomi
+    degli ospedali nel CSV sono troncati: quelli leggibili e tre coordinate
+    mancanti sono nella tabella `OSPEDALI` dello script;
+  - OpenStreetMap (Overpass, solo il comune): 62 ambulatori e poliambulatori, 19
+    laboratori e 48 studi di professionisti (`studio-medico`: studi medici,
+    fisioterapisti e psicoterapeuti, con la `professione` quando non è un
+    medico), con indirizzo, specialità dichiarate, telefono e orari quando ci
+    sono. Gli ospedali di OSM già presenti negli open data si scartano.
+  - **Overture Maps** (places, release 2026-09-23.1, licenza CDLA Permissive
+    2.0): i file pubblici su S3 si leggono con DuckDB in `scripts/estrai_overture.py`,
+    lanciato dallo script con `uv` (circa 30 secondi). Porta gli studi medici
+    specialistici e gli ambulatori privati che su OSM mancano: 5.928 voci (circa
+    5.070 studi, 950 ambulatori, 32 laboratori). Regole: solo luoghi aperti con
+    affidabilità almeno 0,5, nella città di Milano, nelle categorie delle 19 aree
+    (`CATEGORIE_OVERTURE` e `overture` in `aree.ts`); niente ospedali (restano
+    quelli ufficiali del Comune); esclusi dentisti, osteopati, omeopati,
+    farmacie, ottici e i "laboratori" non sanitari (revisioni auto, restauro);
+    un nome da persona ("Dott.", "Dr.", "Prof.") è uno studio; nomi pubblicitari
+    accorciati; telefoni nel formato `+39 ...`; doppioni con le altre fonti
+    (stesso nome entro 150 m) scartati. La maggior parte viene da registri di
+    imprese (BrightQuery): affidabilità media, va bene per una demo.
+  - Overpass è spesso sovraccarico: `npm run strutture -- --osm estrazione.json`
+    usa un'estrazione già scaricata; `--overture estrazione.json` fa lo stesso
+    per Overture.
+- **Aree:** `src/strutture/aree.ts` collega ogni area ai reparti ministeriali,
+  alle specialità OSM e alle parole nel nome. Un test confronta l'elenco con
+  `data/prompt-mother.md`: se il prompt cambia aree, il test fallisce.
+- **Ricerca** (`StruttureService`, in memoria, deterministica): per area, gruppi
+  ordinati dal più vicino (distanza in linea d'aria), separati per categoria:
+  - `strutture` (luoghi, sezione "Le mie strutture"): `specialisti`
+    (ambulatori, laboratori, consultori... che dichiarano l'area) e `ospedali`
+    (con il reparto; per radiologia e laboratorio tutti, "chiedi del servizio");
+  - `professionisti` (persone, sezione "I miei professionisti"): `specialisti`
+    (studi medici che dichiarano l'area) e `medici` (medico di famiglia o
+    pediatra, per medicina generale e pediatria). Con Overture tutte le 19 aree
+    hanno professionisti (prima 13 su 19 ne erano senza): per esempio cardiologia
+    143 studi, oculistica 129, urologia 97, pediatria 153. Se un gruppo è vuoto
+    il frontend rimanda al proprio medico di famiglia.
+  Il punto di partenza deve essere dentro Milano (altrimenti 400); senza punto
+  si parte dal Duomo. Risposta in circa 10 ms.
+- Le rotte ricevono solo l'area e un punto, mai il testo del referto.
+- **Licenze:** Comune CC0, CC BY e IODL; medici e pediatri **CC BY-NC** (va bene
+  per la demo, non per un uso commerciale); OSM ODbL (citare "© OpenStreetMap
+  contributors"); Overture CDLA Permissive 2.0 (citare la fonte). Fonti e
+  licenze sono nel file e in `/api/strutture/aree`.
+- **Limiti:** gli studi di Overture vengono in gran parte da registri di
+  imprese, con nomi e indirizzi a volte datati; i reparti dicono dove si è
+  ricoverati, per le visite ambulatoriali sono un'indicazione; mancano le Case
+  di Comunità e l'elenco dei pronto soccorso; nefrologia (8 studi) e oncologia
+  (22) restano scarse e si appoggiano agli ospedali.
+- Test: `test/strutture.spec.ts`.
 
 ## Avvio in locale con le credenziali
 

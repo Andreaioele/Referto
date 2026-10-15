@@ -24,6 +24,8 @@ export const config = {
   prontuario: process.env.PRONTUARIO_FILE ?? fileDati('aifa_farmaci.json'),
   normalizzazione: process.env.NORMALIZZAZIONE_FILE ?? fileDati('normalizzazione.json'),
   atc: process.env.ATC_FILE ?? fileDati('atc.json'),
+  /** Strutture sanitarie di Milano (scripts/costruisci-strutture.ts). */
+  strutture: process.env.STRUTTURE_FILE ?? fileDati('strutture-milano.json'),
   /** Mother agent di Evolus a cui il backend inoltra i messaggi della chat. Credenziali solo lato server. */
   evolus: {
     apiBase: process.env.EVOLUS_API_BASE ?? 'https://api.evolus.ai/api/v1',

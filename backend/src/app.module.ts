@@ -7,14 +7,15 @@ import { FarmaciModule } from './farmaci/farmaci.module';
 import { FogliettiModule } from './foglietti/foglietti.module';
 import { SaluteController } from './salute/salute.controller';
 import { SessioniModule } from './sessioni/sessioni.module';
+import { StruttureModule } from './strutture/strutture.module';
 import { ChiaveApiGuard } from './sicurezza/chiave-api.guard';
 
 const moduliOpzionali = config.mongoUri
-  ? [MongooseModule.forRoot(config.mongoUri, { dbName: 'Referto' }), SessioniModule]
+  ? [MongooseModule.forRoot(config.mongoUri, { dbName: 'Referto' }), SessioniModule.conMongo()]
   : [];
 
 @Module({
-  imports: [FarmaciModule, ChatModule, FogliettiModule, ...moduliOpzionali],
+  imports: [FarmaciModule, ChatModule, FogliettiModule, StruttureModule, ...moduliOpzionali],
   controllers: [SaluteController],
   providers: [
     {

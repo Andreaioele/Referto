@@ -1,54 +1,49 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Sessione, SessioneDocument, Utente, UtenteDocument } from './schemi';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ARCHIVIO_SESSIONI, type ArchivioSessioni, type SessioneSalvata, type UtenteSalvato } from './archivio-sessioni';
 
+/** Lunghezza massima del titolo preso dalla prima domanda. */
+const LUNGHEZZA_TITOLO = 100;
+
+/**
+ * Regole dello storico: ogni sessione appartiene a un utente e si legge solo
+ * con il suo id; una sessione senza titolo prende la prima domanda. Il
+ * salvataggio è dell'archivio (`ARCHIVIO_SESSIONI`).
+ */
 @Injectable()
 export class SessioniService {
-  constructor(
-    @InjectModel(Utente.name) private readonly utenteModel: Model<UtenteDocument>,
-    @InjectModel(Sessione.name) private readonly sessioneModel: Model<SessioneDocument>,
-  ) {}
+  constructor(@Inject(ARCHIVIO_SESSIONI) private readonly archivio: ArchivioSessioni) {}
 
   /* ── Utenti ── */
 
-  async creaUtente(nickname: string): Promise<UtenteDocument> {
-    return this.utenteModel.create({ nickname });
+  creaUtente(nickname: string): Promise<UtenteSalvato> {
+    return this.archivio.creaUtente(nickname);
   }
 
-  async trovaUtente(id: string): Promise<UtenteDocument> {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Utente non trovato');
-    const utente = await this.utenteModel.findById(id).exec();
+  async trovaUtente(id: string): Promise<UtenteSalvato> {
+    const utente = await this.archivio.trovaUtente(id);
     if (!utente) throw new NotFoundException('Utente non trovato');
     return utente;
   }
 
   /* ── Sessioni ── */
 
-  async creaSessione(utenteId: string, titolo?: string): Promise<SessioneDocument> {
+  async creaSessione(utenteId: string, titolo?: string): Promise<SessioneSalvata> {
     await this.trovaUtente(utenteId);
-    return this.sessioneModel.create({
-      utente: new Types.ObjectId(utenteId),
-      titolo: titolo ?? '',
-    });
+    return this.archivio.creaSessione(utenteId, titolo ?? '');
   }
 
-  async listaSessioni(utenteId: string): Promise<SessioneDocument[]> {
+  async listaSessioni(utenteId: string): Promise<SessioneSalvata[]> {
     await this.trovaUtente(utenteId);
-    return this.sessioneModel
-      .find({ utente: new Types.ObjectId(utenteId) })
-      .sort({ updatedAt: -1 })
-      .exec();
+    return this.archivio.sessioniDi(utenteId);
   }
 
-  async dettaglioSessione(utenteId: string, sessioneId: string): Promise<SessioneDocument> {
-    const sessione = await this.trovaSessioneDiUtente(utenteId, sessioneId);
-    return sessione;
+  dettaglioSessione(utenteId: string, sessioneId: string): Promise<SessioneSalvata> {
+    return this.sessioneDiUtente(utenteId, sessioneId);
   }
 
   async eliminaSessione(utenteId: string, sessioneId: string): Promise<void> {
-    const sessione = await this.trovaSessioneDiUtente(utenteId, sessioneId);
-    await sessione.deleteOne();
+    await this.sessioneDiUtente(utenteId, sessioneId);
+    await this.archivio.eliminaSessione(sessioneId);
   }
 
   /* ── Turni ── */
@@ -57,24 +52,19 @@ export class SessioniService {
     utenteId: string,
     sessioneId: string,
     turno: { messaggio: string; risposta: string; conversazione_evolus?: string; metadati?: Record<string, unknown> },
-  ): Promise<SessioneDocument> {
-    const sessione = await this.trovaSessioneDiUtente(utenteId, sessioneId);
-    sessione.turni.push({ ...turno, timestamp: new Date() });
-    if (!sessione.titolo && turno.messaggio) {
-      sessione.titolo = turno.messaggio.slice(0, 100);
-    }
-    return sessione.save();
+  ): Promise<SessioneSalvata> {
+    const sessione = await this.sessioneDiUtente(utenteId, sessioneId);
+    const titolo = !sessione.titolo && turno.messaggio ? turno.messaggio.slice(0, LUNGHEZZA_TITOLO) : undefined;
+    return this.archivio.aggiungiTurno(sessioneId, { ...turno, timestamp: new Date() }, titolo);
   }
 
   /* ── Helper ── */
 
-  private async trovaSessioneDiUtente(utenteId: string, sessioneId: string): Promise<SessioneDocument> {
+  /** La sessione, solo se esiste ed è dell'utente: altrimenti 404 (non si dice se esiste per un altro). */
+  private async sessioneDiUtente(utenteId: string, sessioneId: string): Promise<SessioneSalvata> {
     await this.trovaUtente(utenteId);
-    if (!Types.ObjectId.isValid(sessioneId)) throw new NotFoundException('Sessione non trovata');
-    const sessione = await this.sessioneModel.findById(sessioneId).exec();
-    if (!sessione || sessione.utente.toString() !== utenteId) {
-      throw new NotFoundException('Sessione non trovata');
-    }
+    const sessione = await this.archivio.trovaSessione(sessioneId);
+    if (!sessione || sessione.utenteId !== utenteId) throw new NotFoundException('Sessione non trovata');
     return sessione;
   }
 }

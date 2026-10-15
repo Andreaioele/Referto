@@ -13,6 +13,7 @@
     "start:dev": "node --env-file-if-exists=.env -r ts-node/register src/main.ts",
     "test": "jest",
     "atc": "ts-node scripts/costruisci-atc.ts",
+    "strutture": "ts-node scripts/costruisci-strutture.ts",
     "parita": "python3 scripts/casi_parita.py",
     "parita:tutti": "python3 scripts/casi_parita.py --tutti /tmp/parita-tutti.json && ts-node scripts/verifica-parita.ts /tmp/parita-tutti.json"
   },

@@ -28,6 +28,9 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Il Mother agent (DeepSeek-V4.1 su Token Factory) risponde in 1-3 minuti e con più richieste insieme va oltre il limite (HTTP 422 "sovraccarico") | Evolus | [[15-backend]] |
 | Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `backend/` | [[15-backend]] |
 | Domande sul foglietto lente (30-40 secondi): la risposta passa dal Mother agent | `/api/foglietti/:cod/domande` | [[15-backend]] |
+| Strutture di Milano: gli studi specialistici vengono da Overture (registri di imprese, affidabilità media); mancano Case di Comunità e pronto soccorso; medici e pediatri con licenza non commerciale (CC BY-NC). Risolto: prima 13 aree su 19 erano senza professionisti | `data/strutture-milano.json` | [[15-backend]] |
+| Overpass sovraccarico quando si rigenerano le strutture (406/429/504): serve `--osm` con un'estrazione già scaricata | `scripts/costruisci-strutture.ts` | [[15-backend]] |
+| Widget: se il servizio non risponde (es. 503 senza credenziali Evolus) compaiono due messaggi di errore di fila, "Il servizio non è disponibile…" e "La risposta si è interrotta…": il messaggio d'errore finisce nel testo libero della risposta | `WidgetReferto.tsx` (`Spiegazione`) | [[16-frontend]] |
 | Risolto: backend fermo su Vercel (`ERR_REQUIRE_ESM` con `@nestjs/mongoose` 12, solo ESM); tornati alla 11.0.4 | `backend/package.json` | [[15-backend]] |
 | Risolto: un PDF AIFA può contenere un foglio per formulazione (Dibase: 10 fogli in 54 pagine); ora si sceglie quello della confezione prescritta | `sezioni.ts` | [[15-backend]] |
 

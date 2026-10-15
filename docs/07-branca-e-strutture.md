@@ -1,6 +1,6 @@
 ---
 tags: [area/funzioni]
-aggiornato: 2026-10-13
+aggiornato: 2026-10-15
 ---
 
 # Specialità del referto e "Dove andare"
@@ -78,3 +78,10 @@ per stabilimento ospedaliero e disciplina" (solo ospedali, dati per struttura
 fino al 2019, senza coordinate). Vedi [[14-problemi-noti-e-prossimi-passi]].
 
 Test: classe `FacilitiesTests` ([[12-test-e-sviluppo]]).
+
+## Nel prodotto nuovo: "Le mie strutture" (Milano)
+
+Backend e frontend non chiamano Overpass a ogni ricerca: per la demo usano un
+file di Milano costruito una volta da open data del Comune e OpenStreetMap, e
+l'area viene dalla classificazione del Mother agent (stesse 19 aree delle
+branche qui sopra). Dettagli in [[15-backend]] e [[16-frontend]].

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { inviaMessaggio } from '../servizio-chat'
+import { spiega } from './cliente'
 
 export interface Messaggio {
   autore: 'persona' | 'referto'
@@ -33,29 +33,18 @@ export function useChat() {
     const segnale = (controllo.current = new AbortController()).signal
     setInCorso(true)
     setMessaggi((attuali) => [...attuali, { autore: 'persona', testo, nascosto: opzioni.nascosto }, { autore: 'referto', testo: '' }])
-    let concluso = false
-    try {
-      await inviaMessaggio(
-        testo,
-        conversazione.current,
-        (evento) => {
-          if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
-          else if (evento.tipo === 'fine') {
-            concluso = true
-            conversazione.current = evento.conversazione
-          } else {
-            concluso = true
-            aggiornaRisposta((r) => segnalaErrore(r, evento.messaggio))
-          }
-        },
-        segnale,
-      )
-      if (!concluso && !segnale.aborted) aggiornaRisposta((r) => segnalaErrore(r, 'La risposta si è interrotta. Riprova tra poco.'))
-    } catch {
-      if (!segnale.aborted) aggiornaRisposta((r) => segnalaErrore(r, 'Collegamento interrotto. Riprova tra poco.'))
-    } finally {
-      if (!segnale.aborted) setInCorso(false)
-    }
+    // spiega() finisce sempre con "fine" o "errore" (rete caduta, flusso interrotto compresi).
+    await spiega(
+      testo,
+      conversazione.current,
+      (evento) => {
+        if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
+        else if (evento.tipo === 'fine') conversazione.current = evento.conversazione
+        else aggiornaRisposta((r) => segnalaErrore(r, evento.messaggio))
+      },
+      segnale,
+    )
+    if (!segnale.aborted) setInCorso(false)
   }, [])
 
   const azzera = useCallback(() => {

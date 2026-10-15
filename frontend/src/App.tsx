@@ -1,15 +1,19 @@
 import { useCallback, useMemo, useState } from 'react'
 import { ContestoAzioni, type Azioni } from './azioni'
 import { usePercorso } from './percorsi'
-import type { Documento, Farmaco } from './portale/dati'
+import type { Documento } from './portale/dati'
+import { farmacoDaLeggere, refertoDaSpiegare } from './portale/perReferto'
 import { Documenti } from './portale/Documenti'
 import { Home } from './portale/Home'
 import { Prescrizioni } from './portale/Prescrizioni'
 import { Profilo } from './portale/Profilo'
 import { Struttura } from './portale/Struttura'
+import { Professionisti } from './portale/Professionisti'
+import { Strutture } from './portale/Strutture'
 import { Visite } from './portale/Visite'
 import { VisualizzaDocumento } from './portale/VisualizzaDocumento'
 import { LettoreFoglietto } from './referto/LettoreFoglietto'
+import type { FarmacoDaLeggere, RefertoDaSpiegare } from './referto/tipi'
 import { WidgetReferto } from './referto/WidgetReferto'
 
 const CHIAVE_CONSENSO = 'referto-attivo'
@@ -24,8 +28,8 @@ function consensoSalvato(): boolean {
 
 /** Finestra aperta sopra il portale: al massimo una alla volta. */
 type Finestra =
-  | { tipo: 'widget'; documento?: Documento }
-  | { tipo: 'foglietto'; farmaco: Farmaco }
+  | { tipo: 'widget'; referto?: RefertoDaSpiegare }
+  | { tipo: 'foglietto'; farmaco: FarmacoDaLeggere }
   | { tipo: 'documento'; documento: Documento }
   | null
 
@@ -51,8 +55,12 @@ function App() {
   const azioni = useMemo<Azioni>(
     () => ({
       refertoAttivo,
-      spiega: (documento) => setFinestra({ tipo: 'widget', documento }),
-      apriFoglietto: (farmaco) => setFinestra({ tipo: 'foglietto', farmaco }),
+      // Qui il portale passa a Referto solo il referto o il farmaco scelto, nei tipi di Referto.
+      spiega: (documento) => setFinestra({ tipo: 'widget', referto: documento && refertoDaSpiegare(documento) }),
+      apriFoglietto: (farmaco) => {
+        const daLeggere = farmacoDaLeggere(farmaco)
+        if (daLeggere) setFinestra({ tipo: 'foglietto', farmaco: daLeggere })
+      },
       apriDocumento: (documento) => setFinestra({ tipo: 'documento', documento }),
     }),
     [refertoAttivo],
@@ -65,10 +73,17 @@ function App() {
       pagina = <Visite />
       break
     case '/documenti':
-      pagina = <Documenti />
+      // La chiave apre la ricerca giusta quando si arriva dal widget (?referto=...&cerca=...).
+      pagina = <Documenti key={window.location.search} />
       break
     case '/prescrizioni':
       pagina = <Prescrizioni />
+      break
+    case '/strutture':
+      pagina = <Strutture />
+      break
+    case '/professionisti':
+      pagina = <Professionisti />
       break
     case '/dati':
       pagina = <Profilo refertoAttivo={refertoAttivo} onCambiaReferto={cambiaConsenso} />
@@ -80,7 +95,7 @@ function App() {
   return (
     <ContestoAzioni.Provider value={azioni}>
       <Struttura percorso={percorso}>{pagina}</Struttura>
-      {finestra?.tipo === 'widget' && <WidgetReferto documento={finestra.documento} onChiudi={chiudi} />}
+      {finestra?.tipo === 'widget' && <WidgetReferto referto={finestra.referto} onChiudi={chiudi} />}
       {finestra?.tipo === 'foglietto' && <LettoreFoglietto farmaco={finestra.farmaco} onChiudi={chiudi} />}
       {finestra?.tipo === 'documento' && <VisualizzaDocumento documento={finestra.documento} onChiudi={chiudi} />}
     </ContestoAzioni.Provider>
