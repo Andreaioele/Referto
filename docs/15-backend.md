@@ -177,6 +177,18 @@ leggono, rinominano ed eliminano.
   funzioni Vercel non la carica con `require` (errore `ERR_REQUIRE_ESM`, backend
   fermo su tutte le rotte), mentre in locale Node 22 sì. Prova prima di
   aggiornare: `node --no-experimental-require-module dist/main.js`.
+- Connessione in `src/sessioni/connessione-mongo.ts`: **pigra**
+  (`lazyConnection`), perché su Vercel il server deve mettersi in ascolto
+  subito. Il 15/10/2026, con `MONGODB_URI` appena impostata, Nest aspettava
+  MongoDB all'avvio, Vercel chiudeva la funzione («No exports found in module
+  "/var/task/main.js"») e **tutte** le rotte davano 500. Se la connessione non
+  riesce, nel log c'è il motivo tecnico (`[MongoDB] Connessione non riuscita`) e
+  la chat va avanti senza archivio. Il driver riceve `runtimeAdapters: { os }`
+  (altrimenti lo carica con `import()` dinamico, che in jest non funziona).
+- **Atlas deve accettare Vercel:** le funzioni Vercel non hanno un IP fisso, quindi
+  in Atlas → Network Access serve `0.0.0.0/0` (o gli IP statici di Vercel, piano
+  Pro). Senza, il log dice «Could not connect to any servers in your MongoDB Atlas
+  cluster… IP that isn't whitelisted» e nulla viene salvato.
 - Stringa di connessione in `MONGODB_URI` (variabile d'ambiente). Se mancante,
   il modulo non viene caricato e le rotte non esistono: gli altri moduli non ne
   risentono.
