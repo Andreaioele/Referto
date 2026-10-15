@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-16 · chat-frontend · Nuovo strumento `cercaTermine` del Mother agent (motore diretto) e rotta `POST /api/terminologia/cerca` sul glossario medico a strati (`data/glossario_medico.json`); prompt con la sezione TERMINI · [[15-backend]]
 - 2026-10-15 · chat-frontend · Prototipo del glossario a strati per `cercaTermine` (curato + HPO + Wikidata/Wikipedia) con script di costruzione e misura: copre il 49% delle parole difficili di RadGraph-IT; tabella delle fonti corretta (SNOMED CT, ICD-11, MeSH) · [[specifica-terminologia]]
 - 2026-10-15 · chat-frontend · Mother agent: qualsiasi domanda sul referto inviato è in tema (anche «Cos'è il colesterolo LDL?»: prima veniva trattata quasi come fuori tema); parole, sigle e valori del referto si spiegano in parole semplici; prompt sincronizzato su Evolus e provato · [[15-backend]]
 - 2026-10-15 · chat-frontend · Mother agent: alle domande fuori tema (non sul referto né sul servizio, es. «i 7 re di Roma») risponde con garbo che può aiutare solo a capire i referti, senza dare la risposta; regola con esempio in `data/prompt-mother.md` e `resources/evolus/agenti/mother.md`, test in `mother-diretto.spec.ts`; prompt sincronizzato sull'agente Evolus e provato · [[15-backend]]

@@ -158,6 +158,31 @@ describe('MotherDiretto', () => {
     expect(trace.primo_testo_ms).toEqual(expect.any(Number));
   });
 
+  it('esegue cercaTermine sul glossario e lo registra nella trace', async () => {
+    rispondi(
+      streaming({
+        choices: [{ delta: { tool_calls: [{ index: 0, id: 't1', function: { name: 'cercaTermine', arguments: '{"termini":["consolidazioni","zxqwv"]}' } }] } }],
+      }),
+      streaming(testo('Una consolidazione è una zona del polmone…')),
+    );
+    const trace = nuovaTraceMotore('diretto');
+    await eventi(mother.chiedi('Cos\'è una consolidazione?', undefined, new AbortController().signal, { trace }));
+
+    expect((corpi[0] as { tools: Array<{ function: { name: string } }> }).tools.map((s) => s.function.name)).toEqual([
+      'cercaFarmaci',
+      'cercaTermine',
+    ]);
+    const risposta = (corpi[1] as { messages: Array<{ role: string; content: string }> }).messages.find((m) => m.role === 'tool');
+    const { risultati } = JSON.parse(risposta?.content ?? '{}') as { risultati: Array<{ trovato: boolean; termine?: string }> };
+    expect(risultati).toEqual([
+      expect.objectContaining({ trovato: true, termine: 'consolidazione' }),
+      { richiesto: 'zxqwv', trovato: false },
+    ]);
+    expect(trace.chiamate_tool).toEqual([
+      expect.objectContaining({ nome: 'cercaTermine', parametri: { termini: ['consolidazioni', 'zxqwv'] } }),
+    ]);
+  });
+
   it('nella trace segna il modello di riserva e l\'errore tecnico', async () => {
     rispondi(new Response('', { status: 503 }), new Response('', { status: 500 }));
     const trace = nuovaTraceMotore('diretto');
@@ -184,6 +209,13 @@ describe('MotherDiretto', () => {
     expect(prompt).toContain('non rispondere nel\n  merito');
     expect(prompt).toContain('posso\n  aiutarti solo a capire i referti medici');
     expect(prompt).toContain('Qualsiasi domanda che riguarda un referto già inviato è in tema');
+  });
+
+  it('nel prompt usa cercaTermine solo per dire che cosa è la cosa nominata', () => {
+    const prompt = readFileSync(config.promptMother, 'utf8');
+    expect(prompt).toContain('chiama UNA\n   sola volta lo strumento cercaTermine');
+    expect(prompt).toContain('Ignora cause, conseguenze, malattie\n  collegate, cure');
+    expect(prompt).not.toContain('glossario della base di conoscenza');
   });
 
   it('ha lo stesso prompt del Mother agent su Evolus', () => {

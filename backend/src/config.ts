@@ -26,6 +26,8 @@ export const config = {
   atc: process.env.ATC_FILE ?? fileDati('atc.json'),
   /** Strutture sanitarie di Milano (scripts/costruisci-strutture.ts). */
   strutture: process.env.STRUTTURE_FILE ?? fileDati('strutture-milano.json'),
+  /** Glossario medico a strati per cercaTermine (resources/glossario/costruisci_glossario_strati.py --backend). */
+  glossario: process.env.GLOSSARIO_FILE ?? fileDati('glossario_medico.json'),
   /** Mother agent di Evolus a cui il backend inoltra i messaggi della chat. Credenziali solo lato server. */
   evolus: {
     apiBase: process.env.EVOLUS_API_BASE ?? 'https://api.evolus.ai/api/v1',

@@ -1,6 +1,6 @@
 ---
 tags: [area/progetto]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-16
 ---
 
 # Problemi noti e prossimi passi
@@ -22,6 +22,8 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Overpass spesso sovraccarico | `strutture_sanitarie.py` | [[07-branca-e-strutture]] |
 | Copertura OSM delle specialità parziale | OpenStreetMap | [[07-branca-e-strutture]] |
 | HPO senza anatomia e procedure | glossario | [[06-glossario-hpo]] |
+| Glossario a strati (`cercaTermine`): copre circa metà delle parole difficili di RadGraph-IT; mancano soprattutto aggettivi e descrittori radiologici («ispessimento», «pervio»); restano abbinamenti sbagliati da Wikidata («radiazioni» → particella α); lo strato curato è una bozza non revisionata da un medico | `backend/data/glossario_medico.json` | [[specifica-terminologia]] |
+| L'agente Mother su Evolus non ha `cercaTermine` e ha ancora il prompt senza le regole TERMINI: sincronizzarlo solo dopo aver aggiunto lo strumento (Web API `/api/terminologia/cerca`) | Evolus | [[15-backend]] |
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |

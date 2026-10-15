@@ -1,6 +1,6 @@
 ---
 tags: [area/specifica]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-16
 ---
 
 # Specifica: Terminologia medica nel referto
@@ -50,6 +50,12 @@ Candidati da valutare:
 | UMLS Metathesaurus | Aggrega tutti i precedenti | Licenza UMLS (gratuita, registrazione) | Ideale come indice unificato |
 
 **Azione richiesta:** scegliere e acquisire il glossario prima di implementare.
+
+> **Stato al 16/10/2026.** Il glossario a strati è nel backend
+> (`backend/data/glossario_medico.json`) con la rotta
+> `POST /api/terminologia/cerca` e lo strumento `cercaTermine` del Mother
+> agent, solo nel motore diretto. Dettagli in [[15-backend]]. La sezione
+> «Parole difficili» del frontend non c'è ancora.
 
 ### Prototipo: glossario a strati (15/10/2026)
 

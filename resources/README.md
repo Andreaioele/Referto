@@ -366,6 +366,10 @@ uv run --no-project --with wordfreq python glossario/costruisci_glossario_strati
 uv run --no-project --with wordfreq python glossario/misura_copertura.py
 ```
 
+Con `--estratti --backend` lo script scarica anche le prime frasi di Wikipedia
+(circa 30 minuti la prima volta) e scrive `backend/data/glossario_medico.json`,
+usato dallo strumento `cercaTermine` del backend.
+
 Il primo scaricamento da Wikidata dura circa 45 minuti (cache in
 `glossario/cache_strati/`, fuori da Git come `glossario/glossario_strati.json`).
 

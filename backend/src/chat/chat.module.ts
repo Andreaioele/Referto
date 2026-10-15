@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { config } from '../config';
 import { FarmaciModule } from '../farmaci/farmaci.module';
+import { TerminologiaModule } from '../terminologia/terminologia.module';
 import { ChatController } from './chat.controller';
 import { EvolusClient } from './evolus.client';
 import { MotherDiretto } from './mother-diretto';
@@ -10,7 +11,7 @@ import { ServizioChat } from './servizio-chat';
 
 @Module({
   // Limite predefinito, ridefinito sulla rotta con @Throttle: 10 messaggi al minuto per IP.
-  imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }]), FarmaciModule],
+  imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }]), FarmaciModule, TerminologiaModule],
   controllers: [ChatController],
   providers: [
     EvolusClient,

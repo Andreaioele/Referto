@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { config } from '../config';
 import { cercaFarmaci } from '../farmaci/cerca-farmaci';
 import { ProntuarioService } from '../farmaci/prontuario.service';
+import { GlossarioService } from '../terminologia/glossario.service';
 import type { TraceMotore } from './archivio-chat';
 import { righeDati, type EventoChat } from './evolus.client';
 import { MotoreChat, type OpzioniChiedi } from './motore-chat';
@@ -35,7 +36,10 @@ interface Delta {
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
-/** Lo strumento del Mother agent su Evolus (Web API "Referto-medicinali"), descritto per il modello. */
+/**
+ * Gli strumenti del Mother agent descritti per il modello: cercaFarmaci (come la Web API "Referto-medicinali"
+ * su Evolus) e cercaTermine (glossario medico a strati, per ora solo nel motore diretto).
+ */
 const STRUMENTI = [
   {
     type: 'function',
@@ -64,6 +68,27 @@ const STRUMENTI = [
           limite_alternative: { type: 'integer', minimum: 0, maximum: 50 },
         },
         required: ['farmaci'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'cercaTermine',
+      description:
+        'Passa SOLO parole o sigle mediche del referto da spiegare (al massimo 10), scritte come nel referto: mai ' +
+        'frasi o il testo del referto. Per ogni parola restituisce trovato e, se trovato, una definizione con fonte ' +
+        'e link (glossario curato, HPO o Wikipedia in italiano).',
+      parameters: {
+        type: 'object',
+        properties: {
+          termini: {
+            type: 'array',
+            description: 'Parole o sigle mediche del referto, per esempio "consolidazione" o "colesterolo LDL".',
+            items: { type: 'string' },
+          },
+        },
+        required: ['termini'],
       },
     },
   },
@@ -104,7 +129,10 @@ export class MotherDiretto extends MotoreChat {
   private readonly conversazioni = new Map<string, { messaggi: Messaggio[]; aggiornata: number }>();
   private promptLetto: string | null = null;
 
-  constructor(private readonly prontuario: ProntuarioService) {
+  constructor(
+    private readonly prontuario: ProntuarioService,
+    private readonly glossario: GlossarioService,
+  ) {
     super();
   }
 
@@ -254,7 +282,7 @@ export class MotherDiretto extends MotoreChat {
   /** Esegue lo strumento e, se c'è una trace, ne registra parametri, risultato e durata. */
   private eseguiStrumento(chiamata: ChiamataStrumento, trace?: TraceMotore): string {
     const inizio = Date.now();
-    const risultato = this.cercaFarmaci(chiamata);
+    const risultato = this.strumento(chiamata);
     if (trace) {
       const leggi = (testo: string): unknown => {
         try {
@@ -275,9 +303,29 @@ export class MotherDiretto extends MotoreChat {
     return risultato;
   }
 
+  private strumento(chiamata: ChiamataStrumento): string {
+    if (chiamata.function.name === 'cercaFarmaci') return this.cercaFarmaci(chiamata);
+    if (chiamata.function.name === 'cercaTermine') return this.cercaTermine(chiamata);
+    return JSON.stringify({ errore: 'Strumento sconosciuto' });
+  }
+
+  /** cercaTermine sul glossario in memoria: riceve solo parole o sigle, come la rotta /api/terminologia/cerca. */
+  private cercaTermine(chiamata: ChiamataStrumento): string {
+    try {
+      const argomenti = JSON.parse(chiamata.function.arguments || '{}') as { termini?: unknown };
+      const termini = (Array.isArray(argomenti.termini) ? argomenti.termini : [])
+        .filter((t): t is string => typeof t === 'string' && Boolean(t.trim()))
+        .slice(0, 10)
+        .map((t) => t.slice(0, 80));
+      if (termini.length === 0) return JSON.stringify({ errore: 'Nessun termine' });
+      return JSON.stringify({ risultati: this.glossario.cerca(termini) });
+    } catch {
+      return JSON.stringify({ errore: 'Argomenti non validi' });
+    }
+  }
+
   /** cercaFarmaci sul prontuario in memoria: riceve solo i nomi dei farmaci, come la rotta /api/farmaci/cerca. */
   private cercaFarmaci(chiamata: ChiamataStrumento): string {
-    if (chiamata.function.name !== 'cercaFarmaci') return JSON.stringify({ errore: 'Strumento sconosciuto' });
     try {
       const argomenti = JSON.parse(chiamata.function.arguments || '{}') as {
         farmaci?: Array<{ nome?: unknown; principio_attivo?: unknown }>;

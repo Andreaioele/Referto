@@ -28,10 +28,11 @@ import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-from wordfreq import zipf_frequency
+from wordfreq import top_n_list, zipf_frequency
 
 CARTELLA = Path(__file__).resolve().parent
 CACHE = CARTELLA / "cache_strati"
@@ -184,21 +185,28 @@ def estratti_wikipedia(titoli: List[str]) -> Dict[str, str]:
     file = CACHE / "estratti_itwiki.json"
     letti: Dict[str, str] = json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
     mancanti = sorted({t for t in titoli if t and t not in letti})
-    for numero, blocco in enumerate(a_blocchi(mancanti, 20)):
-        risposta = scarica(WIKIPEDIA_API, {
+
+    def richiesta(blocco: List[str]) -> Any:
+        time.sleep(0.2)
+        return scarica(WIKIPEDIA_API, {
             "action": "query", "prop": "extracts", "exintro": "1", "explaintext": "1", "exsentences": "2",
             "exlimit": "20", "titles": "|".join(blocco), "redirects": "1", "format": "json", "formatversion": "2",
         })
-        rinomina = {r["to"]: r["from"] for r in risposta.get("query", {}).get("redirects", [])}
-        for pagina in risposta.get("query", {}).get("pages", []):
-            titolo = rinomina.get(pagina.get("title"), pagina.get("title"))
-            letti[titolo] = (pagina.get("extract") or "").strip()
-        for titolo in blocco:
-            letti.setdefault(titolo, "")
-        if numero % 25 == 24:
-            file.write_text(json.dumps(letti, ensure_ascii=False), encoding="utf-8")
-            print(f"  estratti {numero * 20 + len(blocco)}/{len(mancanti)}")
-        time.sleep(0.2)
+
+    # Ogni richiesta impiega circa 2 secondi lato Wikipedia: tre alla volta, non di più.
+    blocchi = list(a_blocchi(mancanti, 20))
+    with ThreadPoolExecutor(max_workers=3) as esecutore:
+        risposte = esecutore.map(richiesta, blocchi)
+        for numero, (blocco, risposta) in enumerate(zip(blocchi, risposte)):
+            rinomina = {r["to"]: r["from"] for r in risposta.get("query", {}).get("redirects", [])}
+            for pagina in risposta.get("query", {}).get("pages", []):
+                titolo = rinomina.get(pagina.get("title"), pagina.get("title"))
+                letti[titolo] = (pagina.get("extract") or "").strip()
+            for titolo in blocco:
+                letti.setdefault(titolo, "")
+            if numero % 25 == 24:
+                file.write_text(json.dumps(letti, ensure_ascii=False), encoding="utf-8")
+                print(f"  estratti {numero * 20 + len(blocco)}/{len(mancanti)}")
     file.write_text(json.dumps(letti, ensure_ascii=False), encoding="utf-8")
     return letti
 
@@ -308,15 +316,70 @@ def costruisci(con_estratti: bool, con_wikidata: bool = True) -> Dict[str, Any]:
     }
 
 
+BACKEND = CARTELLA.parent.parent / "backend" / "data" / "glossario_medico.json"
+# Parentesi di pronuncia o etimologia all'inizio delle voci di Wikipedia: non servono a capire.
+PARENTESI_INUTILI = re.compile(r"\s*\((?:[^()]*?(?:pronuncia|greco|latino|/)[^()]*?)\)")
+MAX_DEFINIZIONE = 400
+
+
+def pulisci_definizione(testo: str) -> str:
+    testo = PARENTESI_INUTILI.sub("", " ".join(testo.split()))
+    return testo if len(testo) <= MAX_DEFINIZIONE else testo[:MAX_DEFINIZIONE].rsplit(" ", 1)[0] + "…"
+
+
+def esporta_backend(glossario: Dict[str, Any]) -> Dict[str, Any]:
+    """Versione compatta per il backend: solo le voci con una definizione, più le parole comuni da escludere.
+
+    Il backend riproduce normalizza() e radice() (src/terminologia/testo.ts): le chiavi devono restare uguali.
+    """
+    voci: Dict[str, Dict[str, Any]] = {}
+    for voce in glossario["voci"]:
+        definizione = voce.get("definizione")
+        fonte, lingua = voce["fonte"], voce["lingua_definizione"]
+        if not definizione and voce.get("descrizione_breve"):
+            definizione, fonte, lingua = voce["descrizione_breve"], "Wikidata (CC0)", "it"
+        if not definizione:
+            continue
+        voci[voce["id"]] = {
+            "nome": voce["nome"],
+            "definizione": pulisci_definizione(definizione),
+            "lingua": lingua,
+            "fonte": fonte,
+            "url": voce.get("url"),
+            "strato": voce["strato"],
+        }
+    indice = {k: i for k, i in glossario["indice"].items() if i in voci}
+    # Parole comuni che hanno la stessa radice di un termine di una parola sola: da sole non sono quel termine
+    # ("stato" non è la proteina STAT). Lo strato curato fa eccezione.
+    parole_singole = {k for k, i in indice.items() if " " not in k and voci[i]["strato"] != "curato"}
+    escluse = sorted({
+        p for p in (normalizza(w) for w in top_n_list("it", 60000))
+        if " " not in p and zipf_frequency(p, "it") >= SOGLIA_PAROLA_COMUNE and chiave(p) in parole_singole
+    })
+    return {
+        "fonti": glossario["fonti"],
+        "creato": glossario["creato"],
+        "voci": voci,
+        "indice": indice,
+        "escluse": escluse,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--estratti", action="store_true", help="scarica anche le prime frasi di Wikipedia (lento)")
     parser.add_argument("--senza-wikidata", action="store_true", help="solo strati curato e HPO (prova veloce)")
+    parser.add_argument("--backend", action="store_true", help=f"scrive anche {BACKEND.relative_to(CARTELLA.parent.parent)}")
     args = parser.parse_args()
     CACHE.mkdir(exist_ok=True)
     glossario = costruisci(args.estratti, not args.senza_wikidata)
     USCITA.write_text(json.dumps(glossario, ensure_ascii=False), encoding="utf-8")
     print(f"{USCITA.name}: {glossario['chiavi']} chiavi, voci per strato {glossario['voci_per_strato']}")
+    if args.backend:
+        compatto = esporta_backend(glossario)
+        BACKEND.write_text(json.dumps(compatto, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print(f"{BACKEND.name}: {len(compatto['voci'])} voci, {len(compatto['indice'])} chiavi, "
+              f"{len(compatto['escluse'])} parole escluse, {BACKEND.stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":

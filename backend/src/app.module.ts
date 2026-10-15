@@ -8,6 +8,7 @@ import { SaluteController } from './salute/salute.controller';
 import { connessioneMongo } from './sessioni/connessione-mongo';
 import { SessioniModule } from './sessioni/sessioni.module';
 import { StruttureModule } from './strutture/strutture.module';
+import { TerminologiaModule } from './terminologia/terminologia.module';
 import { ChiaveApiGuard } from './sicurezza/chiave-api.guard';
 
 const moduliOpzionali = config.mongoUri
@@ -15,7 +16,7 @@ const moduliOpzionali = config.mongoUri
   : [];
 
 @Module({
-  imports: [FarmaciModule, ChatModule, FogliettiModule, StruttureModule, ...moduliOpzionali],
+  imports: [FarmaciModule, TerminologiaModule, ChatModule, FogliettiModule, StruttureModule, ...moduliOpzionali],
   controllers: [SaluteController],
   providers: [
     {

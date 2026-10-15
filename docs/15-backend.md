@@ -1,6 +1,6 @@
 ---
 tags: [area/core]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-16
 ---
 
 # Backend (NestJS)
@@ -26,6 +26,7 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 |---|---|---|
 | `POST /api/farmaci/cerca` | Collega fino a 20 nomi al prontuario AIFA | sì |
 | `GET /api/farmaci/:cod` | Un farmaco per codice AIFA, con categoria e link a foglietto e RCP | sì |
+| `POST /api/terminologia/cerca` | Spiega fino a 10 parole o sigle mediche con il glossario a strati (definizione, fonte, link) | sì |
 | `GET /api/salute` | Stato e data del prontuario | no |
 | `POST /api/chat` | Inoltra un messaggio al Mother agent e ritrasmette la risposta in streaming; con MongoDB usa la cache delle spiegazioni e salva conversazioni e trace | no (limite per IP) |
 | `POST /api/sessioni/utenti` | Crea un utente con il nickname (login fake); l'id va in `X-Utente-Id` | no |
@@ -86,14 +87,22 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
 - Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web
   API su Evolus, ma la ricerca avviene sul prontuario in memoria
   (`src/farmaci/cerca-farmaci.ts`, la stessa della rotta `/api/farmaci/cerca`).
+- Lo strumento `cercaTermine` (dal 16/10/2026, solo nel motore diretto) cerca
+  parole o sigle nel glossario medico a strati (`src/terminologia/`, la stessa
+  ricerca della rotta `/api/terminologia/cerca`). Il prompt lo fa chiamare una
+  volta durante la spiegazione, per al massimo 5 termini difficili (anche
+  insieme a `cercaFarmaci`), e prima di rispondere a «che cosa vuol dire…».
+  Della definizione il modello usa solo che cosa è la cosa nominata. Nelle
+  risposte alle domande cita la fonte con il link.
 - Con MongoDB la storia di ogni domanda arriva dall'archivio (opzione
   `storia` di `chiedi`), quindi vale anche dopo un riavvio o su un'altra
   istanza di Vercel. Senza MongoDB le conversazioni restano in memoria per due
   ore (al massimo 200): un riavvio, o una seconda istanza su Vercel, le perde.
 - `versione()` = `diretto/<modello>/<12 caratteri dello SHA-256 del prompt>`:
   cambiare prompt o modello invalida la cache delle spiegazioni.
-- Manca rispetto a Evolus: il glossario della base di conoscenza citato dal
-  prompt e l'OCR di PDF e foto (oggi il frontend manda solo testo).
+- Manca rispetto a Evolus l'OCR di PDF e foto (oggi il frontend manda solo
+  testo). Al contrario, sull'agente Evolus manca `cercaTermine`: il prompt su
+  Evolus non è ancora sincronizzato con quello che lo nomina.
 
 ## Agenti su Evolus (`resources/evolus/`)
 
@@ -266,6 +275,7 @@ Il modulo farmaci riceve **solo nomi di farmaci**, mai il testo del referto
 | `aifa_farmaci.json` | Prontuario AIFA (~12.600 farmaci) | `resources/farmaci/build_aifa_index.py` |
 | `normalizzazione.json` | Sali e alias dei nomi | a mano |
 | `atc.json` | Descrizioni della classificazione ATC | `npm run atc -- atc.csv` (open data AIFA) |
+| `glossario_medico.json` | Glossario medico a strati per `cercaTermine` (circa 8 MB: voci con definizione, indice delle chiavi, parole comuni escluse) | `resources/glossario/costruisci_glossario_strati.py --estratti --backend` |
 
 I dati appartengono al backend; l'app Python in `resources/` legge
 `aifa_farmaci.json` e `normalizzazione.json` da qui, così app e backend
@@ -328,6 +338,28 @@ Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
   (`SEZIONE: n`, controllata da `interpreta`). Senza agente, se dà errore o se
   non finisce entro 75 secondi risponde il brano stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
 - Test: `test/foglietti.spec.ts`.
+
+## Glossario medico e cercaTermine (`src/terminologia/`, 16/10/2026)
+
+`GlossarioService` carica `data/glossario_medico.json`, generato dal prototipo
+a strati descritto in [[specifica-terminologia]]: termini curati, HPO e
+Wikidata, con le prime frasi della voce di Wikipedia in italiano.
+
+- Ricerca deterministica, nessun modello. Le parole sono normalizzate
+  (minuscolo, senza accenti) e ridotte a una radice leggera, così singolare e
+  plurale coincidono. In ogni punto vince il termine più lungo, fino a 6
+  parole.
+- `src/terminologia/testo.ts` riproduce `normalizza()` e `radice()` dello
+  script Python: un test confronta le chiavi. Se cambiano lì, vanno cambiate
+  anche qui.
+- Parole comuni escluse: una parola molto frequente in italiano non vale come
+  termine solo perché ne condivide la radice («stato» non è la proteina
+  STAT). L'elenco lo calcola lo script con wordfreq.
+- I farmaci non ci sono: li spiega `cercaFarmaci` con la fonte AIFA.
+- Rotta `POST /api/terminologia/cerca` con `{ termini: [...] }` (da 1 a 10
+  parole di massimo 80 caratteri, con chiave API). Risponde con `trovato`,
+  `termine`, `definizione`, `lingua` (`en` per le definizioni HPO non
+  tradotte), `fonte` e `url`.
 
 ## Strutture di Milano (`src/strutture/`, 15/10/2026)
 
