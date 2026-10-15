@@ -110,6 +110,16 @@ apparato esaminato e non per chi ha scritto il referto; riserva: Medicina
 generale. L'argomento descrive l'esame, mai il risultato. Il frontend per ora
 mostra la riga così com'è; in futuro può leggerla per "Dove andare".
 
+Ai messaggi che non sono referti il Mother risponde in poche frasi, senza
+sezioni (prompt, parte QUANDO IL MESSAGGIO NON È UN REFERTO). Le domande fuori
+tema, che non riguardano un referto né il servizio (storia, sport, cucina,
+curiosità, medicina generale non legata a un referto), non hanno risposta nel
+merito: l'agente dice con garbo che può aiutare solo a capire i referti e
+invita a incollarne uno o a fare una domanda su quello già inviato (dal
+15/10/2026, dopo che in produzione aveva elencato i sette re di Roma). Le
+domande che riprendono il referto («Me lo spieghi più semplice?», «Devo
+preoccuparmi?», un farmaco scritto dal medico) restano in tema.
+
 - `agenti/*.md`: prompt di ogni agente, con `agentId` e configurazione
   nell'intestazione; `sincronizza_prompt.py <file>` carica il prompt su Evolus
   senza toccare gli altri campi. In `agenti/archivio/` i prompt di Lettore,

@@ -178,6 +178,13 @@ describe('MotherDiretto', () => {
     expect(risultato).toEqual([{ tipo: 'errore', messaggio: expect.stringContaining('non ha risposto') }]);
   });
 
+  it('nel prompt rifiuta con garbo le domande fuori tema, senza rispondere nel merito', () => {
+    const prompt = readFileSync(config.promptMother, 'utf8');
+    expect(prompt).toContain('Domande fuori tema');
+    expect(prompt).toContain('non rispondere nel\n  merito');
+    expect(prompt).toContain('posso\n  aiutarti solo a capire i referti medici');
+  });
+
   it('ha lo stesso prompt del Mother agent su Evolus', () => {
     const originale = join(__dirname, '..', '..', 'resources', 'evolus', 'agenti', 'mother.md');
     if (!existsSync(originale)) return; // fuori dal repository completo (per esempio su Vercel) non si controlla
