@@ -96,6 +96,22 @@ const STRUMENTI = [
   },
 ];
 
+/**
+ * Un elenco negli argomenti di uno strumento. Il modello di riserva (DeepSeek-V4-Flash) a volte lo manda
+ * come stringa con dentro il JSON ("[\"consolidazione\"]") o come parole separate da virgole.
+ */
+function elenco(valore: unknown): unknown[] {
+  if (Array.isArray(valore)) return valore;
+  if (typeof valore !== 'string' || !valore.trim()) return [];
+  try {
+    const letto: unknown = JSON.parse(valore);
+    if (Array.isArray(letto)) return letto;
+  } catch {
+    // non è JSON: parole separate da virgole
+  }
+  return valore.split(/[,;\n]/).map((parte) => parte.trim()).filter(Boolean);
+}
+
 const SOVRACCARICO = new Set([429, 502, 503, 504]);
 /** Codice usato quando il modello non inizia a rispondere entro config.modello.attesaPrimaRispostaMs (oggi V4.1 a volte dà 504 dopo un minuto). */
 const SCADUTO = 504;
@@ -259,6 +275,13 @@ export class MotherDiretto extends MotoreChat {
             testo += resto;
             yield { tipo: 'testo', testo: resto };
           }
+          // Per esempio solo markup di chiamate a strumenti, tolto dal filtro: non è una risposta da salvare.
+          if (!testo.trim()) {
+            this.logger.warn(`${modello} non ha scritto una risposta dopo ${giro} giri`);
+            if (trace) trace.errore = 'risposta vuota';
+            yield { tipo: 'errore', messaggio: ERRORE_GENERICO };
+            return;
+          }
           if (!storia) this.ricorda(id, [...precedenti, ...nuovi, { role: 'assistant', content: testo }]);
           this.logger.log(`Risposta di ${modello} in ${Date.now() - inizio} ms (${giro} giri)`);
           yield { tipo: 'fine', conversazione: id };
@@ -359,7 +382,7 @@ export class MotherDiretto extends MotoreChat {
   private cercaTermine(chiamata: ChiamataStrumento): string {
     try {
       const argomenti = JSON.parse(chiamata.function.arguments || '{}') as { termini?: unknown };
-      const termini = (Array.isArray(argomenti.termini) ? argomenti.termini : [])
+      const termini = elenco(argomenti.termini)
         .filter((t): t is string => typeof t === 'string' && Boolean(t.trim()))
         .slice(0, 10)
         .map((t) => t.slice(0, 80));
@@ -373,11 +396,8 @@ export class MotherDiretto extends MotoreChat {
   /** cercaFarmaci sul prontuario in memoria: riceve solo i nomi dei farmaci, come la rotta /api/farmaci/cerca. */
   private cercaFarmaci(chiamata: ChiamataStrumento): string {
     try {
-      const argomenti = JSON.parse(chiamata.function.arguments || '{}') as {
-        farmaci?: Array<{ nome?: unknown; principio_attivo?: unknown }>;
-        limite_alternative?: unknown;
-      };
-      const farmaci = (argomenti.farmaci ?? [])
+      const argomenti = JSON.parse(chiamata.function.arguments || '{}') as { farmaci?: unknown; limite_alternative?: unknown };
+      const farmaci = (elenco(argomenti.farmaci) as Array<{ nome?: unknown; principio_attivo?: unknown }>)
         .filter((f) => typeof f?.nome === 'string' && f.nome.trim())
         .slice(0, 20)
         .map((f) => ({

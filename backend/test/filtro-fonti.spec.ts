@@ -34,6 +34,12 @@ describe('FiltroFonti', () => {
     );
   });
 
+  it('toglie il markup DSML delle chiamate a strumenti scritte come testo', () => {
+    const testo = '<｜DSML｜tool_calls>\n<｜DSML｜invoke name="cercaTermine">\n</｜DSML｜invoke>\n</｜DSML｜tool_calls>';
+    expect(filtra(new FiltroFonti(), testo)).toBe('');
+    expect(filtra(new FiltroFonti(), 'Testo normale.\n<｜DSML｜tool_calls>\n')).toBe('Testo normale.\n');
+  });
+
   it('non trattiene le righe che iniziano come "Fonte" ma sono altro', () => {
     const filtro = new FiltroFonti();
     expect(filtro.aggiungi('Fonta')).toBe('Fonta');

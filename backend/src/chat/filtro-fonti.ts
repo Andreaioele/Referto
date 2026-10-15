@@ -1,6 +1,10 @@
+/** Inizi di riga da trattenere finché la riga non è finita (in minuscolo). */
+const PREFISSI = ['fonte:', '<｜dsml｜', '</｜dsml｜'];
+
 /**
  * Toglie dalla risposta del modello le righe "Fonte: …" che non vengono da uno strumento chiamato nella
- * stessa domanda: una fonte citata deve essere verificabile, non inventata dal modello.
+ * stessa domanda (una fonte citata deve essere verificabile, non inventata dal modello) e le righe di
+ * markup DSML: chiamate a strumenti che DeepSeek a volte scrive come testo invece di farle.
  *
  * Lavora sullo streaming: trattiene l'inizio di ogni riga finché non è chiaro se è una riga "Fonte:",
  * e la lascia passare (o la toglie) quando la riga è finita.
@@ -43,8 +47,8 @@ export class FiltroFonti {
         continue;
       }
       const inizio = this.riga.trimStart().toLowerCase();
-      // Finché la riga può ancora diventare "Fonte:" (o lo è) si aspetta la fine della riga.
-      if (!inizio || 'fonte:'.startsWith(inizio) || inizio.startsWith('fonte:')) continue;
+      // Finché la riga può ancora diventare "Fonte:" o markup (o lo è) si aspetta la fine della riga.
+      if (!inizio || PREFISSI.some((prefisso) => prefisso.startsWith(inizio) || inizio.startsWith(prefisso))) continue;
       uscita += this.riga;
       this.riga = '';
       this.rigaLibera = true;
@@ -61,7 +65,9 @@ export class FiltroFonti {
   }
 
   private valuta(riga: string): string {
-    const fonte = riga.trim().toLowerCase().startsWith('fonte:');
+    const inizio = riga.trim().toLowerCase();
+    if (inizio.startsWith('<｜dsml｜') || inizio.startsWith('</｜dsml｜')) return '';
+    const fonte = inizio.startsWith('fonte:');
     return !fonte || [...this.ammesse].some((ammessa) => riga.includes(ammessa)) ? riga : '';
   }
 }

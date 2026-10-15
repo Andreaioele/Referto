@@ -229,6 +229,25 @@ describe('MotherDiretto', () => {
     expect(risultato.at(-1)).toMatchObject({ tipo: 'fine' });
   });
 
+  it('accetta i termini mandati come stringa JSON (modello di riserva)', async () => {
+    rispondi(
+      streaming({ choices: [{ delta: { tool_calls: [{ index: 0, id: 't1', function: { name: 'cercaTermine', arguments: '{"termini":"[\\"consolidazione\\", \\"atelettasia\\"]"}' } }] } }] }),
+      streaming(testo('Spiegazione')),
+    );
+    await eventi(mother.chiedi('Referto', undefined, new AbortController().signal));
+    const risposta = (corpi[1] as { messages: Array<{ role: string; content: string }> }).messages.find((m) => m.role === 'tool');
+    const { risultati } = JSON.parse(risposta?.content ?? '{}') as { risultati: Array<{ trovato: boolean }> };
+    expect(risultati.map((r) => r.trovato)).toEqual([true, true]);
+  });
+
+  it('se resta solo markup di strumenti la risposta è un errore, non una spiegazione', async () => {
+    rispondi(streaming(testo('<｜DSML｜tool_calls>\n<｜DSML｜invoke name="cercaTermine">\n</｜DSML｜tool_calls>')));
+    const trace = nuovaTraceMotore('diretto');
+    const risultato = await eventi(mother.chiedi('Referto', undefined, new AbortController().signal, { trace }));
+    expect(risultato).toEqual([{ tipo: 'errore', messaggio: expect.stringContaining('non ha risposto') }]);
+    expect(trace.errore).toBe('risposta vuota');
+  });
+
   it('nella trace segna il modello di riserva e l\'errore tecnico', async () => {
     rispondi(new Response('', { status: 503 }), new Response('', { status: 500 }));
     const trace = nuovaTraceMotore('diretto');

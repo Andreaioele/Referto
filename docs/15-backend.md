@@ -116,7 +116,15 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
 - `FiltroFonti` (`src/chat/filtro-fonti.ts`) toglie dalla risposta, mentre
   arriva in streaming, le righe «Fonte: …» che non nominano una fonte o un
   link restituiti da uno strumento chiamato nella stessa domanda (AIFA se è
-  stato chiamato `cercaFarmaci`). Anche il testo salvato è quello filtrato.
+  stato chiamato `cercaFarmaci`). Toglie anche le righe di markup DSML
+  (`<｜DSML｜tool_calls>`): DeepSeek a volte scrive una chiamata a strumento
+  come testo. Anche il testo salvato è quello filtrato. Se dopo il filtro non
+  resta niente, la risposta è un errore, così non finisce in cache.
+- Il modello di riserva (DeepSeek-V4-Flash) a volte passa gli elenchi come
+  stringa (`"termini": "[\"consolidazione\"]"`): `cercaTermine` e
+  `cercaFarmaci` accettano anche una stringa JSON o con le voci separate da
+  virgole. Prima lo strumento non trovava niente e la spiegazione usciva come
+  markup DSML (visto nell'anteprima il 16/10/2026).
 - Con MongoDB la storia di ogni domanda arriva dall'archivio (opzione
   `storia` di `chiedi`), quindi vale anche dopo un riavvio o su un'altra
   istanza di Vercel. Senza MongoDB le conversazioni restano in memoria per due
