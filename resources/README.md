@@ -358,6 +358,17 @@ python glossario/build_glossary.py --hp-json hp.json --it-tsv hp-it.babelon.tsv
 HPO copre segni, sintomi e reperti, non anatomia né procedure: parole come
 "menisco" o "ecocardiografia" non compaiono nel glossario.
 
+Prototipo del glossario a strati per lo strumento `cercaTermine` (curato + HPO +
+Wikidata/Wikipedia; risultati in `docs/specifica-terminologia.md`):
+
+```bash
+uv run --no-project --with wordfreq python glossario/costruisci_glossario_strati.py
+uv run --no-project --with wordfreq python glossario/misura_copertura.py
+```
+
+Il primo scaricamento da Wikidata dura circa 45 minuti (cache in
+`glossario/cache_strati/`, fuori da Git come `glossario/glossario_strati.json`).
+
 ## Branca del referto e strutture nella zona
 
 Dopo l'analisi Referto assegna il documento a una branca (cardiologia,

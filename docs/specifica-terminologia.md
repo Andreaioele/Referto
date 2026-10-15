@@ -1,6 +1,6 @@
 ---
 tags: [area/specifica]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Specifica: Terminologia medica nel referto
@@ -43,13 +43,65 @@ Candidati da valutare:
 | Fonte | Copertura | Licenza | Note |
 |---|---|---|---|
 | HPO attuale | Segni/sintomi (~19k) | Libera con citazione | Già in uso |
-| SNOMED CT | Completa (~350k concetti) | Affiliazione nazionale (Italia aderisce) | Il più completo; verificare i termini per il rilascio |
-| MeSH (NLM) | Ampia (~30k descrittori) | Dominio pubblico (USA) | Traduzione italiana parziale; buono per procedure e laboratorio |
-| ICD-11 (OMS) | Diagnosi e procedure (~55k) | CC BY-NC-SA 3.0 IGO | Traduzione italiana ufficiale |
+| SNOMED CT | Completa (~350k concetti) | Licenza nazionale: secondo noze.it l'Italia non è membro di SNOMED International | Nessuna edizione italiana trovata: scartato |
+| MeSH (NLM) | Ampia (~30k descrittori) | Dominio pubblico (USA); traduzione ISS (MSHITA) solo via UMLS, livello di restrizione 3, ferma al 2019 | Definizioni in inglese; i codici MeSH si usano tramite Wikidata |
+| ICD-11 (OMS) | Diagnosi e procedure (~55k) | CC BY-ND 3.0 IGO: traduzioni e adattamenti solo con accordo OMS | Niente definizioni divulgative: scartato |
 | Dizionario medico Treccani / ISS | Divulgativa | Da verificare | Definizioni già in italiano semplice |
 | UMLS Metathesaurus | Aggrega tutti i precedenti | Licenza UMLS (gratuita, registrazione) | Ideale come indice unificato |
 
 **Azione richiesta:** scegliere e acquisire il glossario prima di implementare.
+
+### Prototipo: glossario a strati (15/10/2026)
+
+Nessuna fonte da sola è completa, in italiano semplice e con una licenza
+aperta. Il prototipo ne unisce tre, in ordine di priorità:
+
+1. **Curato** (`resources/glossario/termini_curati.json`, 79 termini): parole
+   frequenti nei referti (laboratorio, immagini, cuore, occhi) con una
+   definizione breve scritta da noi. È una bozza da far revisionare a un medico.
+2. **HPO** (già in uso): circa 2.700 voci con il nome italiano, ma con la
+   definizione in inglese.
+3. **Wikidata**: circa 16.000 voci con un nome italiano e almeno un codice medico
+   (MeSH, ICD-9/10/11, LOINC, UBERON, FMA, SNOMED CT, HPO). La definizione è
+   data dalle prime due frasi della voce di Wikipedia in italiano (CC BY-SA
+   4.0, con link). I farmaci (codice ATC) sono esclusi: li spiega
+   `cercaFarmaci` con la fonte AIFA.
+
+Gli script sono in `resources/glossario/`:
+- `costruisci_glossario_strati.py` produce `glossario_strati.json`;
+- `misura_copertura.py` produce `copertura.md`.
+
+Il glossario e la cache di Wikidata restano fuori da Git. La corrispondenza è
+sulla radice (singolare e plurale) e la parola più lunga vince. Una parola
+sola molto comune non conta come termine (Zipf ≥ 4 secondo wordfreq).
+
+**Copertura** sui 50 referti di RadGraph-IT, radiologia con entità annotate a
+mano (parola difficile = Zipf < 3,5):
+
+| Strati | Parole difficili coperte | Parole difficili diverse | Entità difficili coperte |
+|---|---|---|---|
+| curato | 9% | 3% | 9% |
+| HPO | 2% | 2% | 2% |
+| Wikidata | 40% | 34% | 40% |
+| tutti | 49% | 38% | 49% |
+
+Dei 309 termini diversi trovati da Wikidata, il 93% ha una definizione in
+italiano da Wikipedia. Nei 4 referti del portale le parole difficili scoperte
+sono quasi solo «poliambulatorio», «referto» e «cardiologica». Quel numero
+però non è una prova: la lista curata è stata scritta dopo averli letti.
+
+**Cosa resta da fare prima di usarlo nel tool:**
+- Le parole difficili non coperte sono quasi tutte aggettivi e descrittori
+  radiologici: «ispessimento», «dilatazione», «attenuazione», «enhancement»,
+  «pervio», «polmonari», «ossee», «vertebrale». Nessuna ontologia li copre:
+  vanno aggiunti allo strato curato, circa 100-150 voci.
+- Wikidata ha ancora alcuni abbinamenti sbagliati («radiazioni» → particella α,
+  «addominale» → muscoli addominali). Servono una lista di esclusioni e un
+  controllo a campione.
+- Le frasi di Wikipedia sono lunghe e tecniche, e a volte parlano di diagnosi
+  o cure. Il modello deve riscriverle in italiano semplice senza aggiungere
+  fatti, con la frase originale come riserva e citazione.
+- HPO aggiunge poco rispetto a Wikidata e ha le definizioni in inglese.
 Il formato finale deve essere un file `.json` (o generato da `.md`) nella
 cartella `backend/data/`, con la stessa logica del prontuario AIFA: uno script
 di build in `resources/` genera il file, che viene committato nel backend.

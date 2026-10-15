@@ -61,3 +61,7 @@ dist/
 docs/archify/**/*.finalize*.json
 docs/archify/**/*.browser-check.json
 docs/archify/**/*.delivery.json
+
+# Glossario a strati (prototipo cercaTermine): cache di Wikidata/Wikipedia e risultato generato
+resources/glossario/cache_strati/
+resources/glossario/glossario_strati.json
