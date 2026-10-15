@@ -1900,6 +1900,21 @@ p.referto-errore {
   cursor: default;
 }
 
+/* Pulsanti a icona (telefono, mappa): quadrati, con l'etichetta per i lettori di schermo. */
+.bottone-icona {
+  width: 52px;
+  min-width: 52px;
+  padding: 0;
+}
+
+.bottone-icona:disabled {
+  border-style: dashed;
+  background: var(--p-grigio);
+  color: var(--p-tenue);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 760px) {
   body {
     font-size: 18px;
@@ -2001,6 +2016,19 @@ p.referto-errore {
 
   .struttura .azioni {
     width: 100%;
+  }
+
+  .struttura .azioni {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .struttura .azioni .bottone {
+    flex: 1 1 100%;
+  }
+
+  .struttura .bottone-icona {
+    width: 52px;
   }
 
   .struttura .icona-documento {

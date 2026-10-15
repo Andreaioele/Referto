@@ -88,6 +88,7 @@ export function RigaStruttura({
   azioni?: ReactNode
 }) {
   const telefono = struttura.telefono?.replace(/[^\d+]/g, '')
+  const haPosizione = Number.isFinite(struttura.lat) && Number.isFinite(struttura.lon)
   return (
     <li className="struttura">
       <span className="icona-documento">
@@ -114,20 +115,32 @@ export function RigaStruttura({
               {prenotabile.etichetta ?? 'Prenota una visita'}
             </button>
           ))}
-        {telefono && (
-          <a className="bottone-leggero" href={`tel:${telefono}`} aria-label={`Chiama ${struttura.nome}`}>
-            Chiama
+        {/* Telefono e mappa come icone; se il dato manca il pulsante resta, spento. */}
+        {telefono ? (
+          <a className="bottone-leggero bottone-icona" href={`tel:${telefono}`} aria-label={`Chiama ${struttura.nome}`} title="Chiama">
+            <Icona nome="telefono" dimensione={22} />
           </a>
+        ) : (
+          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label="Telefono non disponibile" title="Telefono non disponibile">
+            <Icona nome="telefono" dimensione={22} />
+          </button>
         )}
-        <a
-          className="bottone-leggero"
-          href={`https://www.openstreetmap.org/?mlat=${struttura.lat}&mlon=${struttura.lon}#map=18/${struttura.lat}/${struttura.lon}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`Mappa: ${struttura.nome} (si apre in una nuova scheda)`}
-        >
-          Mappa
-        </a>
+        {haPosizione ? (
+          <a
+            className="bottone-leggero bottone-icona"
+            href={`https://www.openstreetmap.org/?mlat=${struttura.lat}&mlon=${struttura.lon}#map=18/${struttura.lat}/${struttura.lon}`}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Mappa: ${struttura.nome} (si apre in una nuova scheda)`}
+            title="Mappa"
+          >
+            <Icona nome="mappa" dimensione={22} />
+          </a>
+        ) : (
+          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label="Posizione non disponibile" title="Posizione non disponibile">
+            <Icona nome="mappa" dimensione={22} />
+          </button>
+        )}
         {azioni}
       </div>
     </li>

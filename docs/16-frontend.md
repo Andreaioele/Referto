@@ -240,3 +240,13 @@ Sostituisce le due sezioni descritte sopra con la ricerca dentro le pagine.
 Da "I miei documenti", "Prenota una visita" su un risultato porta a `/prenota`
 con il referto e la struttura già scelti (`preparaPrenotazione` in
 `portale/prenotazioni.ts`). Test in `portale/Pagine.test.tsx`.
+
+### Telefono e mappa come icone (15/10/2026)
+
+Nelle righe di strutture e professionisti (`RigaStruttura`) "Chiama" e "Mappa"
+sono pulsanti a icona (telefono, mappa; classe `.bottone-icona`), con
+l'etichetta per i lettori di schermo ("Chiama ...", "Mappa: ..."). Se il
+telefono o la posizione mancano il pulsante resta, spento (tratteggiato, non
+cliccabile, "Telefono non disponibile"). Sul telefono le due icone stanno
+affiancate sotto "Prenota una visita".
+
