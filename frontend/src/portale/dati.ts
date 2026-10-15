@@ -281,7 +281,7 @@ export const farmaci: Farmaco[] = [
     medico: 'Dott. Paolo Rinaldi',
     giorni: -16,
     dose: '1 compressa al mattino.',
-    validita: 'Ricetta valida per altri 14 giorni · 2 confezioni',
+    validita: 'Ricetta valida per altri 14 giorni, 2 confezioni',
     stato: 'da ritirare',
     nre: '1200A •••• ••••',
     aifa: { cod: '027161', nome: 'Triatec', confezione: '5 mg compresse' },

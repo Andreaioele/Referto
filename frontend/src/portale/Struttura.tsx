@@ -31,7 +31,7 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
             <span>Area paziente</span>
           </span>
         </Collegamento>
-        <span className="etichetta-demo">Portale dimostrativo · dati di esempio</span>
+        <span className="etichetta-demo">Portale dimostrativo con dati di esempio</span>
         <div className="testata-utente">
           <Collegamento className="avatar" href="/dati" aria-label="I miei dati">
             {paziente.iniziali}
@@ -44,7 +44,7 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
           </button>
         </div>
       </header>
-      <div className="etichetta-demo-telefono">Portale dimostrativo · dati di esempio</div>
+      <div className="etichetta-demo-telefono">Portale dimostrativo con dati di esempio</div>
 
       <div className="corpo">
         <nav className="menu" aria-label="Menu principale">

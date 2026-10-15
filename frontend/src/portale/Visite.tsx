@@ -21,7 +21,7 @@ export function Visite() {
           { valore: 'fatte', nome: `Già fatte (${visiteFatte.length})` },
         ]}
       />
-      <div className="elenco-schede">
+      <div className="gruppo-corpo">
         {elenco.map((visita, indice) => (
           <SchedaVisita key={visita.id} visita={visita} inEvidenza={scheda === 'prossime' && indice === 0} />
         ))}

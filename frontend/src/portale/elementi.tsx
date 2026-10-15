@@ -1,11 +1,38 @@
 import type { ReactNode } from 'react'
 import { useAzioni } from '../azioni'
 import { Icona } from '../Icona'
+import { Collegamento } from '../Collegamento'
 import { type Documento, type Visita, documento as trovaDocumento } from './dati'
 import { anno, dataLunga, giornoSettimana, meseBreve, numeroGiorno, traQuanto } from './date'
 import { MarchioReferto } from './Struttura'
 
-/** Riquadro con mese, giorno e giorno della settimana (o l'anno, per le visite già fatte). */
+/**
+ * Un gruppo di righe con il titolo sopra (come le liste raggruppate di Apple
+ * Salute): il portale è fatto di righe in gruppi, non di schede separate.
+ */
+export function Gruppo({
+  id,
+  titolo,
+  collegamento,
+  children,
+}: {
+  id: string
+  titolo: string
+  collegamento?: { href: string; testo: string }
+  children: ReactNode
+}) {
+  return (
+    <section className="gruppo" aria-labelledby={id}>
+      <div className="gruppo-testa">
+        <h2 id={id}>{titolo}</h2>
+        {collegamento && <Collegamento href={collegamento.href}>{collegamento.testo}</Collegamento>}
+      </div>
+      <div className="gruppo-corpo">{children}</div>
+    </section>
+  )
+}
+
+/** Colonna della data, giorno e giorno della settimana (o l'anno, per le visite già fatte). */
 export function CalendarioVisita({ visita, inEvidenza = false }: { visita: Visita; inEvidenza?: boolean }) {
   const passata = visita.giorni < 0
   const classe = passata ? 'calendario calendario-passato' : inEvidenza ? 'calendario calendario-evidenza' : 'calendario'
@@ -35,7 +62,7 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
           </div>
           <p>
             {visita.medico}
-            {visita.specialita !== visita.medico && !passata ? ` · ${visita.specialita}` : ''}
+            {visita.specialita !== visita.medico && !passata ? `, ${visita.specialita}` : ''}
           </p>
           {passata ? (
             <p className="tenue">{dataLunga(visita.giorni)}</p>
@@ -94,7 +121,7 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
       </div>
     </>
   )
-  return nuda ? <div className="visita-nuda">{contenuto}</div> : <section className="scheda">{contenuto}</section>
+  return <div className={nuda ? 'riga visita-nuda' : 'riga visita-riga'}>{contenuto}</div>
 }
 
 const ICONE_DOCUMENTO = { referto: 'documento', ricetta: 'fattura', fattura: 'fattura' } as const
@@ -106,17 +133,15 @@ export function RigaDocumento({ documento, compatta = false }: { documento: Docu
   const referto = documento.tipo === 'referto' && documento.referto
   return (
     <div className={compatta ? 'riga-documento riga-compatta' : 'riga-documento'}>
-      <span className={referto ? 'icona-documento' : 'icona-documento icona-altro'}>
-        <Icona nome={ICONE_DOCUMENTO[documento.tipo]} dimensione={22} />
-      </span>
+      <Icona nome={ICONE_DOCUMENTO[documento.tipo]} dimensione={24} />
       <div className="riga-documento-testo">
         <span className="riga-documento-titolo">
           {documento.titolo}
           {documento.nuovo && <span className="pastiglia">Nuovo</span>}
         </span>
         <span className="tenue piccolo">
-          {NOMI_TIPO[documento.tipo]} · {dataLunga(documento.giorni)}
-          {compatta && documento.tipo !== 'fattura' ? '' : ` · ${documento.autore}`}
+          {NOMI_TIPO[documento.tipo]} del {dataLunga(documento.giorni)}
+          {compatta && documento.tipo !== 'fattura' ? '' : `, ${documento.autore}`}
         </span>
       </div>
       <div className="azioni">

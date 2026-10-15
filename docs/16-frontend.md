@@ -45,7 +45,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/servizio-chat.ts` | Invio del messaggio e lettura dello streaming |
 | `src/api.ts` | Stato del backend e rotte dei foglietti |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
-| `src/index.css` | Tema del portale (finto, verde, Public Sans), versione per telefono sotto i 760 px |
+| `src/index.css` | Tema del portale (finto: gruppi di righe, un verde, Source Serif 4 per i titoli e Public Sans), versione per telefono sotto i 760 px |
 | `src/referto/referto.css` | Tema di Referto: widget e lettore del foglietto, separato dal portale perché è la parte che si integra in portali diversi |
 | `src/referto/Marchio.tsx` | Marchio di Referto (foglio con l'angolo piegato e la R) |
 
@@ -75,19 +75,22 @@ verde e bianco per pazienti anziani:
   `scroll-padding-bottom` evita che lo scorrimento automatico lasci elementi sotto.
 - **Testi in `rem`:** seguono la dimensione del testo scelta nel telefono o nel browser.
 - Domanda pronta «Cosa posso chiedere al medico?» al posto di «Devo preoccuparmi?».
-- **Niente blu, solo verdi** (anche il portale): scala dal più scuro al più chiaro,
-  in `:root` di `index.css`: foresta `#0b3f33` (fascia di benvenuto, menu attivo,
-  calendario), pino `#0f5143` (azioni), felce `#2c6a55` (icone), muschio
-  `#5f9580` (bordi dei controlli, 3,4:1), salvia `#b5d0c3` (dettagli), germoglio
-  `#dcecc7` (etichette "Nuovo", avatar), menta `#e3f1ea` (selezionato), nebbia
-  `#f1f5f2` (fondo). L'ambra resta per gli avvisi. Referto si distingue dal portale
-  per marchio a foglio e pulsanti a pillola, non più per colore.
-- **Dettagli:** il saluto della Home è una fascia verde foresta con un motivo
-  leggero di croci (l'insegna della farmacia) che sfuma e non passa sotto il testo;
-  tacca germoglio sul menu attivo; calendario foresta con il mese in germoglio;
-  etichette in tre verdi; icone su menta con anello salvia; filetto verde in cima;
-  contorno di fuoco doppio (bianco e foresta), visibile su ogni verde; favicon con
-  il marchio a foglio.
+- **Portale "da portale vero" (15/10/2026, dopo un confronto con MyChart, NHS App,
+  Apple Salute, Doctolib e One Medical):** pagina neutra `#f4f5f4`, contenuti in
+  **gruppi di righe** su carta bianca (titolo del gruppo sopra, righe separate da
+  filetti, componente `Gruppo` in `portale/elementi.tsx`) invece di schede
+  separate; un solo verde `#0f5143` per azioni e selezione, menta `#e8f0ec` solo
+  per il selezionato; testo tenue `#4b5450` (7,6:1), bordi dei controlli
+  `#76847e`. Titoli delle pagine, nome dello studio e giorno delle visite in
+  **Source Serif 4** (carta intestata dello studio, come One Medical), il resto
+  in Public Sans. Tolti: fascia di benvenuto con motivo, riquadri colorati delle
+  icone, pillole colorate (ora testo con pallino solo per ciò che chiede
+  un'azione), riquadro colorato del calendario (ora colonna della data con
+  filetto), separatori a punto centrale nei testi, maiuscole nelle tabelle.
+- **Home "Da fare"** (come i «To Do» di MyChart): nuovo referto e ricette da
+  ritirare in cima, poi prossima visita, ultimi documenti e messaggio dello studio.
+- **Schede di pagina** (Prossime/Già fatte, Farmaci/Esami) come in MyChart e NHS:
+  testo con una riga sotto la scelta, non pulsanti pieni.
 
 ## Comandi
 

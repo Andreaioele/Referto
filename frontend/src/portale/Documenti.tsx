@@ -34,9 +34,9 @@ export function Documenti() {
         ))}
       </div>
 
-      <section className="scheda scheda-elenco" aria-label="Documenti">
+      <section className="gruppo-corpo" aria-label="Documenti">
         {elenco.length === 0 ? (
-          <p className="tenue">Nessun documento di questo tipo.</p>
+          <p className="riga tenue">Nessun documento di questo tipo.</p>
         ) : (
           elenco.map((documento) => <RigaDocumento key={documento.id} documento={documento} />)
         )}

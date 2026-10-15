@@ -20,17 +20,15 @@ function SchedaFarmaco({ farmaco }: { farmaco: Farmaco }) {
   const [numeroVisibile, setNumeroVisibile] = useState(false)
   const stato = STATI[farmaco.stato]
   return (
-    <section className="scheda scheda-prescrizione">
-      <span className={farmaco.stato === 'da ritirare' ? 'icona-grande' : 'icona-grande icona-spenta'}>
-        <Icona nome="pillola" dimensione={28} />
-      </span>
+    <section className="riga scheda-prescrizione">
+      <Icona nome="pillola" dimensione={24} />
       <div className="prescrizione-testo">
         <div className="riga-titolo">
           <h3>{farmaco.nome}</h3>
           <span className={stato.classe}>{stato.nome}</span>
         </div>
         <p className="tenue">
-          {farmaco.medico} · prescritto il {dataLunga(farmaco.giorni)}
+          Prescritto da {farmaco.medico} il {dataLunga(farmaco.giorni)}
         </p>
         <div className="nota-visita">
           <strong>Come ha scritto il medico:</strong> {farmaco.dose}
@@ -95,29 +93,29 @@ export function Prescrizioni() {
         ]}
       />
       {scheda === 'farmaci' ? (
-        <div className="elenco-schede">
-          {farmaci.map((farmaco) => (
-            <SchedaFarmaco key={farmaco.id} farmaco={farmaco} />
-          ))}
+        <>
+          <div className="gruppo-corpo">
+            {farmaci.map((farmaco) => (
+              <SchedaFarmaco key={farmaco.id} farmaco={farmaco} />
+            ))}
+          </div>
           <p className="tenue piccolo">
             Il foglietto illustrativo lo apre Referto dalla banca dati ufficiale dell'AIFA. Per dubbi sulla terapia parlane
             con il medico o con il farmacista.
           </p>
-        </div>
+        </>
       ) : (
-        <div className="elenco-schede">
+        <div className="gruppo-corpo">
           {esamiPrescritti.map((esame) => (
-            <section key={esame.id} className="scheda scheda-prescrizione">
-              <span className="icona-grande">
-                <Icona nome="fattura" dimensione={28} />
-              </span>
+            <section key={esame.id} className="riga scheda-prescrizione">
+              <Icona nome="fattura" dimensione={24} />
               <div className="prescrizione-testo">
                 <div className="riga-titolo">
                   <h3>{esame.nome}</h3>
                   <span className={STATI[esame.stato].classe}>{STATI[esame.stato].nome}</span>
                 </div>
                 <p className="tenue">
-                  {esame.medico} · prescritto il {dataLunga(esame.giorni)}
+                  Prescritto da {esame.medico} il {dataLunga(esame.giorni)}
                 </p>
                 <p>{esame.nota}</p>
                 <div className="azioni">

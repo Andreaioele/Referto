@@ -34,7 +34,7 @@ export function VisualizzaDocumento({ documento, onChiudi }: { documento: Docume
             </div>
           </div>
           <p className="tenue">
-            Paziente: {paziente.cognome.toUpperCase()} {paziente.nome.toUpperCase()} · nata il {paziente.dataNascita}
+            Paziente: {paziente.cognome.toUpperCase()} {paziente.nome.toUpperCase()}, nata il {paziente.dataNascita}
           </p>
           {referto?.valori ? (
             <>

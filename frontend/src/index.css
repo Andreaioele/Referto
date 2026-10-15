@@ -1,33 +1,35 @@
 /*
- * Portale dimostrativo dello studio (blu, Public Sans): finto, cambia da studio
- * a studio. Il widget Referto ha il suo tema in referto/referto.css.
- * Testi grandi e aree da premere ampie: deve poterlo usare una persona di 70 anni.
- * Le dimensioni del testo sono in rem: seguono la dimensione scelta nel telefono
- * o nel browser (16px = 1rem).
+ * Portale dimostrativo dello studio: finto, cambia da studio a studio. Il widget
+ * Referto ha il suo tema in referto/referto.css.
+ *
+ * Impostazione presa dai portali paziente più usati (MyChart, NHS App, Apple
+ * Salute, Doctolib, One Medical): pagina neutra, contenuti in gruppi di righe
+ * su carta bianca, un solo verde per azioni e selezione, niente decorazioni.
+ * Il carattere dello studio è nei titoli in serif (Source Serif 4), come la
+ * carta intestata; tutto il resto è Public Sans.
+ *
+ * Testi grandi e aree da premere ampie: deve poterlo usare una persona di 70
+ * anni. Dimensioni del testo in rem (seguono la scelta del telefono o del browser).
  */
 :root {
-  /*
-   * Portale: solo verdi e neutri (niente blu), dal più scuro al più chiaro.
-   * Contrasto sul bianco: foresta 11,8:1, pino 9,2:1, felce 6,4:1, muschio 3,4:1.
-   */
-  --p-foresta: #0b3f33; /* fascia di benvenuto, menu attivo, calendario */
-  --p-verde: #0f5143; /* azioni e collegamenti */
-  --p-felce: #2c6a55; /* icone e testi verdi secondari */
-  --p-muschio: #5f9580; /* bordi dei controlli (oltre 3:1) */
-  --p-salvia: #b5d0c3; /* dettagli decorativi */
-  --p-germoglio: #dcecc7; /* evidenza calda: "Nuovo" */
-  --p-menta: #e3f1ea; /* selezionato, fondi delle icone */
-  --p-velo: #eaf3ee;
-  --p-sfondo: #f1f5f2; /* nebbia: fondo della pagina */
+  /* Contrasto sul bianco: verde 9,2:1, inchiostro 16:1, tenue 7,6:1, bordo 3,9:1. */
+  --p-verde: #0f5143; /* azioni, collegamenti, selezione */
+  --p-foresta: #0b3f33; /* passaggio del mouse, contorno di fuoco */
+  --p-menta: #e8f0ec; /* fondo di ciò che è selezionato */
+  --p-ink: #1a201e;
+  --p-tenue: #4b5450;
+  --p-bordo: #76847e; /* bordi dei controlli (oltre 3:1) */
+  --p-linea: #dde2df; /* filetti tra le righe */
+  --p-sfondo: #f4f5f4;
   --p-carta: #ffffff;
-  --p-ink: #1d2422;
-  --p-tenue: #55605c;
-  --p-linea: #d6e3dc;
-  --p-grigio: #edf2ef;
   --p-avviso: #fff4dc;
   --p-avviso-testo: #6b4200;
-  --p-avviso-bordo: #f0d9a6;
+  --p-avviso-bordo: #ecd29a;
+  --p-avviso-segno: #b26b00;
   --p-font: 'Public Sans Variable', 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --p-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif;
+  --p-raggio: 10px; /* gruppi e finestre */
+  --p-raggio-controllo: 8px; /* pulsanti e campi */
 }
 
 * {
@@ -41,6 +43,7 @@ body {
   font-family: var(--p-font);
   font-size: 1.125rem;
   line-height: 1.55;
+  font-variant-numeric: tabular-nums;
 }
 
 h1,
@@ -53,22 +56,28 @@ dd {
 }
 
 h1 {
-  font-size: 2.125rem;
-  line-height: 1.2;
+  font-family: var(--p-serif);
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 h2 {
-  font-size: 1.4375rem;
-  line-height: 1.25;
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
 }
 
 h3 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: 1.35;
 }
 
 a {
   color: var(--p-verde);
+  text-underline-offset: 0.18em;
 }
 
 a:hover {
@@ -80,7 +89,7 @@ button {
 }
 
 :focus-visible {
-  /* Doppio anello (bianco e verde foresta): si vede su carta e su ogni verde. */
+  /* Doppio anello (bianco e verde scuro): si vede su carta e sul verde. */
   outline: 3px solid var(--p-foresta);
   outline-offset: 2px;
   box-shadow: 0 0 0 2px #fff;
@@ -116,7 +125,7 @@ button {
   gap: 10px;
   min-height: 52px;
   padding: 0 22px;
-  border-radius: 12px;
+  border-radius: var(--p-raggio-controllo);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -136,12 +145,11 @@ button {
 
 .bottone-leggero {
   min-height: 48px;
-  padding: 0 16px;
-  border: 1px solid var(--p-muschio);
+  padding: 0 18px;
+  border: 1px solid var(--p-bordo);
   background: var(--p-carta);
   color: var(--p-ink);
   font-size: 1.0625rem;
-  font-weight: 500;
 }
 
 .bottone-leggero:hover {
@@ -173,7 +181,6 @@ button:disabled {
   cursor: default;
 }
 
-
 /* ---------- Struttura del portale ---------- */
 .portale {
   min-height: 100vh;
@@ -181,8 +188,6 @@ button:disabled {
 }
 
 .testata {
-  /* filetto verde in cima a ogni pagina */
-  border-top: 4px solid var(--p-verde);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -209,9 +214,9 @@ button:disabled {
   display: grid;
   place-items: center;
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
   background: var(--p-verde);
 }
 
@@ -221,8 +226,11 @@ button:disabled {
   line-height: 1.2;
 }
 
+/* Il nome dello studio è la sua carta intestata: serif, come i titoli. */
 .testata-nome strong {
-  font-size: 1.1875rem;
+  font-family: var(--p-serif);
+  font-size: 1.3125rem;
+  font-weight: 600;
 }
 
 .testata-nome span {
@@ -231,9 +239,9 @@ button:disabled {
 }
 
 .etichetta-demo {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border: 1px solid var(--p-avviso-bordo);
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--p-avviso);
   color: var(--p-avviso-testo);
   font-size: 0.875rem;
@@ -260,58 +268,62 @@ button:disabled {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--p-germoglio);
-  color: var(--p-foresta);
-  font-weight: 700;
+  background: #e3e8e5;
+  color: var(--p-ink);
+  font-weight: 650;
   text-decoration: none;
 }
 
 .avatar-grande {
   width: 80px;
   height: 80px;
+  font-family: var(--p-serif);
   font-size: 1.875rem;
+  font-weight: 600;
 }
 
 .corpo {
   display: flex;
   align-items: flex-start;
-  gap: 28px;
-  max-width: 1280px;
+  gap: 48px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 28px 32px 140px;
+  padding: 40px 32px 140px;
 }
 
 .menu {
-  flex: 0 0 240px;
+  flex: 0 0 232px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   position: sticky;
-  top: 20px;
+  top: 24px;
 }
 
 .menu a {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 54px;
-  padding: 0 16px;
-  border-radius: 12px;
-  color: #2a3a33;
-  font-weight: 500;
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 6px;
+  color: var(--p-tenue);
+  font-weight: 550;
   text-decoration: none;
 }
 
 .menu a:hover {
-  background: var(--p-velo);
+  background: #e9ecea;
   color: var(--p-ink);
 }
 
+/* Pagina in cui sei: fondo menta, testo verde e barra a sinistra (si vede
+   anche senza distinguere il colore). */
 .menu a[aria-current='page'] {
-  background: var(--p-foresta);
-  color: #fff;
-  /* tacca germoglio a sinistra: la pagina in cui sei si vede anche senza colore */
-  box-shadow: inset 5px 0 0 var(--p-germoglio);
+  background: var(--p-menta);
+  color: var(--p-verde);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--p-verde);
 }
 
 .menu-prenota {
@@ -319,10 +331,10 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 54px;
-  margin-top: 12px;
-  border: 2px solid var(--p-verde);
-  border-radius: 12px;
+  min-height: 52px;
+  margin-top: 20px;
+  border: 1px solid var(--p-verde);
+  border-radius: var(--p-raggio-controllo);
   background: var(--p-carta);
   color: var(--p-verde);
   font-weight: 600;
@@ -330,15 +342,16 @@ button:disabled {
 }
 
 .menu-prenota:hover {
-  background: var(--p-velo);
+  background: var(--p-menta);
 }
 
 .contenuto {
   flex: 1 1 0;
   min-width: 0;
+  max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 36px;
 }
 
 .aggancio {
@@ -352,8 +365,8 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 60px;
-  padding: 0 24px 0 12px;
+  min-height: 58px;
+  padding: 0 24px 0 14px;
   border: 0;
   border-radius: 999px;
   background: var(--green);
@@ -361,7 +374,7 @@ button:disabled {
   font-family: var(--font);
   font-size: 1.125rem;
   font-weight: 700;
-  box-shadow: 0 14px 34px rgba(15, 81, 67, 0.32);
+  box-shadow: 0 4px 14px rgba(26, 32, 30, 0.2);
   cursor: pointer;
 }
 
@@ -369,51 +382,15 @@ button:disabled {
   background: var(--green-dark);
 }
 
-
 .barra-schede {
   display: none;
 }
 
-/* ---------- Elementi delle pagine ---------- */
+/* ---------- Titoli delle pagine ---------- */
 .titolo-pagina {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-/*
- * Il saluto della Home: fascia verde foresta con un motivo leggero di croci,
- * quelle dell'insegna della farmacia. È l'unico elemento decorativo del
- * portale: il motivo sfuma verso sinistra e non passa mai sotto il testo.
- */
-.benvenuto {
-  position: relative;
-  overflow: hidden;
-  padding: 28px 32px 30px;
-  border-radius: 20px;
-  background-color: var(--p-foresta);
-  color: #fff;
-  isolation: isolate;
-}
-
-.benvenuto::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M15 9h6v6h6v6h-6v6h-6v-6H9v-6h6z' fill='%23b5d0c3' fill-opacity='0.22'/%3E%3C/svg%3E");
-  background-size: 36px 36px;
-  -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 70%);
-  mask-image: linear-gradient(to left, #000 15%, transparent 70%);
-}
-
-.benvenuto h1 {
-  color: #fff;
-}
-
-.benvenuto-data {
-  color: var(--p-germoglio);
-  font-weight: 600;
+  gap: 6px;
 }
 
 .titolo-con-azione {
@@ -427,16 +404,85 @@ button:disabled {
 .titolo-con-azione > div {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
+/* ---------- Gruppi di righe ---------- */
+.gruppo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gruppo-testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.gruppo-testa a {
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.gruppo-corpo {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--p-linea);
+  border-radius: var(--p-raggio);
+  background: var(--p-carta);
+  overflow: hidden;
+}
+
+.riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 18px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--p-linea);
+}
+
+.riga:last-child {
+  border-bottom: 0;
+}
+
+/* Icone a tratto accanto al testo: niente riquadri colorati. */
+.riga > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--p-tenue);
+}
+
+.riga-semplice {
+  align-items: center;
+}
+
+.riga-semplice > svg {
+  margin-top: 0;
+}
+
+.riga-testo {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.messaggio-studio {
+  display: block;
+}
+
+/* Riquadro singolo (dati personali, spiegazioni a scomparsa). */
 .scheda {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 24px 28px;
+  padding: 24px;
   border: 1px solid var(--p-linea);
-  border-radius: 16px;
+  border-radius: var(--p-raggio);
   background: var(--p-carta);
 }
 
@@ -446,10 +492,6 @@ button:disabled {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-}
-
-.scheda-testa a {
-  font-weight: 600;
 }
 
 .scheda-testa .bottone-leggero {
@@ -462,138 +504,134 @@ button:disabled {
   gap: 12px;
 }
 
+/*
+ * Stati ("Nuovo", "Da ritirare", "Tra 8 giorni"): testo con un pallino, non
+ * pillole colorate. Il pallino c'è solo per ciò che chiede un'azione.
+ */
 .pastiglia {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  /* "Nuovo", "Da ritirare": verde germoglio, caldo, diverso dal verde delle azioni */
-  background: var(--p-germoglio);
-  color: var(--p-foresta);
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.6;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--p-verde);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
-.pastiglia-chiara {
-  background: var(--p-menta);
-  color: var(--p-verde);
+.pastiglia::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
+.pastiglia-chiara,
 .pastiglia-grigia {
-  background: var(--p-carta);
   color: var(--p-tenue);
-  box-shadow: inset 0 0 0 1px var(--p-muschio);
+  font-weight: 600;
+}
+
+.pastiglia-chiara::before,
+.pastiglia-grigia::before {
+  display: none;
 }
 
 .pastiglia-avviso {
-  background: var(--p-avviso);
   color: var(--p-avviso-testo);
-  border: 1px solid var(--p-avviso-bordo);
 }
 
 .pastiglia-referto {
-  background: var(--green);
+  color: var(--green);
 }
 
 .riga-titolo {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
+  align-items: baseline;
+  gap: 4px 14px;
 }
 
 .avviso-referto {
-  flex-direction: row;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
-  border: 2px solid var(--mint-bordo);
-  background: var(--p-carta);
-}
-
-.avviso-referto h2 {
-  color: var(--green-dark);
+  gap: 16px 20px;
 }
 
 .avviso-referto-testo {
   flex: 1 1 320px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .avviso-referto .bottone-leggero {
   min-height: 52px;
 }
 
-.visita {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 20px;
+/* ---------- Visite ---------- */
+.visita-nuda,
+.visita-riga {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 16px;
 }
 
-.visita-nuda {
+.visita {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 22px;
 }
 
 .visita-testo {
   flex: 1 1 300px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
+/* La data come in un'agenda: giorno grande in serif, mese e giorno della
+   settimana sotto, separata dal resto da un filetto. Nessun riquadro colorato. */
 .calendario {
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: none;
-  width: 96px;
-  padding: 12px 0;
-  border-radius: 14px;
-  background: var(--p-menta);
-  color: var(--p-verde);
+  width: 80px;
+  padding-right: 20px;
+  border-right: 1px solid var(--p-linea);
+  color: var(--p-ink);
   line-height: 1.2;
 }
 
-.calendario-evidenza {
-  background: var(--p-foresta);
-  color: #fff;
-}
-
-.calendario-evidenza .calendario-mese {
-  color: var(--p-germoglio);
-}
-
-.calendario-passato {
-  background: var(--p-grigio);
-  color: #2a3a33;
-}
-
 .calendario-mese {
+  color: var(--p-tenue);
   font-size: 0.9375rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 .calendario-giorno {
-  font-size: 2.375rem;
-  font-weight: 700;
+  font-family: var(--p-serif);
+  font-size: 2.5rem;
+  font-weight: 600;
   line-height: 1.05;
 }
 
+.calendario-evidenza .calendario-giorno {
+  color: var(--p-verde);
+}
+
 .calendario-sotto {
-  font-size: 0.9375rem;
+  color: var(--p-tenue);
+  font-size: 0.875rem;
 }
 
 .dettagli-visita {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 20px;
+  gap: 4px 22px;
+  margin-top: 4px;
   color: var(--p-tenue);
 }
 
@@ -605,7 +643,7 @@ button:disabled {
 
 .nota-visita {
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--p-sfondo);
 }
 
@@ -614,34 +652,28 @@ button:disabled {
   color: #4d3000;
 }
 
-.elenco-schede {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
+/* ---------- Documenti ---------- */
 .elenco-documenti {
   display: flex;
   flex-direction: column;
-}
-
-.scheda-elenco {
-  gap: 0;
-  padding-top: 8px;
-  padding-bottom: 8px;
 }
 
 .riga-documento {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid #e4ece7;
+  gap: 12px 18px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--p-linea);
 }
 
 .riga-documento:last-child {
   border-bottom: 0;
+}
+
+.riga-documento > svg {
+  flex: none;
+  color: var(--p-tenue);
 }
 
 .riga-documento-testo {
@@ -653,9 +685,9 @@ button:disabled {
 .riga-documento-titolo {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  font-weight: 600;
+  align-items: baseline;
+  gap: 2px 14px;
+  font-weight: 650;
 }
 
 .riga-documento .bottone {
@@ -663,82 +695,53 @@ button:disabled {
   font-size: 1.0625rem;
 }
 
-.icona-documento,
-.icona-tonda,
-.icona-grande {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--p-menta);
-  color: var(--p-felce);
-  box-shadow: inset 0 0 0 1px var(--p-salvia);
-}
-
-.icona-altro {
-  background: #f1ece2;
-  color: #6b4f1d;
-}
-
-.icona-grande {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-}
-
-.icona-spenta {
-  background: var(--p-grigio);
-  color: var(--p-tenue);
-}
-
-.scheda-messaggio {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.scheda-messaggio > div {
-  flex: 1 1 300px;
-}
-
+/* ---------- Schede, filtri ---------- */
+/* Schede di pagina come in MyChart e NHS: testo con una riga sotto la scelta. */
 .commutatore {
   display: flex;
   flex-wrap: wrap;
-  align-self: flex-start;
   gap: 8px;
-  padding: 6px;
-  border-radius: 14px;
-  background: #e4ece7;
+  margin-bottom: -12px;
+  border-bottom: 1px solid var(--p-linea);
 }
 
 .commutatore button {
-  min-height: 48px;
-  padding: 0 22px;
+  min-height: 52px;
+  margin-bottom: -1px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 10px;
+  border-bottom: 3px solid transparent;
   background: transparent;
-  color: #2a3a33;
+  color: var(--p-tenue);
   font-weight: 600;
   cursor: pointer;
 }
 
+.commutatore button + button {
+  margin-left: 18px;
+}
+
+.commutatore button:hover {
+  color: var(--p-ink);
+}
+
 .commutatore button[aria-pressed='true'] {
-  background: var(--p-verde);
-  color: #fff;
+  border-bottom-color: var(--p-verde);
+  color: var(--p-ink);
+  font-weight: 700;
 }
 
 .filtri {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: -12px;
 }
 
 .filtri button {
   min-height: 46px;
   padding: 0 18px;
-  border: 1px solid var(--p-muschio);
+  border: 1px solid var(--p-bordo);
   border-radius: 999px;
   background: var(--p-carta);
   color: var(--p-ink);
@@ -754,7 +757,7 @@ button:disabled {
 }
 
 .dettagli {
-  padding: 18px 28px;
+  padding: 18px 24px;
 }
 
 .dettagli summary,
@@ -764,11 +767,10 @@ details summary {
   cursor: pointer;
 }
 
+/* ---------- Prescrizioni ---------- */
 .scheda-prescrizione {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 20px;
+  flex-wrap: nowrap;
+  gap: 18px;
 }
 
 .prescrizione-testo {
@@ -788,8 +790,8 @@ details summary {
   align-items: center;
   gap: 12px 24px;
   padding: 16px 18px;
-  border: 2px dashed var(--p-muschio);
-  border-radius: 12px;
+  border: 1px solid var(--p-bordo);
+  border-radius: 6px;
 }
 
 .numero-ricetta > div {
@@ -809,6 +811,7 @@ details summary {
   font-size: 1rem;
 }
 
+/* ---------- I miei dati ---------- */
 .profilo {
   display: flex;
   flex-wrap: wrap;
@@ -825,7 +828,6 @@ details summary {
 .voci dt {
   color: var(--p-tenue);
   font-size: 0.9375rem;
-  font-weight: 500;
 }
 
 .voci dd {
@@ -850,9 +852,9 @@ details summary {
   align-items: center;
   gap: 16px 20px;
   padding: 18px 20px;
-  border: 2px solid var(--mint-bordo);
-  border-radius: 14px;
-  background: var(--p-carta);
+  border: 1px solid var(--p-linea);
+  border-radius: var(--p-raggio-controllo);
+  background: var(--p-sfondo);
 }
 
 .servizio-referto-testo {
@@ -874,7 +876,7 @@ details summary {
   height: 40px;
   border: 0;
   border-radius: 999px;
-  background: #76847e;
+  background: var(--p-bordo);
   cursor: pointer;
 }
 
@@ -914,7 +916,7 @@ details summary {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(29, 36, 34, 0.42);
+  background: rgba(26, 32, 30, 0.45);
 }
 
 .velo {
@@ -931,7 +933,7 @@ details summary {
   width: min(820px, 100%);
   max-height: calc(100vh - 48px);
   padding: 20px;
-  border-radius: 18px;
+  border-radius: var(--p-raggio);
   background: var(--p-sfondo);
   overflow-y: auto;
 }
@@ -955,7 +957,7 @@ details summary {
   gap: 14px;
   padding: 36px 40px;
   border: 1px solid var(--p-linea);
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
   font-size: 1rem;
   line-height: 1.5;
@@ -987,17 +989,15 @@ details summary {
 
 .foglio-referto th,
 .foglio-referto td {
-  padding: 7px 8px;
-  border-bottom: 1px solid #e9efeb;
+  padding: 8px;
+  border-bottom: 1px solid var(--p-linea);
   text-align: left;
 }
 
 .foglio-referto th {
   color: var(--p-tenue);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 650;
 }
 
 /* ---------- Telefono ---------- */
@@ -1008,30 +1008,16 @@ details summary {
     scroll-padding-bottom: 170px;
   }
 
-  /* Fascia stretta: il motivo resta nell'angolo e non passa sotto il saluto. */
-  .benvenuto {
-    padding: 22px 20px 24px;
-  }
-
-  .benvenuto::after {
-    -webkit-mask-image: linear-gradient(200deg, #000 0%, transparent 38%);
-    mask-image: linear-gradient(200deg, #000 0%, transparent 38%);
-  }
-
-  body {
-    font-size: 1.125rem;
-  }
-
   h1 {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
 
   h2 {
-    font-size: 1.3125rem;
+    font-size: 1.1875rem;
   }
 
   h3 {
-    font-size: 1.1875rem;
+    font-size: 1.125rem;
   }
 
   .solo-computer {
@@ -1048,13 +1034,12 @@ details summary {
   }
 
   .marchio-studio {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
+    width: 36px;
+    height: 36px;
   }
 
   .testata-nome strong {
-    font-size: 1.0625rem;
+    font-size: 1.1875rem;
   }
 
   .testata .etichetta-demo,
@@ -1073,7 +1058,7 @@ details summary {
 
   .corpo {
     display: block;
-    padding: 18px 16px 190px;
+    padding: 24px 16px 190px;
   }
 
   .menu {
@@ -1081,12 +1066,20 @@ details summary {
   }
 
   .contenuto {
-    gap: 16px;
+    gap: 28px;
   }
 
   .scheda {
     padding: 18px;
     gap: 14px;
+  }
+
+  .riga {
+    padding: 18px 16px;
+  }
+
+  .riga-documento {
+    padding: 16px;
   }
 
   .bottone,
@@ -1105,7 +1098,6 @@ details summary {
     align-items: stretch;
   }
 
-
   .azioni {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1113,8 +1105,7 @@ details summary {
   }
 
   .visita {
-    flex-wrap: nowrap;
-    gap: 14px;
+    gap: 16px;
   }
 
   .visita-testo {
@@ -1123,12 +1114,12 @@ details summary {
   }
 
   .calendario {
-    width: 76px;
-    padding: 10px 0;
+    width: 64px;
+    padding-right: 14px;
   }
 
   .calendario-giorno {
-    font-size: 1.875rem;
+    font-size: 2rem;
   }
 
   .calendario-mese,
@@ -1144,28 +1135,23 @@ details summary {
   .commutatore {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-self: stretch;
-    gap: 6px;
+    gap: 0;
+  }
+
+  .commutatore button + button {
+    margin-left: 0;
   }
 
   .commutatore button {
-    padding: 0 8px;
+    padding: 0 4px;
     font-size: 1rem;
   }
 
   .filtri {
     flex-wrap: nowrap;
-    margin: 0 -16px;
+    margin: 0 -16px -12px;
     padding: 0 16px 4px;
     overflow-x: auto;
-  }
-
-  .filtri button {
-    flex: none;
-  }
-
-  /* Righe che scorrono di lato: niente barra di scorrimento visibile. */
-  .filtri {
     scrollbar-width: none;
   }
 
@@ -1173,8 +1159,8 @@ details summary {
     display: none;
   }
 
-  .scheda-elenco {
-    padding: 4px 16px;
+  .filtri button {
+    flex: none;
   }
 
   .riga-documento {
@@ -1204,7 +1190,8 @@ details summary {
     width: auto;
   }
 
-  .riga-compatta .bottone-referto {
+  .riga-compatta .bottone-referto,
+  .riga-compatta .bottone-leggero {
     width: 52px;
     padding: 0;
   }
@@ -1213,16 +1200,18 @@ details summary {
     display: none;
   }
 
-  .riga-compatta .bottone-leggero {
-    width: 52px;
-    padding: 0;
-  }
-
-  .scheda-messaggio {
-    flex-wrap: nowrap;
+  .riga-semplice {
     align-items: flex-start;
   }
 
+  .riga-semplice > svg {
+    margin-top: 2px;
+  }
+
+  .riga-semplice .bottone-leggero {
+    margin-left: 42px;
+    width: calc(100% - 42px);
+  }
 
   .avviso-referto-testo {
     flex: none;
@@ -1233,12 +1222,7 @@ details summary {
     flex-direction: column-reverse;
   }
 
-  .scheda-prescrizione {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .scheda-prescrizione .icona-grande {
+  .scheda-prescrizione > svg {
     display: none;
   }
 
@@ -1284,7 +1268,6 @@ details summary {
     flex-direction: column;
     border-top: 1px solid var(--p-linea);
     background: var(--p-carta);
-    box-shadow: 0 -6px 18px rgba(29, 36, 34, 0.06);
   }
 
   .lanciatore {
@@ -1296,11 +1279,10 @@ details summary {
     box-shadow: none;
   }
 
-
   .barra-schede {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    padding: 6px 4px calc(10px + env(safe-area-inset-bottom));
+    padding: 4px 4px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--p-linea);
     background: #fff;
   }
@@ -1328,6 +1310,7 @@ details summary {
 
   .barra-schede a[aria-current='page'] {
     color: var(--p-verde);
+    font-weight: 700;
   }
 
   .barra-schede a[aria-current='page'] .barra-schede-icona {
@@ -1352,5 +1335,4 @@ details summary {
   .a-destra {
     text-align: left;
   }
-
 }
