@@ -4,6 +4,7 @@ import { struttureDellArea } from '../referto/cliente'
 import { paziente, STUDIO } from './dati'
 import { Documenti } from './Documenti'
 import { PAGINE } from './pagine'
+import { Prenota } from './Prenota'
 import { Professionisti } from './Professionisti'
 import { Strutture } from './Strutture'
 
@@ -58,16 +59,26 @@ describe('Le mie strutture e I miei professionisti', () => {
     expect(screen.queryByText('Laboratorio analisi')).toBeNull()
   })
 
-  it('in I miei documenti si cerca dal referto già classificato e si prenota: il professionista passa nella sua sezione', async () => {
+  it('in I miei documenti si cerca dal referto già classificato; "Prenota una visita" porta al calendario', async () => {
     render(<Documenti />)
     fireEvent.click(screen.getAllByRole('button', { name: 'Cerca professionisti' })[1])
     await screen.findByText('Dott. Nicola Triglione')
     expect(struttureDellArea).toHaveBeenCalledWith('Cardiologia', paziente.casa, 10, expect.any(AbortSignal), 'professionisti')
     fireEvent.click(screen.getByRole('button', { name: 'Prenota una visita' }))
-    expect(screen.getByText('Prenotazione richiesta')).toBeTruthy()
+    expect(window.location.pathname + window.location.search).toBe('/prenota?referto=d-cardio')
+    cleanup()
+
+    // La pagina apre il calendario con il professionista già scelto; si sceglie l'orario e si segna come prenotata.
+    render(<Prenota />)
+    expect(screen.getByText(/Scegli giorno e ora: Dott. Nicola Triglione/)).toBeTruthy()
+    const libero = screen.getByRole('group', { name: /Orari di/ }).querySelector('button:not([disabled])') as HTMLButtonElement
+    fireEvent.click(libero)
+    expect(screen.getByRole('link', { name: 'Email' }).getAttribute('href')).toMatch(/^mailto:\?subject=Richiesta%20di%20visita/)
+    fireEvent.click(screen.getByRole('button', { name: 'Segna come prenotata' }))
     cleanup()
     render(<Professionisti />)
     expect(screen.getByText('Dott. Nicola Triglione')).toBeTruthy()
+    expect(screen.getByText(/^Visita .* alle /)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Annulla la prenotazione' }))
     expect(screen.queryByText('Dott. Nicola Triglione')).toBeNull()
   })

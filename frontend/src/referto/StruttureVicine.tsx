@@ -66,6 +66,8 @@ function Caricamento({ testo }: { testo: string }) {
 export interface Prenotabile {
   onPrenota: (struttura: StrutturaVicina) => void
   prenotate: Set<string>
+  /** Testo del pulsante (predefinito "Prenota una visita"). */
+  etichetta?: string
 }
 
 /**
@@ -109,7 +111,7 @@ export function RigaStruttura({
             <span className="pastiglia pastiglia-chiara">Prenotazione richiesta</span>
           ) : (
             <button type="button" className="bottone" onClick={() => prenotabile.onPrenota(struttura)}>
-              Prenota una visita
+              {prenotabile.etichetta ?? 'Prenota una visita'}
             </button>
           ))}
         {telefono && (

@@ -1799,6 +1799,102 @@ p.referto-errore {
   margin-top: 4px;
 }
 
+/* ---------- Prenota una visita (demo) ---------- */
+.menu-prenota {
+  text-decoration: none;
+}
+
+.prenota-referti {
+  display: grid;
+  gap: 10px;
+}
+
+.prenota-referti button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 1px solid var(--p-bordo);
+  border-radius: 12px;
+  background: var(--p-carta);
+  color: var(--p-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.prenota-referti button > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.prenota-referti button[aria-pressed='true'] {
+  border: 2px solid var(--p-blu);
+  background: var(--p-blu-velo);
+}
+
+.prenota-orario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prenota-giorni {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.prenota-giorni button {
+  flex: none;
+}
+
+.prenota-orari {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.prenota-orari button {
+  min-height: 52px;
+  border: 1px solid var(--p-bordo);
+  border-radius: 10px;
+  background: var(--p-carta);
+  color: var(--p-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.prenota-orari button[aria-pressed='true'] {
+  border-color: var(--p-blu);
+  background: var(--p-blu);
+  color: #fff;
+}
+
+.prenota-orari button:disabled {
+  border-style: dashed;
+  background: var(--p-grigio);
+  color: var(--p-tenue);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.prenota-riepilogo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--p-blu-chiaro);
+  border-radius: 12px;
+  background: var(--p-blu-velo);
+}
+
+.prenota-riepilogo a.bottone {
+  color: #fff;
+}
+
 @media (max-width: 760px) {
   body {
     font-size: 18px;

@@ -12,7 +12,11 @@ export function ElencoPrenotazioni({ prenotazioni }: { prenotazioni: Prenotazion
         <RigaStruttura
           key={p.id}
           struttura={p.struttura}
-          nota={`Visita prenotata il ${new Date(p.richiesta).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}, per il referto «${p.refertoTitolo}». Lo studio ti chiamerà per fissare il giorno.`}
+          nota={
+            p.quando
+              ? `Visita ${new Date(p.quando).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} alle ${p.quando.slice(11, 16)}, per il referto «${p.refertoTitolo}».`
+              : `Visita richiesta il ${new Date(p.richiesta).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}, per il referto «${p.refertoTitolo}».`
+          }
           azioni={
             <button type="button" className="bottone-leggero" onClick={() => annullaPrenotazione(p.id)}>
               Annulla la prenotazione

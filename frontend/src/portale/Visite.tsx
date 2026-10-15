@@ -1,3 +1,4 @@
+import { Collegamento } from '../Collegamento'
 import { useState } from 'react'
 import { Icona } from '../Icona'
 import { prossimeVisite, visiteFatte } from './dati'
@@ -26,10 +27,10 @@ export function Visite() {
           <SchedaVisita key={visita.id} visita={visita} inEvidenza={scheda === 'prossime' && indice === 0} />
         ))}
       </div>
-      <button type="button" className="bottone solo-telefono">
+      <Collegamento href="/prenota" className="bottone solo-telefono">
         <Icona nome="piu" dimensione={22} />
         Prenota una visita
-      </button>
+      </Collegamento>
     </>
   )
 }

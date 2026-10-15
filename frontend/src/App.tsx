@@ -8,6 +8,7 @@ import { Home } from './portale/Home'
 import { Prescrizioni } from './portale/Prescrizioni'
 import { Profilo } from './portale/Profilo'
 import { Struttura } from './portale/Struttura'
+import { Prenota } from './portale/Prenota'
 import { Professionisti } from './portale/Professionisti'
 import { Strutture } from './portale/Strutture'
 import { Visite } from './portale/Visite'
@@ -84,6 +85,9 @@ function App() {
       break
     case '/professionisti':
       pagina = <Professionisti />
+      break
+    case '/prenota':
+      pagina = <Prenota key={window.location.search} />
       break
     case '/dati':
       pagina = <Profilo refertoAttivo={refertoAttivo} onCambiaReferto={cambiaConsenso} />
