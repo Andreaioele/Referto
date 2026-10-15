@@ -183,6 +183,7 @@ describe('MotherDiretto', () => {
     expect(prompt).toContain('Domande fuori tema');
     expect(prompt).toContain('non rispondere nel\n  merito');
     expect(prompt).toContain('posso\n  aiutarti solo a capire i referti medici');
+    expect(prompt).toContain('Qualsiasi domanda che riguarda un referto già inviato è in tema');
   });
 
   it('ha lo stesso prompt del Mother agent su Evolus', () => {

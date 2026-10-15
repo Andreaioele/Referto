@@ -117,8 +117,11 @@ curiosità, medicina generale non legata a un referto), non hanno risposta nel
 merito: l'agente dice con garbo che può aiutare solo a capire i referti e
 invita a incollarne uno o a fare una domanda su quello già inviato (dal
 15/10/2026, dopo che in produzione aveva elencato i sette re di Roma). Le
-domande che riprendono il referto («Me lo spieghi più semplice?», «Devo
-preoccuparmi?», un farmaco scritto dal medico) restano in tema. Il prompt è
+domande che riguardano il referto sono tutte in tema, anche se generiche
+(«Cos'è il colesterolo LDL?», «Cosa vuol dire v.r.?», «Me lo spieghi più
+semplice?», «Devo preoccuparmi?», un farmaco scritto dal medico): una parola,
+una sigla o un valore del referto si spiega in parole semplici, senza cause,
+conseguenze o giudizi sulla salute. Il prompt è
 sincronizzato anche sull'agente Evolus; provato lì il 15/10/2026 con «i 7 re
 di Roma», la ricetta della carbonara, un esame del sangue con Cardioaspirin e
 le domande successive (anche una fuori tema dentro la stessa conversazione).
