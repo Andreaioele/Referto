@@ -106,6 +106,13 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   `cercaTermine` (`tool_choice`). Se il server rifiuta `tool_choice` (HTTP
   400) si riprova senza. Senza un referto la domanda resta fuori tema e lo
   strumento non è obbligato.
+- Prima, un controllo senza modello (`src/chat/domanda-su-parola.ts`): se
+  le parole chieste (tolte quelle come «cos'è», «il», «referto») non
+  compaiono nel referto, nelle domande o nelle risposte precedenti, anche al
+  singolare o al plurale, la risposta è una frase fissa e gentile:
+  `PAROLA_FUORI_DAL_REFERTO`, «questa parola non compare nel referto…». Le
+  definizioni restituite dagli strumenti non contano. Anche il prompt ha la
+  regola, per le domande scritte in altro modo.
 - `FiltroFonti` (`src/chat/filtro-fonti.ts`) toglie dalla risposta, mentre
   arriva in streaming, le righe «Fonte: …» che non nominano una fonte o un
   link restituiti da uno strumento chiamato nella stessa domanda (AIFA se è

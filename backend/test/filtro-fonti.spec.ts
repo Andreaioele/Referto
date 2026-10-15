@@ -1,5 +1,5 @@
 import { FiltroFonti } from '../src/chat/filtro-fonti';
-import { domandaSuParola } from '../src/chat/mother-diretto';
+import { domandaSuParola, paroleChieste, parolaNellaConversazione } from '../src/chat/domanda-su-parola';
 
 /** Manda il testo a pezzi piccoli, come lo streaming del modello. */
 function filtra(filtro: FiltroFonti, testo: string, pezzo = 3): string {
@@ -56,4 +56,21 @@ describe('domandaSuParola', () => {
     'non riconosce «%s»',
     (domanda) => expect(domandaSuParola(domanda)).toBe(false),
   );
+});
+
+describe('parola chiesta e conversazione', () => {
+  const referto = 'Piccola area di consolidazione al lobo inferiore destro. Ili polmonari nella norma.';
+
+  it('prende dalla domanda solo le parole del termine', () => {
+    expect(paroleChieste("E il lobo inferiore cos'è?")).toEqual(['lobo', 'inferiore']);
+    expect(paroleChieste('Cosa vuol dire ilo polmonare?')).toEqual(['ilo', 'polmonare']);
+    expect(paroleChieste('Cosa vuol dire?')).toEqual([]);
+  });
+
+  it('una parola del referto (anche al singolare) è in tema, una che non c\'è no', () => {
+    expect(parolaNellaConversazione('Cosa vuol dire ilo polmonare?', [referto])).toBe(true);
+    expect(parolaNellaConversazione('Cosa sono le consolidazioni?', [referto])).toBe(true);
+    expect(parolaNellaConversazione("Cos'è la colecisti?", [referto])).toBe(false);
+    expect(parolaNellaConversazione('Cosa vuol dire?', [referto])).toBe(true);
+  });
 });

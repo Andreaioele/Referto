@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { nuovaTraceMotore } from '../src/chat/archivio-chat';
 import { ChatModule } from '../src/chat/chat.module';
 import type { EventoChat } from '../src/chat/evolus.client';
-import { MotherDiretto } from '../src/chat/mother-diretto';
+import { MotherDiretto, PAROLA_FUORI_DAL_REFERTO } from '../src/chat/mother-diretto';
 import { config } from '../src/config';
 
 /** Risposta in streaming come quella di /chat/completions (righe "data:" e [DONE]). */
@@ -192,7 +192,7 @@ describe('MotherDiretto', () => {
       streaming({ choices: [{ delta: { tool_calls: [{ index: 0, id: 't1', function: { name: 'cercaTermine', arguments: '{"termini":["lobo inferiore"]}' } }] } }] }),
       streaming(testo('Il lobo è una parte di un organo.\n\nFonte: Glossario di Referto.\n\nFonte: Wikipedia in italiano, https://it.wikipedia.org/wiki/Lobo')),
     );
-    const storia = [{ domanda: 'Referto di prova', risposta: 'SINTESI\nSpiegazione' }];
+    const storia = [{ domanda: 'Referto di prova: atelettasia del lobo inferiore destro', risposta: 'SINTESI\nSpiegazione' }];
     const risultato = await eventi(mother.chiedi('E il lobo inferiore cos è?', 'c', new AbortController().signal, { storia }));
 
     const [primo, secondo] = corpi as Array<{ tool_choice?: unknown }>;
@@ -203,6 +203,16 @@ describe('MotherDiretto', () => {
     expect(scritto).toContain('Fonte: Wikipedia in italiano, https://it.wikipedia.org/wiki/Lobo');
   });
 
+  it('a «Cos\'è…?» su una parola che non è nel referto risponde con garbo senza chiamare il modello', async () => {
+    rispondi();
+    const trace = nuovaTraceMotore('diretto');
+    const storia = [{ domanda: 'RADIOGRAFIA DEL TORACE. Atelettasia del lobo inferiore destro.', risposta: 'SINTESI\nSpiegazione' }];
+    const risultato = await eventi(mother.chiedi('Cos\'è la colecisti?', 'c', new AbortController().signal, { storia, trace }));
+    expect(risultato).toEqual([{ tipo: 'testo', testo: PAROLA_FUORI_DAL_REFERTO }, { tipo: 'fine', conversazione: 'c' }]);
+    expect(corpi).toEqual([]);
+    expect(trace).toMatchObject({ giri: 0, modelli_provati: [] });
+  });
+
   it('senza referto non obbliga lo strumento; se il server rifiuta tool_choice riprova senza', async () => {
     rispondi(streaming(testo('Mi dispiace, posso aiutarti solo a capire i referti medici.')));
     await eventi(mother.chiedi('Cos\'è la colecisti?', undefined, new AbortController().signal));
@@ -210,7 +220,7 @@ describe('MotherDiretto', () => {
 
     corpi = [];
     rispondi(new Response('', { status: 400 }), streaming(testo('Risposta')));
-    const storia = [{ domanda: 'Referto di prova', risposta: 'Spiegazione' }];
+    const storia = [{ domanda: 'Referto di prova: colesterolo LDL 162 mg/dL', risposta: 'Spiegazione' }];
     const risultato = await eventi(mother.chiedi('Cosa vuol dire LDL?', 'c', new AbortController().signal, { storia }));
     expect(corpi.map((c) => (c as { tool_choice?: unknown }).tool_choice)).toEqual([
       { type: 'function', function: { name: 'cercaTermine' } },

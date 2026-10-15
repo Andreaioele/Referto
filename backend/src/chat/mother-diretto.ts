@@ -7,6 +7,7 @@ import { ProntuarioService } from '../farmaci/prontuario.service';
 import { GlossarioService } from '../terminologia/glossario.service';
 import type { TraceMotore } from './archivio-chat';
 import { righeDati, type EventoChat } from './evolus.client';
+import { domandaSuParola, parolaNellaConversazione } from './domanda-su-parola';
 import { FiltroFonti } from './filtro-fonti';
 import { MotoreChat, type OpzioniChiedi } from './motore-chat';
 
@@ -95,18 +96,6 @@ const STRUMENTI = [
   },
 ];
 
-/**
- * Domande su che cosa vuol dire una parola ("Cos'è…", "Cosa vuol dire…", "Che cosa significa…"): dopo un
- * referto il primo giro obbliga il modello a chiamare cercaTermine, invece di rispondere a memoria.
- */
-const DOMANDA_SU_PAROLA =
-  /\b(cos(\s+|\s*'\s*)e|che\s+cosa\s+(e|sono|significa|vuol(e)?\s+dire|indica)|cosa\s+(vuol(e)?\s+dire|significa|indica|sono)|che\s+vuol(e)?\s+dire|significato\s+di)\b/;
-
-export function domandaSuParola(messaggio: string): boolean {
-  const testo = messaggio.toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '').replace(/[’`]/g, "'");
-  return DOMANDA_SU_PAROLA.test(testo);
-}
-
 const SOVRACCARICO = new Set([429, 502, 503, 504]);
 /** Codice usato quando il modello non inizia a rispondere entro config.modello.attesaPrimaRispostaMs (oggi V4.1 a volte dà 504 dopo un minuto). */
 const SCADUTO = 504;
@@ -117,6 +106,10 @@ const MASSIMO_CONVERSAZIONI = 200;
 const DURATA_CONVERSAZIONE_MS = 2 * 60 * 60 * 1000;
 const ERRORE_GENERICO = 'Il servizio di spiegazione non ha risposto. Riprova tra qualche minuto.';
 const ERRORE_SOVRACCARICO = 'Il servizio di spiegazione è sovraccarico. Riprova tra qualche minuto.';
+/** Risposta senza modello a «Cos'è…» su una parola che non c'è nel referto né nella conversazione. */
+export const PAROLA_FUORI_DAL_REFERTO =
+  'Mi dispiace, questa parola non compare nel referto che mi hai mandato: posso aiutarti solo a capire ' +
+  "quello che c'è scritto lì. Se vuoi, chiedimi di un'altra parola del referto.";
 
 class ErroreModello extends Error {
   constructor(readonly stato: number) {
@@ -179,11 +172,23 @@ export class MotherDiretto extends MotoreChat {
         ])
       : (this.conversazioni.get(id)?.messaggi ?? []);
     const nuovi: Messaggio[] = [{ role: 'user', content: messaggio }];
+    // Solo dopo un referto: senza, una domanda su una parola è fuori tema e non serve il glossario.
+    let obbligaTermine = precedenti.length > 0 && domandaSuParola(messaggio);
+
+    // Una parola che non c'è nel referto né nella conversazione non si spiega: risposta fissa, senza modello.
+    // Solo referto, domande e risposte: le definizioni restituite dagli strumenti non contano.
+    const conversazioneFinora = precedenti.filter((m) => m.role === 'user' || m.role === 'assistant').map((m) => m.content ?? '');
+    if (obbligaTermine && !parolaNellaConversazione(messaggio, conversazioneFinora)) {
+      if (!storia) this.ricorda(id, [...precedenti, ...nuovi, { role: 'assistant', content: PAROLA_FUORI_DAL_REFERTO }]);
+      this.logger.log('Domanda su una parola fuori dal referto: risposta fissa');
+      yield { tipo: 'testo', testo: PAROLA_FUORI_DAL_REFERTO };
+      yield { tipo: 'fine', conversazione: id };
+      return;
+    }
+
     let modello = config.modello.nome;
     let scritto = false;
     trace?.modelli_provati.push(modello);
-    // Solo dopo un referto: senza, una domanda su una parola è fuori tema e non serve il glossario.
-    let obbligaTermine = precedenti.length > 0 && domandaSuParola(messaggio);
     const filtro = new FiltroFonti();
 
     try {
