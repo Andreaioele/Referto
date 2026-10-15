@@ -64,11 +64,11 @@ describe('StruttureDelReferto', () => {
     expect(screen.getByText('Esami del sangue:', { exact: false }).textContent).toContain('Laboratorio analisi')
     expect(screen.getByText('Ospedali: chiedi del servizio di laboratorio analisi')).toBeTruthy()
 
-    // Prime tre, poi "Mostra altre"; telefono come link "tel:", mappa su OpenStreetMap.
+    // Prime tre, poi "Mostra altre"; telefono come link "tel:", mappa in una finestra del portale (FinestraMappa.test.tsx).
     expect(screen.getAllByRole('listitem')).toHaveLength(4)
     expect(screen.getByText('Laboratorio analisi, a 1,3 km da casa')).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Chiama CDI Bicocca' }).getAttribute('href')).toBe('tel:+390248317444')
-    expect(screen.getByRole('link', { name: /Mappa: CDI Bicocca/ }).getAttribute('href')).toContain('openstreetmap.org/?mlat=45.5&mlon=9.2')
+    expect(screen.getByRole('button', { name: 'Mappa: CDI Bicocca' }).getAttribute('aria-haspopup')).toBe('dialog')
     fireEvent.click(screen.getByRole('button', { name: 'Mostra altre 1' }))
     expect(screen.getAllByRole('listitem')).toHaveLength(5)
     expect(screen.getByText('Orari: lun-ven 07:30-19:00')).toBeTruthy()

@@ -47,6 +47,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/portale/perReferto.ts` | Adattatore del portale dimostrativo verso i tipi di Referto |
 | `src/portale/Strutture.tsx`, `Professionisti.tsx`, `MieiLuoghi.tsx`, `prenotazioni.ts`, `distanza.ts` | "Le mie strutture" e "I miei professionisti" (solo luoghi e medici delle proprie visite e prenotazioni) |
 | `src/referto/StruttureVicine.tsx`, `strutture-testi.ts`, `classificazioni.ts` | Strutture per referto e per tipo, testi, classificazioni già fatte |
+| `src/referto/FinestraMappa.tsx`, `mappa.ts` | Mappa di una struttura in una finestra del portale (Leaflet + OpenStreetMap) |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
 | `src/index.css` | Tema del portale e tema di Referto, versione per telefono sotto i 760 px |
 
@@ -159,7 +160,7 @@ locali → elenco**.
   cardiologia", "Ospedali con il reparto di cardiologia", "Medici di famiglia
   vicino a casa"); per ogni struttura nome, tipo, distanza ("a 850 m da casa"),
   indirizzo e quartiere, orari se ci sono, pulsanti "Chiama" (`tel:`) e
-  "Mappa" (OpenStreetMap, nuova scheda). Le prime tre, poi "Mostra altre".
+  "Mappa" (finestra nel portale, vedi sotto). Le prime tre, poi "Mostra altre".
   Avviso: Referto non sceglie per te, telefona prima, urgenze 112.
 - **Cerca vicino a casa:** medici di famiglia, pediatri, farmacie, laboratori,
   consultori, ospedali. "Da dove vengono questi dati" mostra fonti, licenze e data.
@@ -250,3 +251,30 @@ telefono o la posizione mancano il pulsante resta, spento (tratteggiato, non
 cliccabile, "Telefono non disponibile"). Sul telefono le due icone stanno
 affiancate sotto "Prenota una visita".
 
+### Mappa dentro il portale (15/10/2026)
+
+"Mappa" non apre più OpenStreetMap in una nuova scheda: apre una finestra
+sopra la pagina con il nome e l'indirizzo della struttura e la mappa centrata
+sul segnaposto. Vale ovunque compaia una struttura (`RigaStruttura`): "Le mie
+strutture", "I miei professionisti", le prenotazioni e i risultati di "Cerca
+strutture"/"Cerca professionisti" in "I miei documenti".
+
+- **Libreria:** Leaflet 1.9.4 (licenza BSD-2) con le tile di OpenStreetMap
+  (`tile.openstreetmap.org`, attribuzione "© OpenStreetMap" in basso a destra,
+  obbligatoria per la licenza ODbL). Niente chiavi né servizi a pagamento.
+- **Peso:** `mappa.ts` (Leaflet e il suo CSS) si carica con `import()` solo
+  quando si apre una mappa: un pezzo a parte di circa 44 kB gzip più 6 kB di
+  CSS; la pagina iniziale non cambia.
+- **Finestra:** `FinestraMappa.tsx` usa `useDialogo` come le altre finestre
+  (fuoco su "Chiudi", Esc chiude, il fuoco torna su "Mappa", la pagina sotto non
+  scorre); si chiude anche con un clic fuori. È resa nel `body` con
+  `createPortal`, così sta sopra tutta la pagina. Sotto i 760 px è a tutto
+  schermo e la mappa prende lo spazio che resta.
+- **Per chi ha 70 anni:** zoom con la rotellina spento (la pagina non "scappa"
+  scorrendo), pulsanti + e − da 44 px, una riga che spiega come muoversi.
+  Segnaposto disegnato in SVG con il blu del portale (nessuna immagine da servire).
+- **Se la mappa non si carica** (rete assente) la finestra lo dice e resta
+  chiudibile.
+- Test: `referto/FinestraMappa.test.tsx` (apertura, Esc, "Chiudi", clic fuori,
+  fuoco, errore, chiusura prima del caricamento) e `referto/mappa.test.ts`
+  (Leaflet vero in jsdom: tile OpenStreetMap, segnaposto, attribuzione).

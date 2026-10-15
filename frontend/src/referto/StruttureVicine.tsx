@@ -14,6 +14,7 @@ import {
   type StrutturaVicina,
   type TipoStruttura,
 } from './cliente'
+import { FinestraMappa } from './FinestraMappa'
 import { distanzaLeggibile, nessunRisultato, titoloGruppo } from './strutture-testi'
 import type { PuntoDiPartenza, RefertoDaSpiegare } from './tipi'
 
@@ -72,7 +73,7 @@ export interface Prenotabile {
 
 /**
  * Una struttura: nome, tipo, distanza, indirizzo, e i pulsanti per chiamare,
- * vederla sulla mappa e (nella ricerca) prenotare una visita.
+ * vederla sulla mappa (in una finestra del portale) e (nella ricerca) prenotare una visita.
  */
 export function RigaStruttura({
   struttura,
@@ -89,6 +90,8 @@ export function RigaStruttura({
 }) {
   const telefono = struttura.telefono?.replace(/[^\d+]/g, '')
   const haPosizione = Number.isFinite(struttura.lat) && Number.isFinite(struttura.lon)
+  const indirizzo = `${struttura.indirizzo}${struttura.quartiere ? ` (${struttura.quartiere})` : ''}`
+  const [mappaAperta, setMappaAperta] = useState(false)
   return (
     <li className="struttura">
       <span className="icona-documento">
@@ -99,10 +102,7 @@ export function RigaStruttura({
         <span className="tenue">
           {struttura.professione ?? NOMI_TIPO[struttura.tipo]}, {distanzaLeggibile(struttura.distanzaKm)}
         </span>
-        <span>
-          {struttura.indirizzo}
-          {struttura.quartiere ? ` (${struttura.quartiere})` : ''}
-        </span>
+        <span>{indirizzo}</span>
         {struttura.orari && <span className="tenue piccolo">Orari: {struttura.orari}</span>}
         {nota && <span className="struttura-nota">{nota}</span>}
       </div>
@@ -126,16 +126,17 @@ export function RigaStruttura({
           </button>
         )}
         {haPosizione ? (
-          <a
+          // La mappa si apre in una finestra del portale (FinestraMappa).
+          <button
+            type="button"
             className="bottone-leggero bottone-icona"
-            href={`https://www.openstreetmap.org/?mlat=${struttura.lat}&mlon=${struttura.lon}#map=18/${struttura.lat}/${struttura.lon}`}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Mappa: ${struttura.nome} (si apre in una nuova scheda)`}
+            aria-haspopup="dialog"
+            aria-label={`Mappa: ${struttura.nome}`}
             title="Mappa"
+            onClick={() => setMappaAperta(true)}
           >
             <Icona nome="mappa" dimensione={22} />
-          </a>
+          </button>
         ) : (
           <button type="button" className="bottone-leggero bottone-icona" disabled aria-label="Posizione non disponibile" title="Posizione non disponibile">
             <Icona nome="mappa" dimensione={22} />
@@ -143,6 +144,7 @@ export function RigaStruttura({
         )}
         {azioni}
       </div>
+      {mappaAperta && <FinestraMappa luogo={{ ...struttura, indirizzo }} onChiudi={() => setMappaAperta(false)} />}
     </li>
   )
 }
