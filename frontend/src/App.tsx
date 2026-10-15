@@ -1,67 +1,90 @@
-import { useEffect, useState } from 'react'
-import { statoBackend, type StatoBackend } from './api'
-import { Chat } from './Chat'
+import { useCallback, useMemo, useState } from 'react'
+import { ContestoAzioni, type Azioni } from './azioni'
+import { usePercorso } from './percorsi'
+import type { Documento, Farmaco } from './portale/dati'
+import { Documenti } from './portale/Documenti'
+import { Home } from './portale/Home'
+import { Prescrizioni } from './portale/Prescrizioni'
+import { Profilo } from './portale/Profilo'
+import { Struttura } from './portale/Struttura'
+import { Visite } from './portale/Visite'
+import { VisualizzaDocumento } from './portale/VisualizzaDocumento'
+import { LettoreFoglietto } from './referto/LettoreFoglietto'
+import { WidgetReferto } from './referto/WidgetReferto'
 
-type Collegamento =
-  | { tipo: 'in corso' }
-  | { tipo: 'ok'; dati: StatoBackend }
-  | { tipo: 'errore'; messaggio: string }
+const CHIAVE_CONSENSO = 'referto-attivo'
 
-function App() {
-  const [collegamento, setCollegamento] = useState<Collegamento>({ tipo: 'in corso' })
-
-  useEffect(() => {
-    const controllo = new AbortController()
-    statoBackend(controllo.signal)
-      .then((dati) => setCollegamento({ tipo: 'ok', dati }))
-      .catch((errore: unknown) => {
-        if (controllo.signal.aborted) return
-        setCollegamento({ tipo: 'errore', messaggio: errore instanceof Error ? errore.message : String(errore) })
-      })
-    return () => controllo.abort()
-  }, [])
-
-  return (
-    <div className="pagina">
-      <header className="marchio">
-        <div className="marchio-segno" aria-hidden="true">R</div>
-        <div>
-          <h1>Referto</h1>
-          <p>Capire un referto medico in parole semplici</p>
-        </div>
-      </header>
-
-      <main>
-        <Chat />
-
-        <details className="dettagli-tecnici">
-          <summary>Stato del servizio</summary>
-          {collegamento.tipo === 'in corso' && <p>Controllo in corso…</p>}
-          {collegamento.tipo === 'ok' && (
-            <p className="esito esito-ok">
-              Collegato. Prontuario AIFA aggiornato al {dataItaliana(collegamento.dati.aggiornato)}, con{' '}
-              {collegamento.dati.farmaci.toLocaleString('it-IT')} farmaci.
-            </p>
-          )}
-          {collegamento.tipo === 'errore' && (
-            <p className="esito esito-errore">Il backend non risponde ({collegamento.messaggio}).</p>
-          )}
-        </details>
-      </main>
-
-      <footer>
-        Referto non fa diagnosi e non sostituisce il medico: spiega soltanto ciò che è scritto nel referto.
-      </footer>
-    </div>
-  )
+function consensoSalvato(): boolean {
+  try {
+    return window.localStorage.getItem(CHIAVE_CONSENSO) !== 'no'
+  } catch {
+    return true
+  }
 }
 
-/** "2026-10-13" -> "13 ottobre 2026" */
-function dataItaliana(iso: string): string {
-  const data = new Date(`${iso}T00:00:00`)
-  return Number.isNaN(data.getTime())
-    ? iso
-    : data.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+/** Finestra aperta sopra il portale: al massimo una alla volta. */
+type Finestra =
+  | { tipo: 'widget'; documento?: Documento }
+  | { tipo: 'foglietto'; farmaco: Farmaco }
+  | { tipo: 'documento'; documento: Documento }
+  | null
+
+/**
+ * Portale dimostrativo di uno studio medico con Referto integrato come widget:
+ * le pagine del portale chiedono le azioni (spiega, foglietto, documento) e
+ * qui si apre la finestra giusta.
+ */
+function App() {
+  const percorso = usePercorso()
+  const [finestra, setFinestra] = useState<Finestra>(null)
+  const [refertoAttivo, setRefertoAttivo] = useState(consensoSalvato)
+
+  const cambiaConsenso = useCallback((attivo: boolean) => {
+    setRefertoAttivo(attivo)
+    try {
+      window.localStorage.setItem(CHIAVE_CONSENSO, attivo ? 'si' : 'no')
+    } catch {
+      // senza localStorage la scelta vale fino alla chiusura della pagina
+    }
+  }, [])
+
+  const azioni = useMemo<Azioni>(
+    () => ({
+      refertoAttivo,
+      spiega: (documento) => setFinestra({ tipo: 'widget', documento }),
+      apriFoglietto: (farmaco) => setFinestra({ tipo: 'foglietto', farmaco }),
+      apriDocumento: (documento) => setFinestra({ tipo: 'documento', documento }),
+    }),
+    [refertoAttivo],
+  )
+  const chiudi = useCallback(() => setFinestra(null), [])
+
+  let pagina
+  switch (percorso.replace(/\/+$/, '') || '/') {
+    case '/visite':
+      pagina = <Visite />
+      break
+    case '/documenti':
+      pagina = <Documenti />
+      break
+    case '/prescrizioni':
+      pagina = <Prescrizioni />
+      break
+    case '/dati':
+      pagina = <Profilo refertoAttivo={refertoAttivo} onCambiaReferto={cambiaConsenso} />
+      break
+    default:
+      pagina = <Home />
+  }
+
+  return (
+    <ContestoAzioni.Provider value={azioni}>
+      <Struttura percorso={percorso}>{pagina}</Struttura>
+      {finestra?.tipo === 'widget' && <WidgetReferto documento={finestra.documento} onChiudi={chiudi} />}
+      {finestra?.tipo === 'foglietto' && <LettoreFoglietto farmaco={finestra.farmaco} onChiudi={chiudi} />}
+      {finestra?.tipo === 'documento' && <VisualizzaDocumento documento={finestra.documento} onChiudi={chiudi} />}
+    </ContestoAzioni.Provider>
+  )
 }
 
 export default App

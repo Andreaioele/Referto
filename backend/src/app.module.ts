@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ChatModule } from './chat/chat.module';
 import { config } from './config';
 import { FarmaciModule } from './farmaci/farmaci.module';
+import { FogliettiModule } from './foglietti/foglietti.module';
 import { SaluteController } from './salute/salute.controller';
 import { SessioniModule } from './sessioni/sessioni.module';
 import { ChiaveApiGuard } from './sicurezza/chiave-api.guard';
@@ -13,7 +14,7 @@ const moduliOpzionali = config.mongoUri
   : [];
 
 @Module({
-  imports: [FarmaciModule, ChatModule, ...moduliOpzionali],
+  imports: [FarmaciModule, ChatModule, FogliettiModule, ...moduliOpzionali],
   controllers: [SaluteController],
   providers: [
     {

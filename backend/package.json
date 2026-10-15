@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
-    "start:dev": "ts-node src/main.ts",
+    "start:dev": "node --env-file-if-exists=.env -r ts-node/register src/main.ts",
     "test": "jest",
     "atc": "ts-node scripts/costruisci-atc.ts",
     "parita": "python3 scripts/casi_parita.py",
@@ -27,7 +27,8 @@
     "class-validator": "^0.14.2",
     "mongoose": "^9.11.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@nestjs/testing": "^11.1.0",

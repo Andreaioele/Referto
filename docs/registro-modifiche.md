@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Registro delle modifiche
@@ -9,6 +9,9 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 (la più recente in alto) e aggiorna la nota dell'area toccata.
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
+
+- 2026-10-15 · chat-frontend · Frontend rifatto come portale dimostrativo di uno studio medico con Referto integrato (widget, lettore PDF del foglietto con domande, versione per telefono) · [[16-frontend]]
+- 2026-10-15 · chat-frontend · Backend: modulo foglietti (PDF AIFA, sezioni, domande all'agente con riserva deterministica) · [[15-backend]]
 
 ## 2026-10-14
 

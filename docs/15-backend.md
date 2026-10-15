@@ -1,6 +1,6 @@
 ---
 tags: [area/core]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Backend (NestJS)
@@ -171,3 +171,31 @@ Nest 11 (CommonJS) e non 12: Nest 12 è solo ESM e complica Jest. Dettagli in
 
 - Nessuna tolleranza agli errori di battitura ("Cardioaspirina").
 - Alias esteri non riconosciuti se seguiti dal dosaggio ("Lipitor 40 mg"), come nell'app.
+
+## Foglietti illustrativi (`src/foglietti/`, 14/10/2026)
+
+Rotte pubbliche per il browser (le rotte `/api/farmaci` restano per gli agenti):
+
+| Rotta | Cosa fa |
+|---|---|
+| `GET /api/foglietti/:cod?forma=` | Farmaco, pagine, intestazione e sezioni del foglio (con la pagina) |
+| `GET /api/foglietti/:cod/pdf` | Il PDF ufficiale AIFA dallo stesso dominio |
+| `POST /api/foglietti/:cod/domande` | `{ domanda, forma? }` → risposta, sezione citata, brani usati (10 al minuto per IP) |
+
+- Il PDF si scarica da AIFA alla prima richiesta e resta in memoria (30 farmaci);
+  il testo si legge con `unpdf`.
+- `sezioni.ts` (deterministico): trova le sei sezioni dello schema europeo; se
+  il PDF ha un foglio per formulazione (es. Dibase: 54 pagine) sceglie quello
+  che corrisponde a `forma`, la confezione prescritta. `scegliBrani` sceglie i
+  brani vicini alla domanda.
+- Solo quei brani vanno al Mother agent, che deve citare la sezione
+  (`SEZIONE: n`, controllata da `interpreta`). Senza agente risponde il brano
+  stesso; se nessun brano corrisponde: "Non ho trovato questa informazione".
+- Test: `test/foglietti.spec.ts`.
+
+## Avvio in locale con le credenziali
+
+`npm run start:dev` legge `backend/.env` se c'è (`node --env-file-if-exists`):
+lì vanno `EVOLUS_API_KEY`, `EVOLUS_APPLICATION_ID` e, se serve, `MONGODB_URI`.
+Senza le credenziali Evolus la chat risponde 503 e le domande sul foglietto
+usano la riserva deterministica (il brano del foglio).

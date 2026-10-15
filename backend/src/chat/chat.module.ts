@@ -8,5 +8,7 @@ import { EvolusClient } from './evolus.client';
   imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }])],
   controllers: [ChatController],
   providers: [EvolusClient],
+  // Lo usa anche il modulo foglietti per le domande sul foglio illustrativo.
+  exports: [EvolusClient],
 })
 export class ChatModule {}

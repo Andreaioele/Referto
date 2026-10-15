@@ -1,6 +1,6 @@
 ---
 tags: [area/progetto]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Problemi noti e prossimi passi
@@ -27,6 +27,8 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |
 | Il Mother agent (DeepSeek-V4.1 su Token Factory) risponde in 1-3 minuti e con più richieste insieme va oltre il limite (HTTP 422 "sovraccarico") | Evolus | [[15-backend]] |
 | Farmaci: nessuna tolleranza agli errori di battitura; alias esteri con dosaggio non riconosciuti ("Lipitor 40 mg") | `lookup()`, `backend/` | [[15-backend]] |
+| Domande sul foglietto lente (30-40 secondi): la risposta passa dal Mother agent | `/api/foglietti/:cod/domande` | [[15-backend]] |
+| Risolto: un PDF AIFA può contenere un foglio per formulazione (Dibase: 10 fogli in 54 pagine); ora si sceglie quello della confezione prescritta | `sezioni.ts` | [[15-backend]] |
 
 ## Prossimi passi proposti
 
