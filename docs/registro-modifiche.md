@@ -10,7 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
-- 2026-10-15 · chat-frontend · Mother agent: alle domande fuori tema (non sul referto né sul servizio, es. «i 7 re di Roma») risponde con garbo che può aiutare solo a capire i referti, senza dare la risposta; regola con esempio in `data/prompt-mother.md` e `resources/evolus/agenti/mother.md`, test in `mother-diretto.spec.ts` · [[15-backend]]
+- 2026-10-15 · chat-frontend · Mother agent: alle domande fuori tema (non sul referto né sul servizio, es. «i 7 re di Roma») risponde con garbo che può aiutare solo a capire i referti, senza dare la risposta; regola con esempio in `data/prompt-mother.md` e `resources/evolus/agenti/mother.md`, test in `mother-diretto.spec.ts`; prompt sincronizzato sull'agente Evolus e provato · [[15-backend]]
 - 2026-10-15 · chat-frontend · Portale: in «I miei documenti» le ricette hanno l'icona della medicina (pillola) invece di quella delle fatture · [[16-frontend]]
 - 2026-10-15 · chat-frontend · Portale: nuova card dello studio in «Le mie strutture» dal mockup su Claude Design (prossima visita in evidenza, orari, storico a scomparsa, Chiama/Mappa/Prenota con etichetta; versione telefono a pulsanti pieni) · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi-2 · Widget Referto: il salto alla domanda è immediato (prima dello scorrimento animato) · [[16-frontend]]

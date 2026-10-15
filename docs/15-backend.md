@@ -118,7 +118,10 @@ merito: l'agente dice con garbo che può aiutare solo a capire i referti e
 invita a incollarne uno o a fare una domanda su quello già inviato (dal
 15/10/2026, dopo che in produzione aveva elencato i sette re di Roma). Le
 domande che riprendono il referto («Me lo spieghi più semplice?», «Devo
-preoccuparmi?», un farmaco scritto dal medico) restano in tema.
+preoccuparmi?», un farmaco scritto dal medico) restano in tema. Il prompt è
+sincronizzato anche sull'agente Evolus; provato lì il 15/10/2026 con «i 7 re
+di Roma», la ricetta della carbonara, un esame del sangue con Cardioaspirin e
+le domande successive (anche una fuori tema dentro la stessa conversazione).
 
 - `agenti/*.md`: prompt di ogni agente, con `agentId` e configurazione
   nell'intestazione; `sincronizza_prompt.py <file>` carica il prompt su Evolus
