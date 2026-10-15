@@ -35,7 +35,9 @@ export function connessioneMongo(uri: string, attesaMs = ATTESA_NUOVO_TENTATIVO_
           .then(() => logger.log('Connesso'))
           // Il messaggio del driver dice il motivo (server, rete, accesso negato): niente dati della chat.
           .catch((errore: Error) => {
-            logger.warn(`Connessione non riuscita: la chat va avanti senza archivio. ${errore.name}: ${errore.message.slice(0, 400)}`);
+            logger.warn(`Connessione non riuscita: la chat va avanti senza archivio. ${errore.name}: ${errore.message.slice(0, 200)}`);
+            // Il motivo di ogni server (rete chiusa, DNS, TLS, autenticazione): il messaggio sopra è solo un'ipotesi del driver.
+            for (const motivo of motiviServer(errore)) logger.warn(`Server: ${motivo}`);
             const riprova = setTimeout(() => {
               if (!chiusa && connessione.readyState === 0) prova(connessione.openUri(uri, opzioni()));
             }, attesaMs);
@@ -46,4 +48,14 @@ export function connessioneMongo(uri: string, attesaMs = ATTESA_NUOVO_TENTATIVO_
       return connessione;
     },
   });
+}
+
+/** Gli errori dei singoli server dentro un MongoServerSelectionError (al massimo tre). */
+function motiviServer(errore: Error): string[] {
+  const server = (errore as { reason?: { servers?: Map<string, { error?: { name?: string; message?: string } | null }> } }).reason?.servers;
+  if (!server) return [];
+  return [...server.entries()]
+    .filter(([, descrizione]) => descrizione.error)
+    .slice(0, 3)
+    .map(([indirizzo, descrizione]) => `${indirizzo} ${descrizione.error?.name}: ${String(descrizione.error?.message).slice(0, 200)}`);
 }
