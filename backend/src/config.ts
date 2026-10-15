@@ -43,8 +43,10 @@ export const config = {
     apiKey: process.env.RADEON_API_KEY ?? '',
     /** Lo stesso modello del Mother agent su Evolus (modelKey own/deepseek-v4.1-flash). */
     nome: process.env.MODELLO_MOTHER ?? 'DeepSeek-V4.1-Flash',
-    /** Usato se il primo è sovraccarico (HTTP 429, 502, 503) prima di aver scritto qualcosa. */
+    /** Usato se il primo è sovraccarico (HTTP 429, 502, 503, 504 o nessuna risposta in 20 s) prima di aver scritto qualcosa. */
     riserva: process.env.MODELLO_MOTHER_RISERVA ?? 'DeepSeek-V4-Flash',
+    /** Millisecondi entro cui il modello deve iniziare a rispondere, altrimenti si passa alla riserva. */
+    attesaPrimaRispostaMs: Number(process.env.MODELLO_ATTESA_MS ?? 20_000),
   },
   promptMother: process.env.PROMPT_MOTHER_FILE ?? fileDati('prompt-mother.md'),
   /** Stringa di connessione MongoDB (database Referto). */

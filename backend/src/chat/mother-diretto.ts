@@ -66,7 +66,9 @@ const STRUMENTI = [
   },
 ];
 
-const SOVRACCARICO = new Set([429, 502, 503]);
+const SOVRACCARICO = new Set([429, 502, 503, 504]);
+/** Codice usato quando il modello non inizia a rispondere entro config.modello.attesaPrimaRispostaMs (oggi V4.1 a volte dà 504 dopo un minuto). */
+const SCADUTO = 504;
 const MASSIMO_GIRI = 3;
 const MASSIMO_CONVERSAZIONI = 200;
 const DURATA_CONVERSAZIONE_MS = 2 * 60 * 60 * 1000;
@@ -180,24 +182,35 @@ export class MotherDiretto extends MotoreChat {
   }
 
   private async richiesta(modello: string, messaggi: Messaggio[], conStrumenti: boolean, segnale: AbortSignal): Promise<Response> {
-    const risposta = await fetch(`${config.modello.apiBase}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${config.modello.apiKey}`,
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-      },
-      body: JSON.stringify({
-        model: modello,
-        messages: messaggi,
-        stream: true,
-        temperature: 0,
-        max_tokens: 1500,
-        // All'ultimo giro niente strumenti: il modello deve scrivere la risposta.
-        ...(conStrumenti ? { tools: STRUMENTI } : {}),
-      }),
-      signal: segnale,
-    });
+    // Il limite vale solo fino all'arrivo della risposta: lo streaming poi può durare quanto serve.
+    const attesa = new AbortController();
+    const timer = setTimeout(() => attesa.abort(), config.modello.attesaPrimaRispostaMs);
+    let risposta: Response;
+    try {
+      risposta = await fetch(`${config.modello.apiBase}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${config.modello.apiKey}`,
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+        },
+        body: JSON.stringify({
+          model: modello,
+          messages: messaggi,
+          stream: true,
+          temperature: 0,
+          max_tokens: 1500,
+          // All'ultimo giro niente strumenti: il modello deve scrivere la risposta.
+          ...(conStrumenti ? { tools: STRUMENTI } : {}),
+        }),
+        signal: AbortSignal.any([segnale, attesa.signal]),
+      });
+    } catch (errore) {
+      if (attesa.signal.aborted && !segnale.aborted) throw new ErroreModello(SCADUTO);
+      throw errore;
+    } finally {
+      clearTimeout(timer);
+    }
     if (!risposta.ok || !risposta.body) throw new ErroreModello(risposta.status);
     return risposta;
   }

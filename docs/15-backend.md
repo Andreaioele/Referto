@@ -71,8 +71,12 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   quando si cambia il prompt vanno aggiornati tutti e due).
 - Stesso modello: `DeepSeek-V4.1-Flash` su AMD Token Factory (API compatibile
   OpenAI, `/chat/completions` in streaming), chiave in `RADEON_API_KEY`. Se il
-  modello è sovraccarico (HTTP 429, 502, 503) prima di aver scritto qualcosa si
-  riprova con `MODELLO_MOTHER_RISERVA` (predefinito `DeepSeek-V4-Flash`).
+  modello è sovraccarico (HTTP 429, 502, 503, 504) o non inizia a rispondere
+  entro `MODELLO_ATTESA_MS` (predefinito 20 secondi) prima di aver scritto
+  qualcosa, si riprova con `MODELLO_MOTHER_RISERVA` (predefinito
+  `DeepSeek-V4-Flash`).
+- In produzione su Vercel dal 15/10/2026: `MOTORE_CHAT=diretto` e
+  `RADEON_API_KEY` impostate per Production (non per Preview).
 - Lo strumento `cercaFarmaci` è una funzione: il modello la chiama come la Web
   API su Evolus, ma la ricerca avviene sul prontuario in memoria
   (`src/farmaci/cerca-farmaci.ts`, la stessa della rotta `/api/farmaci/cerca`).

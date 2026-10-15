@@ -90,6 +90,28 @@ describe('MotherDiretto', () => {
     expect(risultato.at(-1)).toMatchObject({ tipo: 'fine' });
   });
 
+  it('passa al modello di riserva anche su 504 o se il primo non inizia a rispondere in tempo', async () => {
+    rispondi(new Response('', { status: 504 }), streaming(testo('Risposta')));
+    await eventi(mother.chiedi('Ciao', undefined, new AbortController().signal));
+    expect(corpi.map((c) => c.model)).toEqual(['DeepSeek-V4.1-Flash', 'DeepSeek-V4-Flash']);
+
+    corpi = [];
+    config.modello.attesaPrimaRispostaMs = 50;
+    let chiamate = 0;
+    global.fetch = jest.fn(async (_url: string, opzioni: RequestInit) => {
+      corpi.push(JSON.parse(String(opzioni.body)));
+      chiamate += 1;
+      if (chiamate === 1) {
+        // Il primo modello non risponde finché la richiesta non viene annullata.
+        await new Promise((_, rifiuta) => opzioni.signal?.addEventListener('abort', () => rifiuta(new Error('annullata'))));
+      }
+      return streaming(testo('Risposta di riserva'));
+    }) as unknown as typeof fetch;
+    const risultato = await eventi(mother.chiedi('Ciao', undefined, new AbortController().signal));
+    expect(corpi.map((c) => c.model)).toEqual(['DeepSeek-V4.1-Flash', 'DeepSeek-V4-Flash']);
+    expect(risultato.at(-1)).toMatchObject({ tipo: 'fine' });
+  });
+
   it('continua la conversazione con i messaggi precedenti', async () => {
     rispondi(streaming(testo('Prima risposta')), streaming(testo('Seconda risposta')));
     const prima = await eventi(mother.chiedi('Referto di prova', undefined, new AbortController().signal));
