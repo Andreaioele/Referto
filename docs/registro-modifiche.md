@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-16 · chat-frontend · Mother diretto: dopo un referto, «Cos'è / Cosa vuol dire…» obbliga la chiamata a `cercaTermine` (`tool_choice`, con ripiego se il server la rifiuta); `FiltroFonti` toglie le righe «Fonte:» non date da uno strumento · [[15-backend]]
 - 2026-10-16 · chat-frontend · cercaTermine dopo la prova nell'anteprima: fonte curata mostrata come «Glossario di Referto» (non «bozza»), il prompt chiede di chiamarlo sempre per le domande su una parola e vieta nozioni generali, il Mother diretto non manda le righe vuote che precedono una chiamata a strumento · [[15-backend]]
 - 2026-10-16 · chat-frontend · Nuovo strumento `cercaTermine` del Mother agent (motore diretto) e rotta `POST /api/terminologia/cerca` sul glossario medico a strati (`data/glossario_medico.json`); prompt con la sezione TERMINI · [[15-backend]]
 - 2026-10-15 · chat-frontend · Prototipo del glossario a strati per `cercaTermine` (curato + HPO + Wikidata/Wikipedia) con script di costruzione e misura: copre il 49% delle parole difficili di RadGraph-IT; tabella delle fonti corretta (SNOMED CT, ICD-11, MeSH) · [[specifica-terminologia]]

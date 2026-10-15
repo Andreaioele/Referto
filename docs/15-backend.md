@@ -100,6 +100,16 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
   chiamato e ha aggiunto nozioni generali; da qui la regola «chiama sempre,
   anche se pensi di saperlo». La fonte dello strato curato si legge
   «Glossario di Referto».
+- Anche con quella regola il modello a volte risponde a memoria. Per questo,
+  dopo un referto, una domanda del tipo «Cos'è…», «Cosa vuol dire…» o «Che
+  cosa significa…» (`domandaSuParola()`) obbliga il primo giro a chiamare
+  `cercaTermine` (`tool_choice`). Se il server rifiuta `tool_choice` (HTTP
+  400) si riprova senza. Senza un referto la domanda resta fuori tema e lo
+  strumento non è obbligato.
+- `FiltroFonti` (`src/chat/filtro-fonti.ts`) toglie dalla risposta, mentre
+  arriva in streaming, le righe «Fonte: …» che non nominano una fonte o un
+  link restituiti da uno strumento chiamato nella stessa domanda (AIFA se è
+  stato chiamato `cercaFarmaci`). Anche il testo salvato è quello filtrato.
 - Con MongoDB la storia di ogni domanda arriva dall'archivio (opzione
   `storia` di `chiedi`), quindi vale anche dopo un riavvio o su un'altra
   istanza di Vercel. Senza MongoDB le conversazioni restano in memoria per due

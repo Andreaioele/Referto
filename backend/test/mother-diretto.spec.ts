@@ -187,6 +187,38 @@ describe('MotherDiretto', () => {
     ]);
   });
 
+  it('dopo un referto, a «Cos\'è…?» obbliga a chiamare cercaTermine e toglie le fonti inventate', async () => {
+    rispondi(
+      streaming({ choices: [{ delta: { tool_calls: [{ index: 0, id: 't1', function: { name: 'cercaTermine', arguments: '{"termini":["lobo inferiore"]}' } }] } }] }),
+      streaming(testo('Il lobo è una parte di un organo.\n\nFonte: Glossario di Referto.\n\nFonte: Wikipedia in italiano, https://it.wikipedia.org/wiki/Lobo')),
+    );
+    const storia = [{ domanda: 'Referto di prova', risposta: 'SINTESI\nSpiegazione' }];
+    const risultato = await eventi(mother.chiedi('E il lobo inferiore cos è?', 'c', new AbortController().signal, { storia }));
+
+    const [primo, secondo] = corpi as Array<{ tool_choice?: unknown }>;
+    expect(primo.tool_choice).toEqual({ type: 'function', function: { name: 'cercaTermine' } });
+    expect(secondo.tool_choice).toBeUndefined();
+    const scritto = risultato.filter((e) => e.tipo === 'testo').map((e) => (e as { testo: string }).testo).join('');
+    expect(scritto).not.toContain('Glossario di Referto');
+    expect(scritto).toContain('Fonte: Wikipedia in italiano, https://it.wikipedia.org/wiki/Lobo');
+  });
+
+  it('senza referto non obbliga lo strumento; se il server rifiuta tool_choice riprova senza', async () => {
+    rispondi(streaming(testo('Mi dispiace, posso aiutarti solo a capire i referti medici.')));
+    await eventi(mother.chiedi('Cos\'è la colecisti?', undefined, new AbortController().signal));
+    expect((corpi[0] as { tool_choice?: unknown }).tool_choice).toBeUndefined();
+
+    corpi = [];
+    rispondi(new Response('', { status: 400 }), streaming(testo('Risposta')));
+    const storia = [{ domanda: 'Referto di prova', risposta: 'Spiegazione' }];
+    const risultato = await eventi(mother.chiedi('Cosa vuol dire LDL?', 'c', new AbortController().signal, { storia }));
+    expect(corpi.map((c) => (c as { tool_choice?: unknown }).tool_choice)).toEqual([
+      { type: 'function', function: { name: 'cercaTermine' } },
+      undefined,
+    ]);
+    expect(risultato.at(-1)).toMatchObject({ tipo: 'fine' });
+  });
+
   it('nella trace segna il modello di riserva e l\'errore tecnico', async () => {
     rispondi(new Response('', { status: 503 }), new Response('', { status: 500 }));
     const trace = nuovaTraceMotore('diretto');

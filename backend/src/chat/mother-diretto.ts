@@ -7,6 +7,7 @@ import { ProntuarioService } from '../farmaci/prontuario.service';
 import { GlossarioService } from '../terminologia/glossario.service';
 import type { TraceMotore } from './archivio-chat';
 import { righeDati, type EventoChat } from './evolus.client';
+import { FiltroFonti } from './filtro-fonti';
 import { MotoreChat, type OpzioniChiedi } from './motore-chat';
 
 /** Messaggio nel formato delle API compatibili OpenAI (/chat/completions). */
@@ -94,6 +95,18 @@ const STRUMENTI = [
   },
 ];
 
+/**
+ * Domande su che cosa vuol dire una parola ("Cos'è…", "Cosa vuol dire…", "Che cosa significa…"): dopo un
+ * referto il primo giro obbliga il modello a chiamare cercaTermine, invece di rispondere a memoria.
+ */
+const DOMANDA_SU_PAROLA =
+  /\b(cos(\s+|\s*'\s*)e|che\s+cosa\s+(e|sono|significa|vuol(e)?\s+dire|indica)|cosa\s+(vuol(e)?\s+dire|significa|indica|sono)|che\s+vuol(e)?\s+dire|significato\s+di)\b/;
+
+export function domandaSuParola(messaggio: string): boolean {
+  const testo = messaggio.toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '').replace(/[’`]/g, "'");
+  return DOMANDA_SU_PAROLA.test(testo);
+}
+
 const SOVRACCARICO = new Set([429, 502, 503, 504]);
 /** Codice usato quando il modello non inizia a rispondere entro config.modello.attesaPrimaRispostaMs (oggi V4.1 a volte dà 504 dopo un minuto). */
 const SCADUTO = 504;
@@ -169,6 +182,9 @@ export class MotherDiretto extends MotoreChat {
     let modello = config.modello.nome;
     let scritto = false;
     trace?.modelli_provati.push(modello);
+    // Solo dopo un referto: senza, una domanda su una parola è fuori tema e non serve il glossario.
+    let obbligaTermine = precedenti.length > 0 && domandaSuParola(messaggio);
+    const filtro = new FiltroFonti();
 
     try {
       for (let giro = 1; giro <= MASSIMO_GIRI; giro += 1) {
@@ -178,9 +194,17 @@ export class MotherDiretto extends MotoreChat {
           trace.giri += 1;
           trace.modello = modello;
         }
+        const obbligato = giro === 1 && obbligaTermine ? 'cercaTermine' : undefined;
         try {
-          risposta = await this.richiesta(modello, messaggi, giro < MASSIMO_GIRI, segnale);
+          risposta = await this.richiesta(modello, messaggi, giro < MASSIMO_GIRI, segnale, obbligato);
         } catch (errore) {
+          // Se il server non accetta lo strumento obbligato (tool_choice), si riprova lasciando scegliere il modello.
+          if (obbligato && errore instanceof ErroreModello && errore.stato === 400) {
+            this.logger.warn(`${modello} non accetta tool_choice: riprovo senza`);
+            obbligaTermine = false;
+            giro -= 1;
+            continue;
+          }
           // Modello sovraccarico prima di aver scritto qualcosa: si riprova una volta con il modello di riserva.
           if (errore instanceof ErroreModello && SOVRACCARICO.has(errore.stato) && !scritto && modello !== config.modello.riserva) {
             this.logger.warn(`${modello} ha risposto ${errore.message}: provo ${config.modello.riserva}`);
@@ -210,10 +234,11 @@ export class MotherDiretto extends MotoreChat {
           // Prima di chiamare uno strumento il modello a volte manda solo righe vuote: non vanno alla persona.
           const contenuto = scritto ? delta?.content : delta?.content?.trimStart();
           if (contenuto) {
-            testo += contenuto;
             if (trace && !scritto) trace.primo_testo_ms = Date.now() - inizio;
             scritto = true;
-            yield { tipo: 'testo', testo: contenuto };
+            const daMandare = filtro.aggiungi(contenuto);
+            testo += daMandare;
+            if (daMandare) yield { tipo: 'testo', testo: daMandare };
           }
           for (const parte of delta?.tool_calls ?? []) {
             const chiamata = (chiamate[parte.index] ??= { id: '', type: 'function', function: { name: '', arguments: '' } });
@@ -224,6 +249,11 @@ export class MotherDiretto extends MotoreChat {
         }
 
         if (chiamate.length === 0) {
+          const resto = filtro.fine();
+          if (resto) {
+            testo += resto;
+            yield { tipo: 'testo', testo: resto };
+          }
           if (!storia) this.ricorda(id, [...precedenti, ...nuovi, { role: 'assistant', content: testo }]);
           this.logger.log(`Risposta di ${modello} in ${Date.now() - inizio} ms (${giro} giri)`);
           yield { tipo: 'fine', conversazione: id };
@@ -231,7 +261,9 @@ export class MotherDiretto extends MotoreChat {
         }
         nuovi.push({ role: 'assistant', content: testo || null, tool_calls: chiamate });
         for (const chiamata of chiamate) {
-          nuovi.push({ role: 'tool', tool_call_id: chiamata.id, content: this.eseguiStrumento(chiamata, trace) });
+          const risultato = this.eseguiStrumento(chiamata, trace);
+          filtro.ammettiDa(chiamata.function.name, risultato);
+          nuovi.push({ role: 'tool', tool_call_id: chiamata.id, content: risultato });
         }
       }
       this.logger.warn(`Troppi giri di strumenti dopo ${Date.now() - inizio} ms`);
@@ -246,7 +278,13 @@ export class MotherDiretto extends MotoreChat {
     }
   }
 
-  private async richiesta(modello: string, messaggi: Messaggio[], conStrumenti: boolean, segnale: AbortSignal): Promise<Response> {
+  private async richiesta(
+    modello: string,
+    messaggi: Messaggio[],
+    conStrumenti: boolean,
+    segnale: AbortSignal,
+    obbligato?: string,
+  ): Promise<Response> {
     // Il limite vale solo fino all'arrivo della risposta: lo streaming poi può durare quanto serve.
     const limite = modello === config.modello.riserva ? ATTESA_RISERVA_MS : config.modello.attesaPrimaRispostaMs;
     const attesa = new AbortController();
@@ -268,6 +306,7 @@ export class MotherDiretto extends MotoreChat {
           max_tokens: 1500,
           // All'ultimo giro niente strumenti: il modello deve scrivere la risposta.
           ...(conStrumenti ? { tools: STRUMENTI } : {}),
+          ...(conStrumenti && obbligato ? { tool_choice: { type: 'function', function: { name: obbligato } } } : {}),
         }),
         signal: AbortSignal.any([segnale, attesa.signal]),
       });
