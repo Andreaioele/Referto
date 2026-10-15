@@ -1,6 +1,8 @@
-import { Body, Controller, Delete, Get, Headers, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Pubblico } from '../sicurezza/chiave-api.guard';
 import { AggiornaConversazioneDto } from './dto/aggiorna-conversazione.dto';
+import { CreaUtenteDto } from './dto/crea-utente.dto';
 import { SessioniService } from './sessioni.service';
 
 /**
@@ -8,12 +10,29 @@ import { SessioniService } from './sessioni.service';
  * domande e trace). Le scrive solo il backend, in POST /api/chat; qui si
  * leggono, si rinominano e si eliminano. Contengono il testo dei referti:
  * le rotte chiedono la chiave API (x-api-key) quando CHIAVE_API è impostata.
+ * Solo creare e ritrovare un utente (login fake con nickname) è aperto al browser.
  */
 @ApiTags('sessioni')
 @ApiHeader({ name: 'X-Utente-Id', required: false, description: 'Utente; senza, l\'utente predefinito.' })
 @Controller('sessioni')
 export class SessioniController {
   constructor(private readonly sessioni: SessioniService) {}
+
+  /* ── Utenti (login fake) ── */
+
+  @Post('utenti')
+  @Pubblico()
+  @ApiOperation({ summary: 'Crea un utente con il nickname; l\'id va poi mandato in X-Utente-Id' })
+  async creaUtente(@Body() dto: CreaUtenteDto) {
+    return this.sessioni.creaUtente(dto.nickname);
+  }
+
+  @Get('utenti/:id')
+  @Pubblico()
+  @ApiOperation({ summary: 'Verifica che un utente esista' })
+  async trovaUtente(@Param('id') id: string) {
+    return this.sessioni.trovaUtente(id);
+  }
 
   @Get('utente')
   @ApiOperation({ summary: 'L\'utente corrente (login fake: senza X-Utente-Id è l\'utente predefinito)' })

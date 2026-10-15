@@ -6,6 +6,8 @@
  * Le date sono relative a oggi, così la demo resta sempre attuale.
  */
 
+import type { ValoreLaboratorio } from '../referto/tipi'
+
 export interface Paziente {
   nome: string
   cognome: string
@@ -17,6 +19,8 @@ export interface Paziente {
   telefono: string
   email: string
   indirizzo: string
+  /** Indirizzo di casa con le coordinate: da qui si misurano le distanze in "Le mie strutture". */
+  casa: { indirizzo: string; lat: number; lon: number }
   contatto: string
   pazienteDal: number
   medico: { nome: string; orari: string }
@@ -38,13 +42,6 @@ export interface Visita {
   refertoId?: string
 }
 
-export interface ValoreLaboratorio {
-  esame: string
-  risultato: string
-  unita: string
-  riferimento: string
-  fuori: boolean
-}
 
 export interface Referto {
   /** Testo del referto come lo scrive il medico: è ciò che riceve Referto. */
@@ -106,7 +103,8 @@ export const paziente: Paziente = {
   scadenzaTessera: '31 dicembre 2027',
   telefono: '+39 000 000 0000',
   email: 'giovanna.ferri@esempio.it',
-  indirizzo: 'Via dei Tigli 12, Roma',
+  indirizzo: 'Viale Monza 140, Milano',
+  casa: { indirizzo: 'Viale Monza 140', lat: 45.5041, lon: 9.2225 },
   contatto: 'Marco Ferri (figlio)',
   pazienteDal: 2019,
   medico: { nome: 'Dott. Paolo Rinaldi', orari: 'Riceve allo studio il lunedì e il giovedì' },
@@ -348,3 +346,18 @@ export function visita(id: string): Visita | undefined {
 
 export const prossimeVisite = visite.filter((v) => v.giorni >= 0).sort((a, b) => a.giorni - b.giorni)
 export const visiteFatte = visite.filter((v) => v.giorni < 0).sort((a, b) => b.giorni - a.giorni)
+
+/**
+ * I referti già ricevuti sono già stati letti dal Mother agent quando sono
+ * arrivati: qui la loro classificazione (riga ARGOMENTO), così "Cerca strutture"
+ * e "Cerca professionisti" non richiamano il modello.
+ */
+export const classificazioniGiaFatte: Record<string, { esame: string; area: string }> = {
+  'd-sangue': { esame: 'Esami del sangue', area: 'Laboratorio analisi' },
+  'd-cardio': { esame: 'Visita cardiologica con elettrocardiogramma', area: 'Cardiologia' },
+  'd-rx': { esame: 'Radiografia del torace', area: 'Pneumologia' },
+  'd-occhi': { esame: 'Visita oculistica', area: 'Oculistica' },
+}
+
+/** Dove si trova lo studio delle visite del portale (indirizzo inventato, a Milano). */
+export const SEDE_STUDIO = { indirizzo: 'Via Valle Serena 1, Milano', lat: 45.4785, lon: 9.2101, telefono: '+39 02 0000 0000' }

@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-15
 ---
 
 # Referto: documentazione di progetto
@@ -39,6 +39,7 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
 7. [[11-modelli-e-ollama]] e [[10-dataset-e-valutazione]]: modelli, dataset, cluster.
 8. [[12-test-e-sviluppo]] e [[13-git-e-workflow]]: come lavorare sul repo.
 9. [[14-problemi-noti-e-prossimi-passi]]: cosa non funziona ancora.
+    Diagrammi interattivi dell'architettura (skill archify): [[archify/README|docs/archify]].
 10. Specifiche delle prossime funzionalità:
     [[specifica-terminologia]], [[specifica-visite-specialisti]],
     [[specifica-storico-sessione]].

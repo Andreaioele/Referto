@@ -56,3 +56,8 @@ resources/evolus/farmaci/*
 node_modules/
 dist/
 .vercel/
+
+# Ricevute dei controlli di archify (percorsi locali)
+docs/archify/**/*.finalize*.json
+docs/archify/**/*.browser-check.json
+docs/archify/**/*.delivery.json

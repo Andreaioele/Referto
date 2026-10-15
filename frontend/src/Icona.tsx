@@ -38,6 +38,13 @@ const TRACCIATI = {
       <path d="M12 7v5l3 2" />
     </>
   ),
+  stetoscopio: (
+    <>
+      <path d="M6 3v6a4 4 0 0 0 8 0V3" />
+      <path d="M10 13v3a5 5 0 0 0 10 0v-3" />
+      <circle cx="20" cy="11" r="2" />
+    </>
+  ),
   luogo: (
     <>
       <path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z" />

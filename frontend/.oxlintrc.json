@@ -4,5 +4,23 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/referto/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/portale", "**/portale/**"],
+                "message": "Referto non dipende dal portale: ricevi i dati nei tipi di referto/tipi.ts (adattatore in portale/perReferto.ts)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

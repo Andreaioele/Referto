@@ -101,7 +101,16 @@ const ICONE_DOCUMENTO = { referto: 'documento', ricetta: 'fattura', fattura: 'fa
 const NOMI_TIPO = { referto: 'Referto', ricetta: 'Ricetta', fattura: 'Fattura' }
 
 /** Una riga dell'elenco dei documenti, con "Spiegamelo" per i referti. */
-export function RigaDocumento({ documento, compatta = false }: { documento: Documento; compatta?: boolean }) {
+export function RigaDocumento({
+  documento,
+  compatta = false,
+  extra,
+}: {
+  documento: Documento
+  compatta?: boolean
+  /** Pulsanti in più, dopo quelli del documento (es. "Cerca strutture"). */
+  extra?: ReactNode
+}) {
   const { spiega, apriDocumento, refertoAttivo } = useAzioni()
   const referto = documento.tipo === 'referto' && documento.referto
   return (
@@ -145,6 +154,7 @@ export function RigaDocumento({ documento, compatta = false }: { documento: Docu
             <span className="testo-bottone">Scarica</span>
           </button>
         )}
+        {extra}
       </div>
     </div>
   )

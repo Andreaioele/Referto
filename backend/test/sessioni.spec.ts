@@ -177,6 +177,17 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('crea e ritrova gli utenti (login fake, aperto al browser)', async () => {
+    config.chiaveApi = 'segreto-di-prova';
+    const creato = await request(app.getHttpServer()).post('/api/sessioni/utenti').send({ nickname: 'Test Referto' }).expect(201);
+    expect(creato.body).toEqual({ id: expect.stringMatching(/^[0-9a-f]{24}$/), nickname: 'Test Referto' });
+    const trovato = await request(app.getHttpServer()).get(`/api/sessioni/utenti/${creato.body.id}`).expect(200);
+    expect(trovato.body).toEqual(creato.body);
+    await request(app.getHttpServer()).get('/api/sessioni/utenti/000000000000000000000000').expect(404);
+    await request(app.getHttpServer()).get('/api/sessioni/utenti/non-valido').expect(404);
+    await request(app.getHttpServer()).post('/api/sessioni/utenti').send({ nickname: 'A' }).expect(400);
+  });
+
   it('tiene separati gli utenti: cache e conversazioni non si condividono', async () => {
     const altro = (await utenti.create({ nickname: 'Mario' }))._id.toString();
     rispondi(streaming(SPIEGAZIONE));
@@ -214,5 +225,17 @@ describe('Chat con MongoDB: cache delle spiegazioni, conversazioni e trace', () 
     config.chiaveApi = 'segreto-di-prova';
     await request(app.getHttpServer()).get('/api/sessioni/conversazioni').expect(401);
     await request(app.getHttpServer()).get('/api/sessioni/conversazioni').set('x-api-key', 'segreto-di-prova').expect(200);
+  });
+});
+
+describe('Senza MONGODB_URI', () => {
+  it('il backend non espone le rotte /api/sessioni e la chat non salva nulla', async () => {
+    if (config.mongoUri) return;
+    const { AppModule } = await import('../src/app.module');
+    const modulo = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const app = configuraApp(modulo.createNestApplication());
+    await app.init();
+    await request(app.getHttpServer()).post('/api/sessioni/utenti').send({ nickname: 'Test Referto' }).expect(404);
+    await app.close();
   });
 });

@@ -1692,6 +1692,113 @@ p.referto-errore {
 }
 
 /* ---------- Telefono ---------- */
+/* ---------- Le mie strutture ---------- */
+.strutture-casa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 6px;
+  color: var(--p-tenue);
+}
+
+.strutture-casa svg {
+  color: var(--p-blu);
+}
+
+.strutture-casa strong {
+  color: var(--p-ink);
+}
+
+.strutture-casa a {
+  font-weight: 600;
+}
+
+/* Il risultato di Referto per un referto: riquadro menta, come le altre risposte di Referto. */
+.strutture-risultato {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 4px 0 18px;
+  padding: 20px 22px;
+  border: 1px solid var(--mint-bordo);
+  border-radius: 14px;
+  background: var(--mint);
+}
+
+.strutture-area {
+  font-size: 18px;
+}
+
+.strutture-gruppo h3 {
+  margin: 0 0 10px;
+  font-size: 19px;
+}
+
+.strutture-elenco {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.struttura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--p-linea);
+  border-radius: 12px;
+  background: var(--p-carta);
+}
+
+.struttura-testo {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.struttura-testo strong {
+  font-size: 18px;
+}
+
+.strutture-altre {
+  align-self: flex-start;
+  margin-top: 10px;
+}
+
+.strutture-scelta-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  font-weight: 600;
+}
+
+.strutture-scelta-area select {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--p-bordo);
+  border-radius: 10px;
+  background: var(--p-carta);
+  color: var(--p-ink);
+  font: inherit;
+  font-weight: 500;
+}
+
+.strutture-fonti {
+  margin: 10px 0 0;
+  padding-left: 20px;
+}
+
+.strutture-fonti li + li {
+  margin-top: 4px;
+}
+
 @media (max-width: 760px) {
   body {
     font-size: 18px;
@@ -1785,6 +1892,18 @@ p.referto-errore {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
+  }
+
+  .strutture-risultato {
+    padding: 14px;
+  }
+
+  .struttura .azioni {
+    width: 100%;
+  }
+
+  .struttura .icona-documento {
+    display: none;
   }
 
   .visita {
@@ -1984,7 +2103,7 @@ p.referto-errore {
 
   .barra-schede {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     padding: 6px 4px calc(10px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--p-linea);
     background: #fff;

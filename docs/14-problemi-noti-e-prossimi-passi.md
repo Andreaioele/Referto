@@ -32,6 +32,9 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Una spiegazione in cache non si rigenera finché non cambiano prompt o modello (nessun pulsante "rigenera"); eliminare la conversazione non la cancella | `spiegazioni` | [[15-backend]] |
 | Il frontend non mostra ancora lo storico delle conversazioni salvate (rotte `/api/sessioni` pronte, con chiave API) | `frontend/` | [[specifica-storico-sessione]] |
 | Risolto: con il motore diretto le domande successive dipendevano dalla memoria del processo (perse su un'altra istanza Vercel); con MongoDB la storia arriva dal database | `ServizioChat` | [[15-backend]] |
+| Strutture di Milano: gli studi specialistici vengono da Overture (registri di imprese, affidabilità media); mancano Case di Comunità e pronto soccorso; medici e pediatri con licenza non commerciale (CC BY-NC). Risolto: prima 13 aree su 19 erano senza professionisti | `data/strutture-milano.json` | [[15-backend]] |
+| Overpass sovraccarico quando si rigenerano le strutture (406/429/504): serve `--osm` con un'estrazione già scaricata | `scripts/costruisci-strutture.ts` | [[15-backend]] |
+| Widget: se il servizio non risponde (es. 503 senza credenziali Evolus) compaiono due messaggi di errore di fila, "Il servizio non è disponibile…" e "La risposta si è interrotta…": il messaggio d'errore finisce nel testo libero della risposta | `WidgetReferto.tsx` (`Spiegazione`) | [[16-frontend]] |
 | Risolto: backend fermo su Vercel (`ERR_REQUIRE_ESM` con `@nestjs/mongoose` 12, solo ESM); tornati alla 11.0.4 | `backend/package.json` | [[15-backend]] |
 | Risolto: un PDF AIFA può contenere un foglio per formulazione (Dibase: 10 fogli in 54 pagine); ora si sceglie quello della confezione prescritta | `sezioni.ts` | [[15-backend]] |
 

@@ -69,7 +69,7 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
           </button>
         )}
         <nav className="barra-schede" aria-label="Menu principale">
-          {PAGINE.map((pagina) => (
+          {PAGINE.filter((pagina) => !pagina.soloComputer).map((pagina) => (
             <Collegamento key={pagina.percorso} href={pagina.percorso} aria-current={pagina.percorso === percorso ? 'page' : undefined}>
               <span className="barra-schede-icona">
                 <Icona nome={pagina.icona} />

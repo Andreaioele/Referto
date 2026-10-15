@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { inviaMessaggio } from '../servizio-chat'
+import { spiega } from './cliente'
 
 export interface Messaggio {
   autore: 'persona' | 'referto'
@@ -16,14 +16,11 @@ function segnalaErrore(risposta: Messaggio, messaggio: string): Messaggio {
     : { ...risposta, testo: messaggio, errore: true }
 }
 
-/**
- * Conversazione con il Mother agent (POST /api/chat): la prima domanda è il
- * referto, le altre lo continuano. Il backend salva la conversazione e, se il
- * referto è già stato spiegato, restituisce la spiegazione salvata (daCache).
- */
+/** Conversazione con il Mother agent (POST /api/chat): la prima domanda è il referto, le altre lo continuano. */
 export function useChat() {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([])
   const [inCorso, setInCorso] = useState(false)
+  /** La spiegazione del referto è quella salvata dal backend (cache), non riscritta. */
   const [daCache, setDaCache] = useState(false)
   const conversazione = useRef<string | null>(null)
   const controllo = useRef<AbortController | null>(null)
@@ -38,38 +35,29 @@ export function useChat() {
     const segnale = (controllo.current = new AbortController()).signal
     setInCorso(true)
     setMessaggi((attuali) => [...attuali, { autore: 'persona', testo, nascosto: opzioni.nascosto }, { autore: 'referto', testo: '' }])
-    let concluso = false
-    try {
-      await inviaMessaggio(
-        testo,
-        conversazione.current,
-        (evento) => {
-          if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
-          else if (evento.tipo === 'fine') {
-            concluso = true
-            if (!conversazione.current) setDaCache(Boolean(evento.da_cache))
-            conversazione.current = evento.conversazione
-          } else {
-            concluso = true
-            aggiornaRisposta((r) => segnalaErrore(r, evento.messaggio))
-          }
-        },
-        segnale,
-      )
-      if (!concluso && !segnale.aborted) aggiornaRisposta((r) => segnalaErrore(r, 'La risposta si è interrotta. Riprova tra poco.'))
-    } catch {
-      if (!segnale.aborted) aggiornaRisposta((r) => segnalaErrore(r, 'Collegamento interrotto. Riprova tra poco.'))
-    } finally {
-      if (!segnale.aborted) setInCorso(false)
-    }
+    // spiega() finisce sempre con "fine" o "errore" (rete caduta, flusso interrotto compresi).
+    await spiega(
+      testo,
+      conversazione.current,
+      (evento) => {
+        if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))
+        else if (evento.tipo === 'fine') {
+          if (!conversazione.current) setDaCache(Boolean(evento.da_cache))
+          conversazione.current = evento.conversazione
+        }
+        else aggiornaRisposta((r) => segnalaErrore(r, evento.messaggio))
+      },
+      segnale,
+    )
+    if (!segnale.aborted) setInCorso(false)
   }, [])
 
   const azzera = useCallback(() => {
     controllo.current?.abort()
     conversazione.current = null
+    setDaCache(false)
     setMessaggi([])
     setInCorso(false)
-    setDaCache(false)
   }, [])
 
   return { messaggi, inCorso, daCache, invia, azzera }

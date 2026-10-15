@@ -60,6 +60,18 @@ export class SessioniService extends ArchivioChat {
     return this.utentePredefinito;
   }
 
+  async creaUtente(nickname: string): Promise<{ id: string; nickname: string }> {
+    const utente = await this.utenteModel.create({ nickname });
+    return { id: utente._id.toString(), nickname: utente.nickname };
+  }
+
+  /** 404 anche per un id non valido. */
+  async trovaUtente(id: string): Promise<{ id: string; nickname: string }> {
+    const utente = Types.ObjectId.isValid(id) ? await this.utenteModel.findById(id).exec() : null;
+    if (!utente) throw new NotFoundException('Utente non trovato');
+    return { id: utente._id.toString(), nickname: utente.nickname };
+  }
+
   async nickname(utente: string): Promise<string> {
     const trovato = await this.utenteModel.findById(utente).exec();
     return trovato?.nickname ?? NICKNAME_PREDEFINITO;

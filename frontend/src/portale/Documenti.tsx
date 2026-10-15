@@ -1,7 +1,12 @@
 import { useState } from 'react'
+import { useAzioni } from '../azioni'
 import { Icona } from '../Icona'
+import type { Categoria, StrutturaVicina } from '../referto/cliente'
+import { StruttureDelReferto } from '../referto/StruttureVicine'
 import { documenti, type Documento } from './dati'
 import { RigaDocumento } from './elementi'
+import { casaDelPaziente, refertoDaSpiegare } from './perReferto'
+import { prenota, usePrenotazioni } from './prenotazioni'
 
 const FILTRI: Array<{ valore: 'tutti' | Documento['tipo']; nome: string }> = [
   { valore: 'tutti', nome: 'Tutti' },
@@ -10,9 +15,26 @@ const FILTRI: Array<{ valore: 'tutti' | Documento['tipo']; nome: string }> = [
   { valore: 'fattura', nome: 'Fatture' },
 ]
 
+/** Ricerca aperta su un referto: arriva anche dal widget (?referto=id&cerca=strutture). */
+function ricercaRichiesta(): { id: string; categoria: Categoria } | null {
+  const parametri = new URLSearchParams(window.location.search)
+  const id = parametri.get('referto')
+  const cerca = parametri.get('cerca')
+  return id && (cerca === 'strutture' || cerca === 'professionisti') ? { id, categoria: cerca } : null
+}
+
 export function Documenti() {
-  const [filtro, setFiltro] = useState<(typeof FILTRI)[number]['valore']>('tutti')
+  const { refertoAttivo } = useAzioni()
+  const [filtro, setFiltro] = useState<(typeof FILTRI)[number]['valore']>(() => (ricercaRichiesta() ? 'referto' : 'tutti'))
+  const [ricerca, setRicerca] = useState(ricercaRichiesta)
+  const prenotazioni = usePrenotazioni()
   const elenco = documenti.filter((d) => filtro === 'tutti' || d.tipo === filtro)
+  const casa = casaDelPaziente()
+
+  function apri(id: string, categoria: Categoria) {
+    setRicerca(ricerca?.id === id && ricerca.categoria === categoria ? null : { id, categoria })
+  }
+
   return (
     <>
       <div className="titolo-pagina titolo-con-azione">
@@ -38,7 +60,60 @@ export function Documenti() {
         {elenco.length === 0 ? (
           <p className="tenue">Nessun documento di questo tipo.</p>
         ) : (
-          elenco.map((documento) => <RigaDocumento key={documento.id} documento={documento} />)
+          elenco.map((documento) => {
+            const referto = refertoAttivo ? refertoDaSpiegare(documento) : undefined
+            const aperta = referto && ricerca?.id === documento.id ? ricerca.categoria : null
+            return (
+              <div key={documento.id}>
+                <RigaDocumento
+                  documento={documento}
+                  extra={
+                    referto && (
+                      <>
+                        <button
+                          type="button"
+                          className="bottone-leggero"
+                          aria-expanded={aperta === 'strutture'}
+                          onClick={() => apri(documento.id, 'strutture')}
+                        >
+                          <Icona nome="luogo" dimensione={20} />
+                          Cerca strutture
+                        </button>
+                        <button
+                          type="button"
+                          className="bottone-leggero"
+                          aria-expanded={aperta === 'professionisti'}
+                          onClick={() => apri(documento.id, 'professionisti')}
+                        >
+                          <Icona nome="stetoscopio" dimensione={20} />
+                          Cerca professionisti
+                        </button>
+                      </>
+                    )
+                  }
+                />
+                {referto && aperta && (
+                  <StruttureDelReferto
+                    key={aperta}
+                    referto={referto}
+                    casa={casa}
+                    categoria={aperta}
+                    prenotabile={{
+                      prenotate: new Set(prenotazioni.filter((p) => p.categoria === aperta).map((p) => p.struttura.id)),
+                      onPrenota: (struttura: StrutturaVicina) =>
+                        prenota({
+                          categoria: aperta,
+                          struttura,
+                          refertoId: referto.id,
+                          refertoTitolo: referto.titolo,
+                          area: referto.classificazione?.area,
+                        }),
+                    }}
+                  />
+                )}
+              </div>
+            )
+          })
         )}
       </section>
 
@@ -51,7 +126,8 @@ export function Documenti() {
         <summary>Che cos'è «Spiegamelo»?</summary>
         <p>
           Accanto a ogni referto c'è il pulsante «Spiegamelo» di Referto, un servizio collegato al portale. Spiega con
-          parole semplici solo ciò che è scritto nel referto: non fa diagnosi e non sostituisce il medico.
+          parole semplici solo ciò che è scritto nel referto: non fa diagnosi e non sostituisce il medico. Con «Cerca
+          strutture» e «Cerca professionisti» trovi dove andare vicino a casa e puoi prenotare una visita.
         </p>
       </details>
     </>

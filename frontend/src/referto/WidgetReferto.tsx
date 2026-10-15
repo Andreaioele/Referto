@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { statoBackend, type StatoBackend } from '../api'
+import { statoBackend, type StatoBackend } from './cliente'
 import { Collegamento } from '../Collegamento'
 import { Icona } from '../Icona'
-import { visita as trovaVisita, type Documento } from '../portale/dati'
-import { dataLunga, giornoEData } from '../portale/date'
 import { useDialogo } from '../useDialogo'
 import { leggiSpiegazione, senzaChiusura } from './spiegazione'
+import { salvaClassificazione } from './classificazioni'
+import { domandePronte } from './domande-pronte'
+import type { RefertoDaSpiegare } from './tipi'
 import { useChat, type Messaggio } from './useChat'
 
 const LUNGHEZZA_MASSIMA = 30000
@@ -21,12 +22,29 @@ function Caricamento({ testo }: { testo: string }) {
 }
 
 /** La spiegazione del referto: le parti del Mother agent più i dati del referto che si possono verificare. */
-function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; documento?: Documento; inCorso: boolean }) {
+function Spiegazione({
+  risposta,
+  referto,
+  inCorso,
+  onChiudi,
+}: {
+  risposta: Messaggio
+  referto?: RefertoDaSpiegare
+  inCorso: boolean
+  onChiudi: () => void
+}) {
   const spiegazione = useMemo(() => leggiSpiegazione(risposta.testo), [risposta.testo])
-  const referto = documento?.referto
+  const argomento = spiegazione.argomento
+  // Durante lo streaming la riga ARGOMENTO può essere ancora a metà: vale solo quando è finita.
+  const argomentoCompleto = argomento && (!inCorso || /ARGOMENTO:[^\n]*\n/.test(risposta.testo)) ? argomento : undefined
+
+  // La classificazione del Mother agent serve anche a "Le mie strutture": così non lo si richiama.
+  useEffect(() => {
+    if (referto && argomentoCompleto) salvaClassificazione(referto.id, argomentoCompleto)
+  }, [referto, argomentoCompleto])
   const fuori = referto?.valori?.filter((v) => v.fuori) ?? []
   const nellIntervallo = referto?.valori?.filter((v) => !v.fuori) ?? []
-  const visitaCollegata = referto?.visitaCollegata ? trovaVisita(referto.visitaCollegata) : undefined
+  const visitaCollegata = referto?.visitaCollegata
   const { sintesi, spiegazione: semplice, indicazioni, farmaci, limiti } = spiegazione.parti
   const vuota = !sintesi && !semplice && !spiegazione.libero
 
@@ -94,16 +112,39 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
           <p>{farmaci}</p>
         </section>
       )}
-      {visitaCollegata && visitaCollegata.giorni >= 0 && (sintesi || !inCorso) && (
+      {visitaCollegata && (sintesi || !inCorso) && (
         <section className="referto-box referto-visita">
           <span className="icona-tonda">
             <Icona nome="calendario" dimensione={22} />
           </span>
           <p>
-            Hai già una <strong>{visitaCollegata.titolo.toLowerCase()}</strong> {giornoEData(visitaCollegata.giorni)}: lì
+            Hai già una <strong>{visitaCollegata.titolo.toLowerCase()}</strong> {visitaCollegata.quando}: lì
             puoi parlarne con il medico.
           </p>
-          <Collegamento href="/visite">Vedi la visita</Collegamento>
+          <Collegamento href={visitaCollegata.href} onClick={onChiudi}>
+            Vedi la visita
+          </Collegamento>
+        </section>
+      )}
+      {(referto?.doveAndare || referto?.aChiChiedere) && argomentoCompleto && (sintesi || !inCorso) && (
+        <section className="referto-box referto-visita">
+          <span className="icona-tonda">
+            <Icona nome="luogo" dimensione={22} />
+          </span>
+          <p>
+            Cerca strutture e medici di <strong>{argomentoCompleto.area.toLowerCase()}</strong> vicino a casa tua e
+            prenota una visita.
+          </p>
+          {referto.doveAndare && (
+            <Collegamento href={referto.doveAndare} onClick={onChiudi}>
+              Cerca strutture
+            </Collegamento>
+          )}
+          {referto.aChiChiedere && (
+            <Collegamento href={referto.aChiChiedere} onClick={onChiudi}>
+              Cerca professionisti
+            </Collegamento>
+          )}
         </section>
       )}
       {nellIntervallo.length > 0 && (
@@ -123,28 +164,21 @@ function Spiegazione({ risposta, documento, inCorso }: { risposta: Messaggio; do
   )
 }
 
-/** Domande pronte: brevi, sul referto aperto. */
-function domandePronte(documento?: Documento): string[] {
-  const fuori = documento?.referto?.valori?.filter((v) => v.fuori) ?? []
-  const prima = fuori.length > 0 ? `Cosa vuol dire «${fuori[fuori.length - 1].esame}»?` : 'Me lo spieghi più semplice?'
-  return [prima, 'Devo preoccuparmi?']
-}
-
 /**
  * Il widget di Referto dentro il portale: pannello laterale (a tutto schermo
- * sul telefono). Riceve dal portale solo il referto scelto e lo manda al
- * Mother agent; senza referto chiede di incollarne il testo.
+ * sul telefono). Riceve dal portale solo il referto scelto (`RefertoDaSpiegare`)
+ * e lo manda al Mother agent; senza referto chiede di incollarne il testo.
  */
-export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; onChiudi: () => void }) {
+export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiegare; onChiudi: () => void }) {
   const { messaggi, inCorso, daCache, invia, azzera } = useChat()
   const [bozza, setBozza] = useState('')
   const [stato, setStato] = useState<StatoBackend | null>(null)
   const pannello = useDialogo<HTMLDivElement>(onChiudi)
 
   useEffect(() => {
-    if (documento?.referto) void invia(documento.referto.testo, { nascosto: true })
+    if (referto) void invia(referto.testo, { nascosto: true })
     return azzera
-  }, [documento, invia, azzera])
+  }, [referto, invia, azzera])
 
   useEffect(() => {
     const controllo = new AbortController()
@@ -182,11 +216,11 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
         </div>
         <div className="referto-contesto">
           <Icona nome="documento" dimensione={20} />
-          {documento ? (
+          {referto ? (
             <span>
               Stai leggendo:{' '}
               <strong>
-                {documento.titolo} · {dataLunga(documento.giorni)}
+                {referto.titolo} · {referto.data}
               </strong>
             </span>
           ) : (
@@ -214,7 +248,7 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
               </button>
             </form>
           ) : (
-            primaRisposta && <Spiegazione risposta={primaRisposta} documento={documento} inCorso={inCorso && seguito.length === 0} />
+            primaRisposta && <Spiegazione risposta={primaRisposta} referto={referto} inCorso={inCorso && seguito.length === 0} onChiudi={onChiudi} />
           )}
 
           {domande.map(([domanda, risposta], indice) => (
@@ -255,7 +289,7 @@ export function WidgetReferto({ documento, onChiudi }: { documento?: Documento; 
           <div className="referto-piede">
             {!inCorso && (
               <div className="referto-suggerimenti">
-                {domandePronte(documento).map((domanda) => (
+                {domandePronte(referto).map((domanda) => (
                   <button key={domanda} type="button" className="referto-chip" onClick={() => void invia(domanda)}>
                     {domanda}
                   </button>
