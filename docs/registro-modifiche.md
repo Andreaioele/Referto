@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-15 · pietro-giovedi · Nuova cartella `docs/archify/` per i diagrammi della skill archify; regola in `CLAUDE.md` · [[archify/README]]
 - 2026-10-15 · pietro-giovedi · Portale più professionale dopo il confronto con MyChart, NHS App, Apple Salute, Doctolib e One Medical: gruppi di righe al posto delle schede, Home "Da fare", titoli in Source Serif 4, tolte decorazioni (motivo a croci, riquadri delle icone, pillole colorate) · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Niente blu: portale e widget in una scala di otto verdi (foresta, pino, felce, muschio, salvia, germoglio, menta, nebbia) con contrasti misurati; dettagli: fascia di benvenuto con motivo a croci, tacca sul menu attivo, calendario e etichette in toni di verde, contorno di fuoco doppio, favicon con il marchio · [[16-frontend]]
 - 2026-10-15 · pietro-giovedi · Restyling del widget Referto: carattere Atkinson Hyperlegible Next e Public Sans ospitati nell'app; verde solo per marchio e azioni, contenuti su carta bianca, bordi dei controlli oltre 3:1; nuovo marchio a foglio e pulsanti a pillola; spiegazione come foglio unico e domande come citazioni; al telefono «Capire un referto» diventa una fascia fissa (copriva i pulsanti); testi in rem; CSS di Referto separato (`referto/referto.css`) · [[16-frontend]]

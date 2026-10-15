@@ -33,6 +33,15 @@ Leggi `docs/00-indice.md` e poi le note dell'area che tocchi. La cartella
 
 Convenzioni delle note in `docs/come-usare-questa-documentazione.md`.
 
+## Diagrammi (archify)
+
+L'output della skill **archify** va sempre in `docs/archify/`, una cartella per
+diagramma (`docs/archify/<tipo>-<argomento>-<AAAAMMGG-HHMMSS>/`), mai in
+`.archify/` nella radice; aggiungi ogni diagramma alla tabella di
+`docs/archify/README.md`. Se serve capire architettura o flussi, leggi anche
+quella cartella (`candidate.json` è il diagramma in dati, più facile da leggere
+dell'HTML).
+
 ## Vincoli di prodotto
 
 - Niente diagnosi, terapie o consigli: si spiega solo ciò che è scritto nel
