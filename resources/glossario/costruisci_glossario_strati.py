@@ -11,7 +11,8 @@ Tre strati, in ordine di priorità quando la stessa parola compare in più fonti
 3. Wikidata: voci con almeno un codice medico (MeSH, ICD, LOINC, UBERON, FMA,
    SNOMED CT, HPO), con etichetta, sinonimi e descrizione in italiano (CC0) e
    la voce di Wikipedia in italiano (CC BY-SA 4.0), da cui con --estratti si
-   prendono le prime frasi come definizione citabile.
+   prendono le prime frasi come definizione citabile. Gli abbinamenti sbagliati
+   visti nei referti di prova sono in ESCLUSIONI_WIKIDATA.
 
 Le risposte di Wikidata e Wikipedia restano in glossario/cache_strati/ (fuori
 da Git); il risultato è glossario/glossario_strati.json.
@@ -30,7 +31,7 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from wordfreq import top_n_list, zipf_frequency
 
@@ -89,7 +90,50 @@ def chiave(testo: str) -> str:
     return " ".join(radice(p) for p in normalizza(testo).split())
 
 
+# Abbinamenti sbagliati di Wikidata visti in glossario/copertura.md ("Termini trovati fatti solo di parole
+# comuni"): voce → nomi o sinonimi che non diventano chiavi; None toglie tutta la voce. Nei referti quelle
+# parole vogliono dire altro: se servono, le spiega lo strato curato.
+ESCLUSIONI_WIKIDATA: Dict[str, Optional[Tuple[str, ...]]] = {
+    "Q249699": ("addominali",),        # muscoli addominali: nei referti «addominale» è l'aggettivo
+    "Q621636": ("somministrazione",),  # via di somministrazione
+    "Q188928": ("trascritto",),        # RNA messaggero: nei referti è il testo trascritto
+    "Q619671": ("prominenza",),        # apofisi dell'osso: nei referti è una struttura più evidente
+    "Q276469": ("vescica",),           # bolla della pelle: nei referti è la vescica urinaria
+    "Q178492": ("radiale",),           # osso radio: «radiale» è anche l'arteria
+    "Q841215": ("epidurale",),         # anestesia peridurale: nei referti è lo spazio epidurale
+    "Q752441": ("brachiale",),         # muscolo brachiale: «brachiale» è anche l'arteria o il plesso
+    "Q2873": ("pca",),                 # analisi delle componenti principali: nei referti è un'arteria cerebrale
+    "Q2467403": ("sma",),              # area motoria supplementare: nei referti è l'arteria mesenterica superiore
+    "Q152100": ("fumatore",),          # tabagismo: «fumatore» non è una diagnosi
+    "Q22710": ("cono",),               # strobilo delle piante
+    "Q145863": ("pet",),               # polietilene tereftalato: nei referti è la PET
+    "Q103517": ("radiazioni",),        # particella α: senza la lettera greca «radiazioni α» diventerebbe «radiazioni»
+    "Q116646": None,                   # dissezione anatomica: nei referti è quella di un vaso
+    "Q1070877": None,                  # inversione cromosomica: nei referti è quella della lordosi
+    "Q1420643": None,                  # recidiva come aggravante del reato
+    "Q1458245": None,                  # spostamento in psicologia
+    "Q178648": None,                   # periferica del computer («periferiche»)
+    "Q25587": None,                    # foche («foci»)
+    "Q201851": None,                   # spine delle piante
+    "Q846664": None,                   # falco («falce» ha la stessa radice)
+    "Q82025": None,                    # corna degli animali («corni» dei ventricoli)
+    "Q130": None,                      # venerdì («ven»)
+    "Q132": None,                      # domenica («dome», «dom»)
+    "Q3918": None,                     # università
+    "Q812": None,                      # Florida («floridi»)
+    "Q515217": None,                   # inseparabili (uccelli)
+    "Q283537": None,                   # Thoracica (crostacei)
+}
+
+
+def lettere_non_latine(nome: str) -> bool:
+    """Lettere greche o di altri alfabeti, che normalizza() toglierebbe: «radiazioni α» resterebbe «radiazioni»."""
+    return any(unicodedata.category(c).startswith("L") and "LATIN" not in unicodedata.name(c, "") for c in nome)
+
+
 def chiave_ammessa(nome: str) -> bool:
+    if lettere_non_latine(nome):
+        return False
     parole = normalizza(nome).split()
     if not parole or len(parole) > MAX_PAROLE or len(" ".join(parole)) < 3:
         return False
@@ -259,6 +303,8 @@ def strato_wikidata(con_estratti: bool) -> List[Dict[str, Any]]:
     for voce, dato in entita.items():
         if not dato.get("nome") or any(n in codici.get(voce, {}) for n in PROPRIETA_ESCLUSE.values()):
             continue
+        if voce in ESCLUSIONI_WIKIDATA and ESCLUSIONI_WIKIDATA[voce] is None:
+            continue
         titolo = dato.get("wikipedia")
         estratto = estratti.get(titolo) if titolo else None
         voci.append({
@@ -274,6 +320,7 @@ def strato_wikidata(con_estratti: bool) -> List[Dict[str, Any]]:
             else f"https://www.wikidata.org/wiki/{voce}",
             "wikipedia": titolo,
             "codici": codici.get(voce, {}),
+            "chiavi_escluse": sorted({chiave(n) for n in ESCLUSIONI_WIKIDATA.get(voce) or ()}),
         })
     return voci
 
@@ -296,6 +343,8 @@ def costruisci(con_estratti: bool, con_wikidata: bool = True) -> Dict[str, Any]:
             if voce["strato"] != "curato" and not chiave_ammessa(nome):
                 continue
             k = chiave(nome)
+            if k in voce.get("chiavi_escluse", ()):
+                continue
             if k and (k not in indice or priorita(voce) < scelte[k]):
                 indice[k] = voce["id"]
                 scelte[k] = priorita(voce)

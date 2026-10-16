@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-16
 ---
 
 # Registro delle modifiche
@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-16 · claude/gracious-goldstine-e8a876 · Glossario a strati: 255 voci curate nuove (descrittori radiologici, aggettivi di sede, dispositivi e interventi), esclusioni degli abbinamenti sbagliati di Wikidata e dei nomi con lettere greche; copertura delle parole difficili di RadGraph-IT dal 49% al 92% (misurata sugli stessi referti) · [[specifica-terminologia]]
 - 2026-10-16 · chat-frontend · Mother diretto: elenchi degli strumenti accettati anche come stringa (modello di riserva), righe di markup DSML tolte dalla risposta, risposta vuota trattata come errore · [[15-backend]]
 - 2026-10-16 · chat-frontend · Mother diretto: «Cos'è…» su una parola che non compare nel referto né nella conversazione riceve una risposta fissa e gentile, senza modello; stessa regola nel prompt · [[15-backend]]
 - 2026-10-16 · chat-frontend · Mother diretto: dopo un referto, «Cos'è / Cosa vuol dire…» obbliga la chiamata a `cercaTermine` (`tool_choice`, con ripiego se il server la rifiuta); `FiltroFonti` toglie le righe «Fonte:» non date da uno strumento · [[15-backend]]

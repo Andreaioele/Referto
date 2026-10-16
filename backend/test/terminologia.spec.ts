@@ -53,6 +53,13 @@ describe('Terminologia', () => {
     expect(inesistente).toEqual({ richiesto: 'zxqwv', trovato: false });
   });
 
+  it('gli abbinamenti sbagliati di Wikidata sono esclusi e le parole le spiega lo strato curato', () => {
+    const [addominale, vescica, trascritto] = glossario.cerca(['addominale', 'vescica', 'trascritto']);
+    expect(addominale).toMatchObject({ trovato: true, termine: 'addominale', fonte: 'Glossario di Referto' });
+    expect(vescica).toMatchObject({ trovato: true, termine: 'vescica', fonte: 'Glossario di Referto' });
+    expect(trascritto.trovato).toBe(false);
+  });
+
   it('una parola comune non diventa il termine con la stessa radice ("stato" non è la proteina STAT)', () => {
     expect(glossario.cerca(['stato'])[0].trovato).toBe(false);
     expect(glossario.trovaNelTesto('Lo stato del paziente è stabile.')).toEqual([]);
@@ -60,7 +67,7 @@ describe('Terminologia', () => {
 
   it('nel testo vince il termine più lungo, senza ripetizioni', () => {
     const trovati = glossario.trovaNelTesto('Versamento pleurico a destra. Versamenti pleurici invariati.');
-    expect(trovati.map((t) => t.voce.nome)).toEqual(['versamento pleurico']);
+    expect(trovati.map((t) => t.voce.nome)).toEqual(['versamento pleurico', 'invariato']);
   });
 
   it('POST /api/terminologia/cerca spiega le parole e rifiuta il testo del referto', async () => {
