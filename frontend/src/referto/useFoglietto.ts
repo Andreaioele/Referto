@@ -2,6 +2,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { useEffect, useRef, useState } from 'react'
 import { apriFoglietto, chiediAlFoglietto, ErroreServizio, type InfoFoglietto, type RispostaFoglietto } from './cliente'
 import type { FarmacoDaLeggere } from './tipi'
+import { t } from '../lingua/lingua'
 
 export interface Scambio {
   domanda: string
@@ -40,7 +41,7 @@ export function useFoglietto(farmaco: FarmacoDaLeggere) {
       })
       .catch((motivo: unknown) => {
         if (caricamento.signal.aborted) return
-        setErrore(motivo instanceof ErroreServizio ? motivo.message : 'Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.')
+        setErrore(motivo instanceof ErroreServizio ? motivo.message : t('Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.'))
       })
     return () => {
       caricamento.abort()
@@ -81,7 +82,7 @@ export function useFoglietto(farmaco: FarmacoDaLeggere) {
       })
       .catch((motivo: unknown) => {
         if (controllo.signal.aborted) return
-        aggiorna({ stato: 'errore', errore: motivo instanceof ErroreServizio ? motivo.message : 'Collegamento interrotto. Riprova tra poco.' })
+        aggiorna({ stato: 'errore', errore: motivo instanceof ErroreServizio ? motivo.message : t('Collegamento interrotto. Riprova tra poco.') })
       })
       .finally(() => {
         if (domandaInCorso.current === controllo) domandaInCorso.current = null

@@ -2,6 +2,7 @@ import { Collegamento } from '../Collegamento'
 import { Icona } from '../Icona'
 import { RigaStruttura } from '../referto/StruttureVicine'
 import { annullaPrenotazione, type Prenotazione } from './prenotazioni'
+import { locale, t } from '../lingua/lingua'
 
 /** Le prenotazioni fatte dalla ricerca, con la data e il referto da cui sono partite. */
 export function ElencoPrenotazioni({ prenotazioni }: { prenotazioni: Prenotazione[] }) {
@@ -14,12 +15,19 @@ export function ElencoPrenotazioni({ prenotazioni }: { prenotazioni: Prenotazion
           struttura={p.struttura}
           nota={
             p.quando
-              ? `Visita ${new Date(p.quando).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} alle ${p.quando.slice(11, 16)}, per il referto «${p.refertoTitolo}».`
-              : `Visita richiesta il ${new Date(p.richiesta).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}, per il referto «${p.refertoTitolo}».`
+              ? t('Visita {giorno} alle {ora}, per il referto «{referto}».', {
+                  giorno: new Date(p.quando).toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' }),
+                  ora: p.quando.slice(11, 16),
+                  referto: t(p.refertoTitolo),
+                })
+              : t('Visita richiesta il {giorno}, per il referto «{referto}».', {
+                  giorno: new Date(p.richiesta).toLocaleDateString(locale(), { day: 'numeric', month: 'long' }),
+                  referto: t(p.refertoTitolo),
+                })
           }
           azioni={
             <button type="button" className="bottone-leggero" onClick={() => annullaPrenotazione(p.id)}>
-              Annulla la prenotazione
+              {t('Annulla la prenotazione')}
             </button>
           }
         />
@@ -33,8 +41,9 @@ export function CercaDaiReferti({ cosa }: { cosa: 'strutture' | 'professionisti'
   return (
     <p className="strutture-casa">
       <Icona nome="documento" dimensione={20} />
-      Per trovarne altre vicino a casa apri un referto in{' '}
-      <Collegamento href="/documenti">I miei documenti</Collegamento> e scegli «Cerca {cosa}».
+      {t('Per trovarne altre vicino a casa apri un referto in')}{' '}
+      <Collegamento href="/documenti">{t('I miei documenti')}</Collegamento>{' '}
+      {t('e scegli «{azione}».', { azione: t(cosa === 'strutture' ? 'Cerca strutture' : 'Cerca professionisti') })}
     </p>
   )
 }

@@ -1,5 +1,6 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { apriPdf } from './pdf'
+import { t } from '../lingua/lingua'
 
 /**
  * Client di Referto verso il backend (sempre su /api: Vite in sviluppo, Vercel
@@ -7,24 +8,24 @@ import { apriPdf } from './pdf'
  * usa non legge stati HTTP né flussi SSE.
  */
 
-/** Errore già scritto per la persona, da mostrare così com'è. */
+/** Errore già scritto per la persona (nella lingua scelta), da mostrare così com'è. */
 export class ErroreServizio extends Error {}
 
-const NON_DISPONIBILE = 'Il servizio non è disponibile in questo momento. Riprova tra poco.'
-const INTERROTTO = 'Collegamento interrotto. Riprova tra poco.'
-const RISPOSTA_INTERROTTA = 'La risposta si è interrotta. Riprova tra poco.'
-const FOGLIETTO_NON_DISPONIBILE = 'Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.'
+const NON_DISPONIBILE = () => t('Il servizio non è disponibile in questo momento. Riprova tra poco.')
+const INTERROTTO = () => t('Collegamento interrotto. Riprova tra poco.')
+const RISPOSTA_INTERROTTA = () => t('La risposta si è interrotta. Riprova tra poco.')
+const FOGLIETTO_NON_DISPONIBILE = () => t('Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.')
 
 /** Il messaggio per la persona per ogni stato HTTP, secondo cosa stava facendo. */
 function messaggioPerStato(stato: number, attivita: 'spiegazione' | 'foglietto'): string {
   if (stato === 429) {
     return attivita === 'spiegazione'
-      ? 'Hai inviato molti messaggi di seguito. Aspetta un minuto e riprova.'
-      : 'Hai fatto molte domande di seguito. Aspetta un minuto e riprova.'
+      ? t('Hai inviato molti messaggi di seguito. Aspetta un minuto e riprova.')
+      : t('Hai fatto molte domande di seguito. Aspetta un minuto e riprova.')
   }
-  if (attivita === 'foglietto' && stato === 404) return 'Questo farmaco non è nella banca dati AIFA.'
-  if (attivita === 'foglietto' && stato === 502) return FOGLIETTO_NON_DISPONIBILE
-  return NON_DISPONIBILE
+  if (attivita === 'foglietto' && stato === 404) return t('Questo farmaco non è nella banca dati AIFA.')
+  if (attivita === 'foglietto' && stato === 502) return FOGLIETTO_NON_DISPONIBILE()
+  return NON_DISPONIBILE()
 }
 
 function interrotta(segnale?: AbortSignal): boolean {
@@ -82,7 +83,7 @@ export async function spiega(
       signal: segnale,
     })
   } catch {
-    return errore(INTERROTTO)
+    return errore(INTERROTTO())
   }
   if (!risposta.ok || !risposta.body) return errore(messaggioPerStato(risposta.status, 'spiegazione'))
 
@@ -106,9 +107,9 @@ export async function spiega(
       }
     }
   } catch {
-    return errore(INTERROTTO)
+    return errore(INTERROTTO())
   }
-  errore(RISPOSTA_INTERROTTA)
+  errore(RISPOSTA_INTERROTTA())
 }
 
 /** Evento di una riga "data: {...}" del flusso; null per commenti e righe non valide. */
@@ -177,7 +178,7 @@ export async function apriFoglietto(
   if (pdf.status === 'fulfilled') void pdf.value.destroy()
   const motivo = info.status === 'rejected' ? info.reason : (pdf as PromiseRejectedResult).reason
   if (interrotta(segnale)) throw motivo
-  throw motivo instanceof ErroreServizio ? motivo : new ErroreServizio(FOGLIETTO_NON_DISPONIBILE)
+  throw motivo instanceof ErroreServizio ? motivo : new ErroreServizio(FOGLIETTO_NON_DISPONIBILE())
 }
 
 async function infoFoglietto(cod: string, forma: string, segnale?: AbortSignal): Promise<InfoFoglietto> {
@@ -204,7 +205,7 @@ export async function chiediAlFoglietto(
     })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
   if (!risposta.ok) throw new ErroreServizio(messaggioPerStato(risposta.status, 'foglietto'))
   return (await risposta.json()) as RispostaFoglietto
@@ -218,7 +219,7 @@ export interface Classificazione {
   area: string
 }
 
-const AREA_NON_CAPITA = 'Non sono riuscito a capire di che area è il referto. Puoi sceglierla tu qui sotto.'
+const AREA_NON_CAPITA = () => t('Non sono riuscito a capire di che area è il referto. Puoi sceglierla tu qui sotto.')
 
 /**
  * Chiede al Mother agent di leggere il referto e si ferma appena arriva la riga
@@ -262,7 +263,7 @@ export async function classifica(testo: string, segnale?: AbortSignal): Promise<
     ])
     if (segnale?.aborted) throw new DOMException('Classificazione annullata', 'AbortError')
     if (risultato) return risultato
-    throw new ErroreServizio(errore ?? AREA_NON_CAPITA)
+    throw new ErroreServizio(errore ?? AREA_NON_CAPITA())
   } finally {
     segnale?.removeEventListener('abort', annulla)
   }
@@ -340,9 +341,9 @@ async function getStrutture<T>(parametri: Record<string, string | number>, segna
     risposta = await fetch(`/api/strutture?${query}`, { signal: segnale })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
-  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE)
+  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE())
   return (await risposta.json()) as T
 }
 
@@ -372,8 +373,8 @@ export async function infoStrutture(segnale?: AbortSignal): Promise<InfoStruttur
     risposta = await fetch('/api/strutture/aree', { signal: segnale })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
-  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE)
+  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE())
   return (await risposta.json()) as InfoStrutture
 }

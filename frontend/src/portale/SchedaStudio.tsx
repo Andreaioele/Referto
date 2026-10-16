@@ -6,6 +6,7 @@ import { distanzaLeggibile } from '../referto/strutture-testi'
 import { prossimeVisite, SEDE_STUDIO, STUDIO, visite, visiteFatte } from './dati'
 import { dataConGiorno, dataLunga } from './date'
 import { comeStruttura } from './distanza'
+import { t } from '../lingua/lingua'
 
 /**
  * La card dello studio in "Le mie strutture" (mockup "Card struttura" su
@@ -37,7 +38,7 @@ export function SchedaStudio() {
         </span>
         <div className="studio-dati">
           <h3 id={idTitolo}>{STUDIO}</h3>
-          <p className="tenue">Ambulatorio · {distanzaLeggibile(distanza)}</p>
+          <p className="tenue">{t('Ambulatorio')} · {distanzaLeggibile(distanza)}</p>
           <p className="studio-riga">
             <Icona nome="luogo" dimensione={20} />
             {indirizzo}
@@ -45,10 +46,10 @@ export function SchedaStudio() {
           <p className="studio-riga">
             <Icona nome="orologio" dimensione={20} />
             <span className="solo-computer">
-              Aperto {orari.giorni}, {orari.ore}
+              {t('Aperto {giorni}, {ore}', { giorni: t(orari.giorni), ore: orari.ore })}
             </span>
             <span className="solo-telefono">
-              Aperto {orari.giorniBrevi}, {orari.ore}
+              {t('Aperto {giorni}, {ore}', { giorni: t(orari.giorniBrevi), ore: orari.ore })}
             </span>
           </p>
         </div>
@@ -60,9 +61,9 @@ export function SchedaStudio() {
             <Icona nome="calendario" dimensione={28} />
           </span>
           <div>
-            <span className="studio-prossima-etichetta">Prossima visita</span>
+            <span className="studio-prossima-etichetta">{t('Prossima visita')}</span>
             <span className="studio-prossima-data">{dataConGiorno(prossima.giorni)}</span>
-            <span>{prossima.titolo}</span>
+            <span>{t(prossima.titolo)}</span>
           </div>
         </div>
       )}
@@ -70,7 +71,7 @@ export function SchedaStudio() {
       <div className="studio-storia">
         {ultima && (
           <p className="tenue">
-            Ultima visita: {ultima.titolo.toLowerCase()}, {dataLunga(ultima.giorni)}
+            {t('Ultima visita: {visita}, {data}', { visita: t(ultima.titolo).toLowerCase(), data: dataLunga(ultima.giorni) })}
           </p>
         )}
         <button
@@ -80,14 +81,14 @@ export function SchedaStudio() {
           aria-controls={idStoria}
           onClick={() => setStoriaAperta(!storiaAperta)}
         >
-          {storiaAperta ? 'Nascondi le visite' : `Vedi tutte le ${visite.length} visite`}
+          {storiaAperta ? t('Nascondi le visite') : t('Vedi tutte le {n} visite', { n: visite.length })}
         </button>
         <ul id={idStoria} className="studio-elenco" hidden={!storiaAperta}>
           {tutte.map((v) => (
             <li key={v.id}>
               <span>
-                {v.titolo}
-                {v.giorni >= 0 && ' (prenotata)'}
+                {t(v.titolo)}
+                {v.giorni >= 0 && ` (${t('prenotata')})`}
               </span>
               <span className="tenue">{dataLunga(v.giorni)}</span>
             </li>
@@ -103,29 +104,29 @@ export function SchedaStudio() {
           onClick={() => setTelefonoVisibile(!telefonoVisibile)}
         >
           <Icona nome="telefono" dimensione={22} />
-          Chiama
+          {t('Chiama')}
         </button>
         <a className="bottone solo-telefono" href={`tel:${telefono}`}>
           <Icona nome="telefono" dimensione={22} />
-          Chiama {numero}
+          {t('Chiama')} {numero}
         </a>
         <button type="button" className="bottone-leggero" aria-haspopup="dialog" onClick={() => setMappaAperta(true)}>
           <Icona nome="mappa" dimensione={22} />
-          Mappa
+          {t('Mappa')}
         </button>
         <Collegamento href="/prenota" className="bottone studio-prenota">
           <Icona nome="prenota" dimensione={22} />
-          Prenota un'altra visita
+          {t("Prenota un'altra visita")}
         </Collegamento>
       </div>
 
       {telefonoVisibile && (
         <div className="studio-telefono solo-computer" role="status">
           <span>
-            Telefono dello studio: <strong>{numero}</strong>
+            {t('Telefono dello studio:')} <strong>{numero}</strong>
           </span>
           <span className="tenue">
-            {orari.giorniBrevi} {orari.ore}
+            {t(orari.giorniBrevi)} {orari.ore}
           </span>
         </div>
       )}

@@ -4,6 +4,8 @@
  * feriali da domani, sei orari al giorno, alcuni "occupati" sempre negli stessi
  * punti così la demo è stabile.
  */
+import { locale } from '../lingua/lingua'
+
 export const ORARI = ['08:30', '10:00', '11:30', '14:30', '16:00', '17:30']
 
 export interface GiornoDisponibile {
@@ -30,7 +32,7 @@ export function giorniDisponibili(oggi = new Date(), quanti = 10): GiornoDisponi
 
 /** "martedì 20 ottobre" */
 export function giornoLeggibile(data: Date): string {
-  return data.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+  return data.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 /** La data e l'ora scelte, come ISO locale "2026-10-20T10:00". */

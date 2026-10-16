@@ -4,6 +4,9 @@
  * maiuscolo con un paragrafo ciascuno e una frase di chiusura. Qui la si
  * divide in parti da mostrare in riquadri separati. Funziona anche su una
  * risposta ancora incompleta (streaming) e su una risposta libera.
+ *
+ * I titoli si riconoscono in italiano e in inglese (risposta in inglese, vedi
+ * docs/16-frontend.md); la riga ARGOMENTO resta sempre in italiano: è una chiave.
  */
 
 export type Parte = 'sintesi' | 'spiegazione' | 'limiti' | 'indicazioni' | 'farmaci'
@@ -21,9 +24,14 @@ const TITOLI: Record<string, Parte> = {
   'INCERTEZZE O LIMITI DEL REFERTO': 'limiti',
   'INDICAZIONI RIPORTATE NEL DOCUMENTO': 'indicazioni',
   'FARMACI CITATI NEL REFERTO': 'farmaci',
+  SUMMARY: 'sintesi',
+  'PLAIN-LANGUAGE EXPLANATION': 'spiegazione',
+  'UNCERTAINTIES OR LIMITS OF THE REPORT': 'limiti',
+  'INSTRUCTIONS GIVEN IN THE DOCUMENT': 'indicazioni',
+  'MEDICINES MENTIONED IN THE REPORT': 'farmaci',
 }
 
-export const CHIUSURA = /Questa è una spiegazione automatica[\s\S]*$/
+export const CHIUSURA = /(Questa è una spiegazione automatica|This is an automatic explanation)[\s\S]*$/
 
 export function leggiSpiegazione(testo: string): Spiegazione {
   const spiegazione: Spiegazione = { parti: {}, libero: '' }

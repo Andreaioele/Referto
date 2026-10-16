@@ -4,8 +4,13 @@ import { useDialogo } from '../useDialogo'
 import { type Documento, paziente, STUDIO } from './dati'
 import { dataLunga } from './date'
 import { MarchioReferto } from './Struttura'
+import { t } from '../lingua/lingua'
 
-/** Il referto così come l'ha scritto lo studio (anteprima del documento del portale). */
+/**
+ * Il referto così come l'ha scritto lo studio (anteprima del documento del portale).
+ * Il foglio resta nella lingua dello studio anche in inglese: è il documento
+ * originale; tradotti solo la finestra e i pulsanti.
+ */
 export function VisualizzaDocumento({ documento, onChiudi }: { documento: Documento; onChiudi: () => void }) {
   const { spiega, refertoAttivo } = useAzioni()
   const finestra = useDialogo<HTMLDivElement>(onChiudi)
@@ -14,13 +19,13 @@ export function VisualizzaDocumento({ documento, onChiudi }: { documento: Docume
     <div className="velo" onClick={(e) => e.target === e.currentTarget && onChiudi()}>
       <div className="finestra-documento" role="dialog" aria-modal="true" aria-labelledby="titolo-documento" ref={finestra}>
         <div className="finestra-testa">
-          <h2 id="titolo-documento">{documento.titolo}</h2>
+          <h2 id="titolo-documento">{t(documento.titolo)}</h2>
           <button type="button" className="bottone-leggero" onClick={onChiudi} data-fuoco-iniziale>
             <Icona nome="chiudi" dimensione={20} />
-            Chiudi
+            {t('Chiudi')}
           </button>
         </div>
-        <article className="foglio-referto" aria-label="Il referto">
+        <article className="foglio-referto" aria-label={t('Il referto')}>
           <div className="foglio-referto-testa">
             <div>
               <strong>{documento.autore}</strong>
@@ -80,7 +85,7 @@ export function VisualizzaDocumento({ documento, onChiudi }: { documento: Docume
               }}
             >
               <MarchioReferto />
-              Fatti spiegare il referto
+              {t('Fatti spiegare il referto')}
             </button>
           </div>
         )}

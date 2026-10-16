@@ -25,6 +25,7 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Glossario a strati (`cercaTermine`): la copertura del 92% delle parole difficili di RadGraph-IT è misurata sugli stessi referti da cui sono state scelte le voci curate, quindi sovrastima quella su referti nuovi; le esclusioni di Wikidata nascono solo dalla radiologia; lo strato curato (334 voci) è una bozza non revisionata da un medico | `backend/data/glossario_medico.json` | [[specifica-terminologia]] |
 | Una spiegazione guasta (solo markup DSML) è nella cache dell'anteprima per il referto di prova «RADIOGRAFIA DEL TORACE in due proiezioni…» (16/10/2026, conversazione `6ad156d3fa274bf09627fcf8`): sparisce al prossimo cambio di prompt o va cancellata a mano da `spiegazioni` | MongoDB | [[15-backend]] |
 | L'agente Mother su Evolus non ha `cercaTermine` e ha ancora il prompt senza le regole TERMINI: sincronizzarlo solo dopo aver aggiunto lo strumento (Web API `/api/terminologia/cerca`) | Evolus | [[15-backend]] |
+| Interfaccia in inglese ma Mother agent solo in italiano: spiegazioni, risposte fisse ed errori del backend restano in italiano finché il backend non accetta `lingua` | `backend/src/chat/` | [[specifica-multilingua]] |
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |

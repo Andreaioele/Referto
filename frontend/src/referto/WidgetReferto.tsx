@@ -8,9 +8,10 @@ import { salvaClassificazione } from './classificazioni'
 import { domandePronte } from './domande-pronte'
 import type { RefertoDaSpiegare } from './tipi'
 import { useChat, type Messaggio } from './useChat'
+import { locale, t } from '../lingua/lingua'
 
 const LUNGHEZZA_MASSIMA = 30000
-const LIMITI_ASSENTI = /^non sono riportati limiti specifici\.?$/i
+const LIMITI_ASSENTI = /^(non sono riportati limiti specifici|no specific limits are reported)\.?$/i
 
 function Caricamento({ testo }: { testo: string }) {
   return (
@@ -53,19 +54,19 @@ function Spiegazione({
     <>
       {spiegazione.argomento && (
         <p className="referto-argomento">
-          {spiegazione.argomento.esame} · {spiegazione.argomento.area}
+          {spiegazione.argomento.esame} · {t(spiegazione.argomento.area)}
         </p>
       )}
-      {vuota && inCorso && <Caricamento testo="Sto leggendo il referto… può servire un minuto." />}
+      {vuota && inCorso && <Caricamento testo={t('Sto leggendo il referto… può servire un minuto.')} />}
       {sintesi && (
         <section className="referto-box">
-          <h3>In breve</h3>
+          <h3>{t('In breve')}</h3>
           <p>{sintesi}</p>
         </section>
       )}
       {fuori.length > 0 && (
         <section className="referto-box">
-          <h3>I valori fuori dall'intervallo</h3>
+          <h3>{t("I valori fuori dall'intervallo")}</h3>
           {fuori.map((valore) => (
             <div key={valore.esame} className="referto-valore">
               <div className="referto-valore-numeri">
@@ -73,10 +74,12 @@ function Spiegazione({
                 <span className="referto-valore-numero">
                   {valore.risultato} <small>{valore.unita}</small>
                 </span>
-                <span className="tenue">intervallo: {valore.riferimento}</span>
+                <span className="tenue">
+                  {t('intervallo:')} {valore.riferimento}
+                </span>
               </div>
               <span className="referto-citazione">
-                Dal referto: «{valore.esame} {valore.risultato} {valore.unita} · {valore.riferimento}»
+                {t('Dal referto:')} «{valore.esame} {valore.risultato} {valore.unita} · {valore.riferimento}»
               </span>
             </div>
           ))}
@@ -84,7 +87,7 @@ function Spiegazione({
       )}
       {semplice && (
         <section className="referto-box">
-          <h3>In parole semplici</h3>
+          <h3>{t('In parole semplici')}</h3>
           <p>{semplice}</p>
         </section>
       )}
@@ -95,11 +98,11 @@ function Spiegazione({
       )}
       {(referto?.noteMedico || indicazioni) && (
         <section className="referto-box">
-          <h3>Cosa ha scritto il medico</h3>
+          <h3>{t('Cosa ha scritto il medico')}</h3>
           {referto?.noteMedico ? (
             <>
               <p className="referto-nota">«{referto.noteMedico}»</p>
-              <span className="referto-citazione">Dal referto</span>
+              <span className="referto-citazione">{t('Dal referto')}</span>
             </>
           ) : (
             <p>{indicazioni}</p>
@@ -108,7 +111,7 @@ function Spiegazione({
       )}
       {farmaci && (
         <section className="referto-box">
-          <h3>Farmaci citati nel referto</h3>
+          <h3>{t('Farmaci citati nel referto')}</h3>
           <p>{farmaci}</p>
         </section>
       )}
@@ -118,11 +121,11 @@ function Spiegazione({
             <Icona nome="calendario" dimensione={22} />
           </span>
           <p>
-            Hai già una <strong>{visitaCollegata.titolo.toLowerCase()}</strong> {visitaCollegata.quando}: lì
-            puoi parlarne con il medico.
+            {t('Hai già una')} <strong>{t(visitaCollegata.titolo).toLowerCase()}</strong> {visitaCollegata.quando}
+            {t(': lì puoi parlarne con il medico.')}
           </p>
           <Collegamento href={visitaCollegata.href} onClick={onChiudi}>
-            Vedi la visita
+            {t('Vedi la visita')}
           </Collegamento>
         </section>
       )}
@@ -132,34 +135,34 @@ function Spiegazione({
             <Icona nome="luogo" dimensione={22} />
           </span>
           <p>
-            Cerca strutture e medici di <strong>{argomentoCompleto.area.toLowerCase()}</strong> vicino a casa tua e
-            prenota una visita.
+            {t('Cerca strutture e medici di')} <strong>{t(argomentoCompleto.area).toLowerCase()}</strong>{' '}
+            {t('vicino a casa tua e prenota una visita.')}
           </p>
           {referto.doveAndare && (
             <Collegamento href={referto.doveAndare} onClick={onChiudi}>
-              Cerca strutture
+              {t('Cerca strutture')}
             </Collegamento>
           )}
           {referto.aChiChiedere && (
             <Collegamento href={referto.aChiChiedere} onClick={onChiudi}>
-              Cerca professionisti
+              {t('Cerca professionisti')}
             </Collegamento>
           )}
         </section>
       )}
       {nellIntervallo.length > 0 && (
         <details className="referto-box">
-          <summary>Gli altri {nellIntervallo.length} valori sono nell'intervallo</summary>
+          <summary>{t("Gli altri {n} valori sono nell'intervallo", { n: nellIntervallo.length })}</summary>
           <p>{nellIntervallo.map((v) => v.esame).join(', ')}.</p>
         </details>
       )}
       {limiti && !LIMITI_ASSENTI.test(limiti) && (
         <details className="referto-box">
-          <summary>Limiti del referto</summary>
+          <summary>{t('Limiti del referto')}</summary>
           <p>{limiti}</p>
         </details>
       )}
-      {risposta.errore && !vuota && <p className="referto-errore">La risposta si è interrotta. Riprova tra poco.</p>}
+      {risposta.errore && !vuota && <p className="referto-errore">{t('La risposta si è interrotta. Riprova tra poco.')}</p>}
     </>
   )
 }
@@ -225,9 +228,9 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
           </span>
           <div className="referto-testa-testo">
             <strong id="titolo-referto">Referto</strong>
-            <span>Ti spiego il referto in parole semplici</span>
+            <span>{t('Ti spiego il referto in parole semplici')}</span>
           </div>
-          <button type="button" className="referto-chiudi" onClick={onChiudi} aria-label="Chiudi Referto" data-fuoco-iniziale>
+          <button type="button" className="referto-chiudi" onClick={onChiudi} aria-label={t('Chiudi Referto')} data-fuoco-iniziale>
             <Icona nome="chiudi" dimensione={22} />
           </button>
         </div>
@@ -235,13 +238,13 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
           <Icona nome="documento" dimensione={20} />
           {referto ? (
             <span>
-              Stai leggendo:{' '}
+              {t('Stai leggendo:')}{' '}
               <strong>
-                {referto.titolo} · {referto.data}
+                {t(referto.titolo)} · {referto.data}
               </strong>
             </span>
           ) : (
-            <span>Il referto che incolli tu</span>
+            <span>{t('Il referto che incolli tu')}</span>
           )}
         </div>
 
@@ -249,19 +252,19 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
           {!iniziato ? (
             <form className="referto-incolla" onSubmit={invio}>
               <label htmlFor="testo-referto">
-                <strong>Incolla il testo del referto</strong>
+                <strong>{t('Incolla il testo del referto')}</strong>
               </label>
-              <p className="tenue piccolo">Prima togli nome, codice fiscale e indirizzo.</p>
+              <p className="tenue piccolo">{t('Prima togli nome, codice fiscale e indirizzo.')}</p>
               <textarea
                 id="testo-referto"
                 value={bozza}
                 onChange={(e) => setBozza(e.target.value)}
                 maxLength={LUNGHEZZA_MASSIMA}
                 rows={9}
-                placeholder="Incolla qui il testo del referto…"
+                placeholder={t('Incolla qui il testo del referto…')}
               />
               <button type="submit" className="bottone bottone-referto" disabled={!bozza.trim()}>
-                Spiega il referto
+                {t('Spiega il referto')}
               </button>
             </form>
           ) : (
@@ -279,7 +282,7 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
                 {risposta.testo ? (
                   <p>{senzaChiusura(risposta.testo)}</p>
                 ) : (
-                  <Caricamento testo="Sto cercando la risposta nel referto…" />
+                  <Caricamento testo={t('Sto cercando la risposta nel referto…')} />
                 )}
               </section>
             </div>
@@ -287,12 +290,16 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
 
           {iniziato && (
             <details className="referto-box referto-dettagli">
-              <summary>Come è fatta questa spiegazione</summary>
+              <summary>{t('Come è fatta questa spiegazione')}</summary>
               <p>
-                La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del
-                medico sono copiati dal referto così come sono.
-                {daCache && ' Questo referto era già stato spiegato: la spiegazione è quella salvata, non è stata riscritta.'}
-                {stato && ` Collegato al prontuario AIFA aggiornato al ${new Date(`${stato.aggiornato}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}.`}
+                {t(
+                  "La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del medico sono copiati dal referto così come sono.",
+                )}
+                {daCache && ` ${t('Questo referto era già stato spiegato: la spiegazione è quella salvata, non è stata riscritta.')}`}
+                {stato &&
+                  ` ${t('Collegato al prontuario AIFA aggiornato al {data}.', {
+                    data: new Date(`${stato.aggiornato}T00:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }),
+                  })}`}
               </p>
             </details>
           )}
@@ -300,8 +307,10 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
           <div className="referto-sicurezza">
             <Icona nome="scudo" dimensione={22} />
             <span>
-              Referto non fa diagnosi e non dà consigli: spiega solo ciò che è scritto. Per ogni dubbio parlane con il tuo
-              medico. Per le urgenze chiama il <strong>112</strong>.
+              {t(
+                'Referto non fa diagnosi e non dà consigli: spiega solo ciò che è scritto. Per ogni dubbio parlane con il tuo medico. Per le urgenze chiama il',
+              )}{' '}
+              <strong>112</strong>.
             </span>
           </div>
         </div>
@@ -319,18 +328,18 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
             )}
             <form className="referto-chiedi" onSubmit={invio}>
               <label htmlFor="domanda-referto" className="nascosto">
-                Fai una domanda su questo referto
+                {t('Fai una domanda su questo referto')}
               </label>
               <input
                 id="domanda-referto"
                 type="text"
                 value={bozza}
                 onChange={(e) => setBozza(e.target.value)}
-                placeholder="Fai una domanda su questo referto"
+                placeholder={t('Fai una domanda su questo referto')}
                 maxLength={2000}
                 disabled={inCorso}
               />
-              <button type="submit" className="referto-invia" aria-label="Invia la domanda" disabled={inCorso || !bozza.trim()}>
+              <button type="submit" className="referto-invia" aria-label={t('Invia la domanda')} disabled={inCorso || !bozza.trim()}>
                 <Icona nome="invia" dimensione={22} />
               </button>
             </form>

@@ -4,6 +4,7 @@ import { Icona } from '../Icona'
 import { type Documento, type Visita, documento as trovaDocumento } from './dati'
 import { anno, dataLunga, giornoSettimana, meseBreve, numeroGiorno, traQuanto } from './date'
 import { MarchioReferto } from './Struttura'
+import { t } from '../lingua/lingua'
 
 /** Riquadro con mese, giorno e giorno della settimana (o l'anno, per le visite già fatte). */
 export function CalendarioVisita({ visita, inEvidenza = false }: { visita: Visita; inEvidenza?: boolean }) {
@@ -29,13 +30,13 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
         <CalendarioVisita visita={visita} inEvidenza={inEvidenza} />
         <div className="visita-testo">
           <div className="riga-titolo">
-            <h3>{visita.titolo}</h3>
+            <h3>{t(visita.titolo)}</h3>
             {!passata && visita.giorni <= 14 && <span className="pastiglia pastiglia-chiara">{traQuanto(visita.giorni)}</span>}
-            {referto?.nuovo && <span className="pastiglia">Referto nuovo</span>}
+            {referto?.nuovo && <span className="pastiglia">{t('Referto nuovo')}</span>}
           </div>
           <p>
-            {visita.medico}
-            {visita.specialita !== visita.medico && !passata ? ` · ${visita.specialita}` : ''}
+            {t(visita.medico)}
+            {visita.specialita !== visita.medico && !passata ? ` · ${t(visita.specialita)}` : ''}
           </p>
           {passata ? (
             <p className="tenue">{dataLunga(visita.giorni)}</p>
@@ -44,14 +45,15 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
               {visita.ora && (
                 <span>
                   <Icona nome="orologio" dimensione={20} />
-                  <span className="nascosto">Orario: </span>ore {visita.ora}
+                  <span className="nascosto">{t('Orario:')} </span>
+                  {t('ore {ora}', { ora: visita.ora })}
                 </span>
               )}
               {visita.luogo && (
                 <span>
                   <Icona nome="luogo" dimensione={20} />
-                  <span className="nascosto">Dove: </span>
-                  {visita.luogo}
+                  <span className="nascosto">{t('Dove:')} </span>
+                  {t(visita.luogo)}
                 </span>
               )}
             </p>
@@ -60,34 +62,34 @@ export function SchedaVisita({ visita, inEvidenza = false, nuda = false }: { vis
       </div>
       {visita.daPortare && (
         <div className="nota-visita">
-          <strong>Da portare:</strong> {visita.daPortare}
+          <strong>{t('Da portare:')}</strong> {t(visita.daPortare)}
         </div>
       )}
       {visita.preparazione && (
         <div className="nota-visita nota-avviso">
-          <strong>Preparazione indicata dallo studio:</strong> {visita.preparazione}
+          <strong>{t('Preparazione indicata dallo studio:')}</strong> {t(visita.preparazione)}
         </div>
       )}
       <div className="azioni">
         {passata && referto ? (
           <>
             <button type="button" className="bottone-leggero" onClick={() => apriDocumento(referto)}>
-              Apri il referto
+              {t('Apri il referto')}
             </button>
             {refertoAttivo && (
               <button type="button" className="bottone bottone-referto" onClick={() => spiega(referto)}>
                 <MarchioReferto />
-                Spiegamelo
+                {t('Spiegamelo')}
               </button>
             )}
           </>
         ) : (
           <>
             <button type="button" className="bottone-leggero">
-              Aggiungi al calendario
+              {t('Aggiungi al calendario')}
             </button>
             <button type="button" className="bottone-leggero">
-              Sposta o disdici
+              {t('Sposta o disdici')}
             </button>
           </>
         )}
@@ -120,12 +122,12 @@ export function RigaDocumento({
       </span>
       <div className="riga-documento-testo">
         <span className="riga-documento-titolo">
-          {documento.titolo}
-          {documento.nuovo && <span className="pastiglia">Nuovo</span>}
+          {t(documento.titolo)}
+          {documento.nuovo && <span className="pastiglia">{t('Nuovo')}</span>}
         </span>
         <span className="tenue piccolo">
-          {NOMI_TIPO[documento.tipo]} · {dataLunga(documento.giorni)}
-          {compatta && documento.tipo !== 'fattura' ? '' : ` · ${documento.autore}`}
+          {t(NOMI_TIPO[documento.tipo])} · {dataLunga(documento.giorni)}
+          {compatta && documento.tipo !== 'fattura' ? '' : ` · ${t(documento.autore)}`}
         </span>
       </div>
       <div className="azioni">
@@ -133,7 +135,7 @@ export function RigaDocumento({
           <>
             {(!compatta || !refertoAttivo) && (
               <button type="button" className="bottone-leggero" onClick={() => apriDocumento(documento)}>
-                Apri
+                {t('Apri')}
               </button>
             )}
             {refertoAttivo && (
@@ -141,17 +143,17 @@ export function RigaDocumento({
                 type="button"
                 className="bottone bottone-referto"
                 onClick={() => spiega(documento)}
-                aria-label={compatta ? `Spiegamelo: ${documento.titolo}` : undefined}
+                aria-label={compatta ? `${t('Spiegamelo')}: ${t(documento.titolo)}` : undefined}
               >
                 <MarchioReferto />
-                <span className="testo-bottone">Spiegamelo</span>
+                <span className="testo-bottone">{t('Spiegamelo')}</span>
               </button>
             )}
           </>
         ) : (
-          <button type="button" className="bottone-leggero" aria-label={compatta ? `Scarica: ${documento.titolo}` : undefined}>
+          <button type="button" className="bottone-leggero" aria-label={compatta ? `${t('Scarica')}: ${t(documento.titolo)}` : undefined}>
             <Icona nome="scarica" dimensione={20} />
-            <span className="testo-bottone">Scarica</span>
+            <span className="testo-bottone">{t('Scarica')}</span>
           </button>
         )}
         {extra}

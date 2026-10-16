@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Icona } from '../Icona'
 import { useDialogo } from '../useDialogo'
 import type { LuogoSullaMappa } from './mappa'
+import { t } from '../lingua/lingua'
 
 /**
  * La mappa di una struttura dentro al portale, sopra la pagina: nome e
@@ -54,24 +55,24 @@ export function FinestraMappa({ luogo, onChiudi }: { luogo: LuogoSullaMappa; onC
           </div>
           <button type="button" className="bottone-leggero" onClick={onChiudi} data-fuoco-iniziale>
             <Icona nome="chiudi" dimensione={20} />
-            Chiudi
+            {t('Chiudi')}
           </button>
         </div>
         <div className="mappa">
-          <div ref={tela} className="mappa-tela" role="region" aria-label={`Mappa: ${nome}`} />
+          <div ref={tela} className="mappa-tela" role="region" aria-label={`${t('Mappa')}: ${nome}`} />
           {stato === 'attesa' && (
             <p className="mappa-stato" role="status">
               <span className="rotella" aria-hidden="true" />
-              Carico la mappa…
+              {t('Carico la mappa…')}
             </p>
           )}
           {stato === 'errore' && (
             <p className="mappa-stato referto-errore" role="alert">
-              Non riesco a mostrare la mappa in questo momento. Riprova tra poco.
+              {t('Non riesco a mostrare la mappa in questo momento. Riprova tra poco.')}
             </p>
           )}
         </div>
-        <p className="tenue piccolo">Trascina la mappa per spostarti, usa + e − per ingrandire o rimpicciolire.</p>
+        <p className="tenue piccolo">{t('Trascina la mappa per spostarti, usa + e − per ingrandire o rimpicciolire.')}</p>
       </div>
     </div>,
     document.body,

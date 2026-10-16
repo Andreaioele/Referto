@@ -5,6 +5,7 @@ import { dataLunga } from './date'
 import { comeStruttura } from './distanza'
 import { CercaDaiReferti, ElencoPrenotazioni } from './MieiLuoghi'
 import { usePrenotazioni } from './prenotazioni'
+import { t } from '../lingua/lingua'
 
 /** Chi ha fatto le visite dello studio ma non è una persona (laboratorio, punto prelievi). */
 const NON_PERSONE = /laboratorio|punto prelievi/i
@@ -26,8 +27,8 @@ export function Professionisti() {
   return (
     <>
       <div className="titolo-pagina">
-        <h1>I miei professionisti</h1>
-        <p className="tenue">I medici con cui hai fatto o prenotato una visita.</p>
+        <h1>{t('I miei professionisti')}</h1>
+        <p className="tenue">{t('I medici con cui hai fatto o prenotato una visita.')}</p>
       </div>
 
       <section className="scheda scheda-messaggio" aria-labelledby="titolo-mio-medico">
@@ -35,25 +36,25 @@ export function Professionisti() {
           <Icona nome="stetoscopio" dimensione={22} />
         </span>
         <div>
-          <h2 id="titolo-mio-medico">Il tuo medico di famiglia</h2>
+          <h2 id="titolo-mio-medico">{t('Il tuo medico di famiglia')}</h2>
           <p>
-            <strong>{paziente.medico.nome}</strong>
+            <strong>{t(paziente.medico.nome)}</strong>
           </p>
-          <p className="tenue">{paziente.medico.orari}. È il primo a cui chiedere per ogni referto.</p>
+          <p className="tenue">{t(paziente.medico.orari)}. {t('È il primo a cui chiedere per ogni referto.')}</p>
         </div>
       </section>
 
       <section className="scheda" aria-labelledby="titolo-medici-visite">
         <div className="scheda-testa">
-          <h2 id="titolo-medici-visite">Le tue visite allo studio</h2>
+          <h2 id="titolo-medici-visite">{t('Le tue visite allo studio')}</h2>
         </div>
         <ul className="strutture-elenco">
           {[...medici].map(([nome, { specialita, visite: sue }]) => {
             const prossima = sue.filter((v) => v.giorni >= 0).sort((a, b) => a.giorni - b.giorni)[0]
             const ultima = sue.filter((v) => v.giorni < 0).sort((a, b) => b.giorni - a.giorni)[0]
             const nota = [
-              prossima && `Prossima visita: ${dataLunga(prossima.giorni)}`,
-              ultima && `ultima visita: ${dataLunga(ultima.giorni)}`,
+              prossima && t('Prossima visita: {data}', { data: dataLunga(prossima.giorni) }),
+              ultima && t('ultima visita: {data}', { data: dataLunga(ultima.giorni) }),
             ]
               .filter(Boolean)
               .join('; ')
@@ -63,8 +64,8 @@ export function Professionisti() {
                 struttura={comeStruttura({
                   id: `medico-${nome}`,
                   tipo: 'studio-medico',
-                  nome,
-                  professione: specialita,
+                  nome: t(nome),
+                  professione: t(specialita),
                   indirizzo: `${STUDIO}, ${SEDE_STUDIO.indirizzo}`,
                   lat: SEDE_STUDIO.lat,
                   lon: SEDE_STUDIO.lon,
@@ -79,12 +80,12 @@ export function Professionisti() {
 
       <section className="scheda" aria-labelledby="titolo-professionisti-prenotati">
         <div className="scheda-testa">
-          <h2 id="titolo-professionisti-prenotati">Prenotati da te</h2>
+          <h2 id="titolo-professionisti-prenotati">{t('Prenotati da te')}</h2>
         </div>
         {prenotazioni.length > 0 ? (
           <ElencoPrenotazioni prenotazioni={prenotazioni} />
         ) : (
-          <p className="tenue">Non hai ancora prenotato con altri professionisti.</p>
+          <p className="tenue">{t('Non hai ancora prenotato con altri professionisti.')}</p>
         )}
         <CercaDaiReferti cosa="professionisti" />
       </section>
