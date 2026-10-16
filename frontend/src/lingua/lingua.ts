@@ -69,7 +69,11 @@ export function locale(): string {
  * italiano: il test di `en.test.ts` controlla che non ne manchino.
  */
 export function t(italiano: string, valori?: Record<string, string | number>): string {
-  const testo = corrente === 'en' ? (INGLESE[italiano] ?? italiano) : italiano
+  return componi(corrente === 'en' ? (INGLESE[italiano] ?? italiano) : italiano, valori)
+}
+
+/** Sostituisce `{nome}` con `valori.nome`, senza tradurre. */
+export function componi(testo: string, valori?: Record<string, string | number>): string {
   return valori ? testo.replace(/\{(\w+)\}/g, (tutto, nome: string) => (nome in valori ? String(valori[nome]) : tutto)) : testo
 }
 

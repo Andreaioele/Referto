@@ -76,6 +76,25 @@ describe('useFoglietto', () => {
     expect(result.current.inAttesa).toBe(false)
   })
 
+  it('in inglese mostra la domanda della persona e manda all’agente quella preparata in italiano', async () => {
+    vi.mocked(chiediAlFoglietto).mockResolvedValue(risposta(3))
+    const { result } = await aperto()
+    act(() => void result.current.chiedi('How do I take it?', { prepara: async () => 'Come lo prendo?' }))
+    expect(result.current.scambi[0]).toMatchObject({ domanda: 'How do I take it?', stato: 'attesa' })
+    await waitFor(() => expect(result.current.scambi[0].stato).toBe('pronta'))
+    expect(chiediAlFoglietto).toHaveBeenCalledWith('036635', 'Come lo prendo?', '10.000 U.I./ml gocce orali', expect.any(AbortSignal))
+    // La domanda mandata (in italiano) resta nello scambio: serve a riconoscere le domande sulla dose.
+    expect(result.current.scambi[0].domanda).toBe('Come lo prendo?')
+  })
+
+  it('una domanda pronta si vede nella lingua scelta e va com’è', async () => {
+    vi.mocked(chiediAlFoglietto).mockResolvedValue(risposta(1))
+    const { result } = await aperto()
+    act(() => void result.current.chiedi('A cosa serve?', { mostra: 'What is it for?' }))
+    expect(result.current.scambi[0]).toMatchObject({ domanda: 'A cosa serve?', mostra: 'What is it for?' })
+    await waitFor(() => expect(result.current.scambi[0].stato).toBe('pronta'))
+  })
+
   it('non fa partire domande vuote o una seconda mentre la prima aspetta', async () => {
     let rispondi: (r: RispostaFoglietto) => void = () => undefined
     vi.mocked(chiediAlFoglietto).mockImplementation(() => new Promise((r) => (rispondi = r)))

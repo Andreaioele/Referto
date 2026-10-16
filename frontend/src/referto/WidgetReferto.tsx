@@ -8,10 +8,12 @@ import { salvaClassificazione } from './classificazioni'
 import { domandePronte } from './domande-pronte'
 import type { RefertoDaSpiegare } from './tipi'
 import { useChat, type Messaggio } from './useChat'
-import { locale, t } from '../lingua/lingua'
+import { domandaPerReferto, useTraduzione } from './useTraduzione'
+import type { Traduzione } from './cliente'
+import { locale, t, useLingua } from '../lingua/lingua'
 
 const LUNGHEZZA_MASSIMA = 30000
-const LIMITI_ASSENTI = /^(non sono riportati limiti specifici|no specific limits are reported)\.?$/i
+const LIMITI_ASSENTI = /^non sono riportati limiti specifici\.?$/i
 
 function Caricamento({ testo }: { testo: string }) {
   return (
@@ -22,7 +24,17 @@ function Caricamento({ testo }: { testo: string }) {
   )
 }
 
-/** La spiegazione del referto: le parti del Mother agent più i dati del referto che si possono verificare. */
+/** Un pezzo scritto dal modello rimasto in italiano perché la traduzione non c'è o non ha passato il controllo. */
+function NotaItaliano({ parte }: { parte?: Traduzione }) {
+  if (!parte || parte.tradotto) return null
+  return <span className="referto-citazione">{t('Mostrato in italiano: la traduzione non ha passato il controllo.')}</span>
+}
+
+/**
+ * La spiegazione del referto: le parti del Mother agent più i dati del referto che si possono verificare.
+ * Il Mother agent scrive in italiano: con l'interfaccia in inglese le sue parti si traducono quando la
+ * risposta è finita (useTraduzione); i dati copiati dal referto restano come sono.
+ */
 function Spiegazione({
   risposta,
   referto,
@@ -49,19 +61,41 @@ function Spiegazione({
   const { sintesi, spiegazione: semplice, indicazioni, farmaci, limiti } = spiegazione.parti
   const vuota = !sintesi && !semplice && !spiegazione.libero
 
-  if (risposta.errore && vuota) return <p className="referto-errore">{risposta.testo}</p>
+  // Le parti scritte dal modello, da tradurre (in italiano restano come sono, anche durante lo streaming).
+  const italiano = {
+    esame: argomento?.esame,
+    sintesi,
+    semplice,
+    libero: spiegazione.libero && !sintesi ? senzaChiusura(spiegazione.libero) : undefined,
+    indicazioni: referto?.noteMedico ? undefined : indicazioni,
+    farmaci,
+    limiti: limiti && !LIMITI_ASSENTI.test(limiti) ? limiti : undefined,
+  }
+  const nomi = (Object.keys(italiano) as Array<keyof typeof italiano>).filter((nome) => italiano[nome])
+  const traduzione = useTraduzione(
+    nomi.map((nome) => italiano[nome]!),
+    !inCorso,
+  )
+  const parte = (nome: keyof typeof italiano): Traduzione | undefined =>
+    traduzione.pronta && italiano[nome] ? traduzione.testi[nomi.indexOf(nome)] : undefined
+
+  if (risposta.errore && vuota) return <p className="referto-errore">{t(risposta.testo)}</p>
   return (
     <>
-      {spiegazione.argomento && (
+      {argomento && (
         <p className="referto-argomento">
-          {spiegazione.argomento.esame} · {t(spiegazione.argomento.area)}
+          {parte('esame')?.testo ?? argomento.esame} · {t(argomento.area)}
         </p>
       )}
       {vuota && inCorso && <Caricamento testo={t('Sto leggendo il referto… può servire un minuto.')} />}
-      {sintesi && (
+      {!vuota && !traduzione.pronta && (
+        <Caricamento testo={inCorso ? t('Sto leggendo il referto… può servire un minuto.') : t('Sto traducendo la spiegazione in inglese…')} />
+      )}
+      {parte('sintesi') && (
         <section className="referto-box">
           <h3>{t('In breve')}</h3>
-          <p>{sintesi}</p>
+          <p>{parte('sintesi')!.testo}</p>
+          <NotaItaliano parte={parte('sintesi')} />
         </section>
       )}
       {fuori.length > 0 && (
@@ -85,18 +119,20 @@ function Spiegazione({
           ))}
         </section>
       )}
-      {semplice && (
+      {parte('semplice') && (
         <section className="referto-box">
           <h3>{t('In parole semplici')}</h3>
-          <p>{semplice}</p>
+          <p>{parte('semplice')!.testo}</p>
+          <NotaItaliano parte={parte('semplice')} />
         </section>
       )}
-      {spiegazione.libero && !sintesi && (
+      {parte('libero') && (
         <section className="referto-box">
-          <p>{senzaChiusura(spiegazione.libero)}</p>
+          <p>{parte('libero')!.testo}</p>
+          <NotaItaliano parte={parte('libero')} />
         </section>
       )}
-      {(referto?.noteMedico || indicazioni) && (
+      {(referto?.noteMedico || parte('indicazioni')) && (
         <section className="referto-box">
           <h3>{t('Cosa ha scritto il medico')}</h3>
           {referto?.noteMedico ? (
@@ -105,14 +141,18 @@ function Spiegazione({
               <span className="referto-citazione">{t('Dal referto')}</span>
             </>
           ) : (
-            <p>{indicazioni}</p>
+            <>
+              <p>{parte('indicazioni')!.testo}</p>
+              <NotaItaliano parte={parte('indicazioni')} />
+            </>
           )}
         </section>
       )}
-      {farmaci && (
+      {parte('farmaci') && (
         <section className="referto-box">
           <h3>{t('Farmaci citati nel referto')}</h3>
-          <p>{farmaci}</p>
+          <p>{parte('farmaci')!.testo}</p>
+          <NotaItaliano parte={parte('farmaci')} />
         </section>
       )}
       {visitaCollegata && (sintesi || !inCorso) && (
@@ -156,13 +196,30 @@ function Spiegazione({
           <p>{nellIntervallo.map((v) => v.esame).join(', ')}.</p>
         </details>
       )}
-      {limiti && !LIMITI_ASSENTI.test(limiti) && (
+      {parte('limiti') && (
         <details className="referto-box">
           <summary>{t('Limiti del referto')}</summary>
-          <p>{limiti}</p>
+          <p>{parte('limiti')!.testo}</p>
+          <NotaItaliano parte={parte('limiti')} />
         </details>
       )}
       {risposta.errore && !vuota && <p className="referto-errore">{t('La risposta si è interrotta. Riprova tra poco.')}</p>}
+    </>
+  )
+}
+
+/** La risposta a una domanda: in inglese si traduce quando è finita, fino ad allora si aspetta. */
+function RispostaDomanda({ risposta, inCorso }: { risposta: Messaggio; inCorso: boolean }) {
+  const testo = senzaChiusura(risposta.testo)
+  const traduzione = useTraduzione([testo], !inCorso)
+  if (!risposta.testo) return <Caricamento testo={t('Sto cercando la risposta nel referto…')} />
+  if (!traduzione.pronta) {
+    return <Caricamento testo={inCorso ? t('Sto cercando la risposta nel referto…') : t('Sto traducendo la risposta in inglese…')} />
+  }
+  return (
+    <>
+      <p>{traduzione.testi[0].testo}</p>
+      <NotaItaliano parte={traduzione.testi[0]} />
     </>
   )
 }
@@ -174,6 +231,7 @@ function Spiegazione({
  */
 export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiegare; onChiudi: () => void }) {
   const { messaggi, inCorso, daCache, invia, azzera } = useChat()
+  const lingua = useLingua()
   const [bozza, setBozza] = useState('')
   const [stato, setStato] = useState<StatoBackend | null>(null)
   const pannello = useDialogo<HTMLDivElement>(onChiudi)
@@ -216,7 +274,9 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
     const testo = bozza.trim()
     if (!testo || inCorso) return
     setBozza('')
-    void invia(testo)
+    // Il primo messaggio è il referto incollato: va com'è. Le domande in inglese vanno al Mother agent in italiano.
+    if (!iniziato || lingua === 'it') void invia(testo)
+    else void invia(testo, { prepara: (segnale) => domandaPerReferto(testo, lingua, segnale) })
   }
 
   return (
@@ -277,13 +337,9 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
               className={indice === domande.length - 1 ? 'referto-scambio referto-scambio-ultimo' : 'referto-scambio'}
               ref={indice === domande.length - 1 ? ultimaDomanda : undefined}
             >
-              <p className="referto-domanda">{domanda.testo}</p>
+              <p className="referto-domanda">{domanda.mostra ?? domanda.testo}</p>
               <section className={risposta.errore ? 'referto-box referto-errore' : 'referto-box'}>
-                {risposta.testo ? (
-                  <p>{senzaChiusura(risposta.testo)}</p>
-                ) : (
-                  <Caricamento testo={t('Sto cercando la risposta nel referto…')} />
-                )}
+                <RispostaDomanda risposta={risposta} inCorso={inCorso && indice === domande.length - 1} />
               </section>
             </div>
           ))}
@@ -320,8 +376,13 @@ export function WidgetReferto({ referto, onChiudi }: { referto?: RefertoDaSpiega
             {!inCorso && (
               <div className="referto-suggerimenti">
                 {domandePronte(referto).map((domanda) => (
-                  <button key={domanda} type="button" className="referto-chip" onClick={() => void invia(domanda)}>
-                    {domanda}
+                  <button
+                    key={domanda.invia}
+                    type="button"
+                    className="referto-chip"
+                    onClick={() => void invia(domanda.invia, { mostra: domanda.mostra })}
+                  >
+                    {domanda.mostra}
                   </button>
                 ))}
               </div>

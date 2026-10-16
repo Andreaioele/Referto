@@ -9,9 +9,19 @@ Torna a [[00-indice]] · Riferimenti: [[16-frontend]], [[15-backend]],
 [[03-pipeline-spiegazione]].
 
 La persona sceglie la lingua con il tasto **IT / EN** nella testata del
-portale. Il **frontend è fatto** (branch `ita-eng`, [[16-frontend]]). Il
-**Mother agent risponde ancora solo in italiano**: qui sotto c'è la
-proposta di modifica, **non implementata**.
+portale (branch `ita-eng`, [[16-frontend]]).
+
+**Soluzione scelta (16/10/2026): il Mother agent non si tocca.** Scrive
+sempre in italiano; con l'interfaccia in inglese le sue risposte si traducono
+dopo, con controllo deterministico, e le domande in inglese gli arrivano
+tradotte in italiano ([[15-backend]], `src/traduzione/`). Vantaggi: un solo
+prompt del Mother agent, cache e strumenti (cercaTermine, «parola non nel
+referto») invariati, nessuna sincronizzazione con Evolus. Costi: qualche
+secondo in più in inglese (la risposta si vede quando è tradotta, non in
+streaming) e una chiamata al modello per ogni risposta.
+
+La proposta qui sotto (Mother agent che scrive direttamente in inglese) **non
+è implementata**: resta come alternativa se la traduzione non bastasse.
 
 ## Che cosa resta in italiano anche in inglese (per scelta)
 
@@ -24,16 +34,14 @@ proposta di modifica, **non implementata**.
 - **La riga `ARGOMENTO`** come chiave: l'area resta una voce dell'elenco
   italiano (serve alla ricerca delle strutture); il frontend la traduce.
 
-## Proposta per il Mother agent (da implementare)
+## Alternativa non scelta: il Mother agent in inglese
 
 ### 1. Il browser dice la lingua
 
 `POST /api/chat` accetta un campo in più, `lingua: 'it' | 'en'`
 (facoltativo, predefinito `it`, `@IsIn(['it', 'en'])` in `chat.dto.ts`).
-Oggi il frontend **non lo manda**: la `ValidationPipe` ha
-`forbidNonWhitelisted` e risponderebbe 400. Quando il backend lo accetta, in
-`frontend/src/referto/cliente.ts` basta aggiungere `lingua: lingua()` al corpo
-della richiesta (una riga). Lo stesso campo per `/api/foglietti` (domande sul
+Il frontend non lo manda: la `ValidationPipe` ha `forbidNonWhitelisted` e
+risponderebbe 400. Lo stesso campo per `/api/foglietti` (domande sul
 foglietto).
 
 `RichiestaChat` e `OpzioniChiedi` (`motore-chat.ts`) portano la lingua fino al
@@ -53,10 +61,10 @@ quando `lingua = en`:
 - titoli del FORMATO in inglese, esattamente: `SUMMARY`,
   `PLAIN-LANGUAGE EXPLANATION`, `UNCERTAINTIES OR LIMITS OF THE REPORT`,
   `INSTRUCTIONS GIVEN IN THE DOCUMENT`, `MEDICINES MENTIONED IN THE REPORT`
-  (il frontend li riconosce già, `referto/spiegazione.ts`);
-- chiusura in inglese che inizia con «This is an automatic explanation…»
-  (anche questa già riconosciuta) e «No specific limits are reported.» quando
-  non ci sono limiti;
+  (da aggiungere a `TITOLI` in `referto/spiegazione.ts`);
+- chiusura in inglese che inizia con «This is an automatic explanation…» e
+  «No specific limits are reported.» quando non ci sono limiti (da
+  riconoscere in `spiegazione.ts` e `WidgetReferto.tsx`);
 - il grado di certezza si traduce con equivalenti fissi, senza cambiarlo:
   «compatibile con» → «consistent with», «non si esclude» → «cannot be ruled
   out», «verosimile» → «likely»; numeri, unità, lato e sigle invariati;
@@ -111,9 +119,8 @@ Wikipedia/Wikidata anche (`resources/glossario/`).
 - l'app Python di riferimento resta solo in italiano: la parità
   (`npm run parita:tutti`) vale per `lingua = it`.
 
-## Stima
+## Stima dell'alternativa
 
 Backend: DTO e passaggio della lingua, appendice del prompt, cache, risposte
 fisse e domande inglesi in `domanda-su-parola.ts`, con i test: circa mezza
-giornata. Frontend dopo il backend: una riga in `cliente.ts`. Evolus: una
-sincronizzazione del prompt.
+giornata. Evolus: una sincronizzazione del prompt.

@@ -1,5 +1,7 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cambiaLingua } from '../lingua/lingua'
+import { dimenticaTraduzioni } from './cliente'
 import type { RefertoDaSpiegare } from './tipi'
 import { WidgetReferto } from './WidgetReferto'
 
@@ -36,7 +38,47 @@ const referto: RefertoDaSpiegare = {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  act(() => cambiaLingua('it'))
+  dimenticaTraduzioni()
 })
+
+/** Le traduzioni che il backend restituirebbe (/api/traduzione): ogni testo non in elenco torna non tradotto. */
+const INGLESE: Record<string, string> = {
+  'Esami del sangue': 'Blood tests',
+  'Quasi tutti i valori sono nella norma; due sono un po’ alti.': 'Almost all values are within normal limits; two are a little high.',
+  'Devo preoccuparmi?': 'Should I be worried?',
+  'Cosa vuol dire glicemia?': 'What does glicemia mean?',
+  'Il referto non dice di preoccuparsi.': 'The report does not say to worry.',
+  'La glicemia è lo zucchero nel sangue.': 'Glicemia is the sugar in the blood.',
+}
+
+/** fetch finto: salute, Mother agent (risposta al referto, poi alle domande) e traduzione; registra i corpi. */
+function backendFinto(risposteDomande: string[]) {
+  const richieste: Array<{ url: string; corpo?: { messaggio?: string; testi?: string[]; lingua?: string } }> = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string, opzioni?: RequestInit) => {
+      const corpo = opzioni?.body ? JSON.parse(String(opzioni.body)) : undefined
+      richieste.push({ url, corpo })
+      if (url === '/api/salute') return Response.json({ stato: 'ok', aggiornato: '2026-10-13' })
+      if (url === '/api/traduzione') {
+        const testi = corpo.testi as string[]
+        return Response.json({
+          traduzioni: testi.map((testo) =>
+            corpo.lingua === 'it'
+              ? { testo: 'Cosa vuol dire glicemia?', tradotto: true }
+              : INGLESE[testo]
+                ? { testo: INGLESE[testo], tradotto: true }
+                : { testo, tradotto: false },
+          ),
+        })
+      }
+      const testo = corpo.conversazione ? (risposteDomande.shift() ?? '') : RISPOSTA
+      return sse({ tipo: 'testo', testo }, { tipo: 'fine', conversazione: 'c-1' })
+    }),
+  )
+  return richieste
+}
 
 describe('WidgetReferto', () => {
   it('manda al Mother agent solo il testo del referto e mostra la spiegazione con i dati del referto', async () => {
@@ -86,5 +128,64 @@ describe('WidgetReferto', () => {
     expect(screen.getByLabelText('Incolla il testo del referto')).toBeTruthy()
     await waitFor(() => expect(chiamata).toHaveBeenCalledTimes(1))
     expect(chiamata.mock.calls[0][0]).toBe('/api/salute')
+  })
+
+  describe('in inglese', () => {
+    it('traduce le parti scritte dal Mother agent; ciò che non passa il controllo resta in italiano, segnalato', async () => {
+      act(() => cambiaLingua('en'))
+      backendFinto([])
+      render(<WidgetReferto referto={referto} onChiudi={() => undefined} />)
+
+      await screen.findByText('Almost all values are within normal limits; two are a little high.')
+      expect(screen.queryByText('Quasi tutti i valori sono nella norma; due sono un po’ alti.')).toBeNull()
+      expect(screen.getByText('Blood tests · Testing laboratory', { selector: '.referto-argomento' })).toBeTruthy()
+      // Questa parte non ha traduzione (il backend la restituisce non tradotta): resta in italiano, con la nota.
+      expect(screen.getByText('La glicemia e il colesterolo LDL sono sopra l’intervallo indicato dal laboratorio.')).toBeTruthy()
+      expect(screen.getAllByText('Shown in Italian: the translation did not pass the check.')).toHaveLength(1)
+      // I dati copiati dal referto restano come sono.
+      expect(screen.getByText(/From the report: «Glicemia a digiuno 108 mg\/dL · 70 – 99»/)).toBeTruthy()
+    })
+
+    it('la domanda pronta si vede in inglese ma va al Mother agent in italiano, e la risposta si traduce', async () => {
+      act(() => cambiaLingua('en'))
+      const richieste = backendFinto(['Il referto non dice di preoccuparsi.'])
+      render(<WidgetReferto referto={referto} onChiudi={() => undefined} />)
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Should I be worried?' }))
+      await screen.findByText('The report does not say to worry.')
+      expect(screen.getByText('Should I be worried?', { selector: '.referto-domanda' })).toBeTruthy()
+      expect(richieste.filter((r) => r.url === '/api/chat').map((r) => r.corpo?.messaggio)).toEqual(['TESTO DEL REFERTO', 'Devo preoccuparmi?'])
+    })
+
+    it('la domanda scritta in inglese si traduce in italiano prima di andare al Mother agent', async () => {
+      act(() => cambiaLingua('en'))
+      const richieste = backendFinto(['La glicemia è lo zucchero nel sangue.'])
+      render(<WidgetReferto referto={referto} onChiudi={() => undefined} />)
+
+      const campo = await screen.findByPlaceholderText('Ask a question about this report')
+      await waitFor(() => expect((campo as HTMLInputElement).disabled).toBe(false))
+      fireEvent.change(campo, { target: { value: 'What does glicemia mean?' } })
+      fireEvent.submit(campo.closest('form')!)
+
+      await screen.findByText('Glicemia is the sugar in the blood.')
+      expect(screen.getByText('What does glicemia mean?', { selector: '.referto-domanda' })).toBeTruthy()
+      expect(richieste.find((r) => r.corpo?.lingua === 'it')?.corpo?.testi).toEqual(['What does glicemia mean?'])
+      expect(richieste.filter((r) => r.url === '/api/chat').at(-1)?.corpo?.messaggio).toBe('Cosa vuol dire glicemia?')
+    })
+
+    it('se la traduzione non risponde mostra la spiegazione in italiano, segnalata', async () => {
+      act(() => cambiaLingua('en'))
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (url: string) => {
+          if (url === '/api/salute') return Response.json({ stato: 'ok', aggiornato: '2026-10-13' })
+          if (url === '/api/traduzione') return new Response('', { status: 503 })
+          return sse({ tipo: 'testo', testo: RISPOSTA }, { tipo: 'fine', conversazione: 'c-1' })
+        }),
+      )
+      render(<WidgetReferto referto={referto} onChiudi={() => undefined} />)
+      await screen.findByText('Quasi tutti i valori sono nella norma; due sono un po’ alti.')
+      expect(screen.getAllByText('Shown in Italian: the translation did not pass the check.').length).toBeGreaterThan(0)
+    })
   })
 })

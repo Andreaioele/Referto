@@ -378,3 +378,63 @@ export async function infoStrutture(segnale?: AbortSignal): Promise<InfoStruttur
   if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE())
   return (await risposta.json()) as InfoStrutture
 }
+
+/* ── Traduzione per l'interfaccia in inglese (POST /api/traduzione) ── */
+
+export interface Traduzione {
+  testo: string
+  /** false: la traduzione non c'è o non ha passato il controllo del backend, `testo` è l'originale. */
+  tradotto: boolean
+}
+
+const traduzioniFatte = new Map<string, Traduzione>()
+
+/**
+ * Traduce i testi nella lingua data: le risposte del Mother agent (sempre in
+ * italiano) verso l'inglese, le domande scritte in inglese verso l'italiano.
+ * Prima i testi fissi che il frontend conosce già (`en.ts`, deterministici),
+ * poi il backend. Non lancia mai, tranne quando `segnale` annulla: se il
+ * servizio non risponde restituisce gli originali con `tradotto: false`.
+ */
+export async function traduci(testi: string[], lingua: 'en' | 'it', segnale?: AbortSignal): Promise<Traduzione[]> {
+  const risultati: Array<Traduzione | undefined> = testi.map((testo) => {
+    if (!testo.trim()) return { testo, tradotto: true }
+    if (lingua === 'en' && testoFisso(testo)) return { testo: testoFisso(testo)!, tradotto: true }
+    return traduzioniFatte.get(`${lingua}\n${testo}`)
+  })
+  const mancanti = testi.filter((_, i) => !risultati[i])
+  for (let inizio = 0; inizio < mancanti.length; inizio += 8) {
+    const gruppo = mancanti.slice(inizio, inizio + 8)
+    let tradotti: Traduzione[]
+    try {
+      const risposta = await fetch('/api/traduzione', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testi: gruppo, lingua }),
+        signal: segnale,
+      })
+      if (!risposta.ok) throw new Error(`HTTP ${risposta.status}`)
+      tradotti = ((await risposta.json()) as { traduzioni: Traduzione[] }).traduzioni
+    } catch (motivo) {
+      if (interrotta(segnale)) throw motivo
+      tradotti = gruppo.map((testo) => ({ testo, tradotto: false }))
+    }
+    gruppo.forEach((testo, i) => {
+      const traduzione = tradotti[i] ?? { testo, tradotto: false }
+      if (traduzione.tradotto) traduzioniFatte.set(`${lingua}\n${testo}`, traduzione)
+      risultati[testi.indexOf(testo)] = traduzione
+    })
+  }
+  return testi.map((testo, i) => risultati[i] ?? { testo, tradotto: false })
+}
+
+/** La traduzione di un testo fisso (errori, risposte senza modello), se il frontend la conosce. */
+function testoFisso(testo: string): string | undefined {
+  const tradotto = t(testo.trim())
+  return tradotto !== testo.trim() ? tradotto : undefined
+}
+
+/** Solo per i test. */
+export function dimenticaTraduzioni(): void {
+  traduzioniFatte.clear()
+}

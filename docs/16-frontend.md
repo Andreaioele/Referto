@@ -81,14 +81,27 @@ Su Vercel è il servizio `frontend` del progetto Services (`vercel.json` nella r
 - Restano in italiano per scelta i documenti originali (foglio del referto,
   foglietto AIFA), le citazioni dal referto e i nomi propri
   ([[specifica-multilingua]]).
-- **La risposta del Mother agent è ancora in italiano**: il frontend non manda
-  la lingua al backend (che oggi rifiuterebbe il campo). È pronto a leggere
-  la risposta inglese: titoli, chiusura e «nessun limite» in inglese sono già
-  riconosciuti (`spiegazione.ts`, `WidgetReferto.tsx`). Proposta in
-  [[specifica-multilingua]].
+- **Risposte di Referto in inglese senza toccare il Mother agent**
+  (`referto/useTraduzione.ts`, `traduci()` in `cliente.ts`): il Mother agent
+  scrive in italiano; quando la risposta è finita le sue parti si mandano a
+  `POST /api/traduzione` ([[15-backend]]) e si mostrano in inglese. Durante la
+  generazione e la traduzione si vede l'attesa, non l'italiano. Un pezzo che
+  non passa il controllo del backend resta in italiano con la nota «Shown in
+  Italian…». I testi fissi (errori, «parola non nel referto») si traducono
+  dal dizionario, senza chiamata. Valori, citazioni e note del medico restano
+  copiati dal referto.
+- Le domande vanno al Mother agent **in italiano**: le domande pronte si
+  mostrano in inglese ma si mandano nel testo italiano (`domande-pronte.ts`),
+  quelle scritte in inglese si traducono prima (`useChat` con `mostra` e
+  `prepara`). Così il Mother agent riconosce «Cosa vuol dire…» come in
+  italiano. Lo stesso per il foglietto (`useFoglietto`): domande in italiano,
+  risposta tradotta, brani del foglio in italiano.
 - Test: `lingua/en.test.ts` controlla che ogni `t('…')` del codice e i testi
   dei dati abbiano la traduzione, con gli stessi segnaposto;
-  `SelettoreLingua.test.tsx` prova il cambio IT → EN → IT sul menu.
+  `SelettoreLingua.test.tsx` prova il cambio IT → EN → IT sul menu;
+  `WidgetReferto.test.tsx` (in inglese) la traduzione delle parti, la nota per
+  quelle rimaste in italiano, le domande mandate in italiano e la riserva se la
+  traduzione non risponde; `useFoglietto.test.tsx` le domande del foglietto.
 - Sul telefono le voci della barra in basso in inglese sono brevi (Docs, Meds,
   Places) per non sovrapporsi.
 

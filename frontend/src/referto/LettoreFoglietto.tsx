@@ -5,7 +5,8 @@ import { PaginaPdf } from './PaginaPdf'
 import { urlPdfFoglietto, type RispostaFoglietto } from './cliente'
 import type { FarmacoDaLeggere } from './tipi'
 import { useFoglietto, type Scambio } from './useFoglietto'
-import { t } from '../lingua/lingua'
+import { domandaPerReferto, useTraduzione } from './useTraduzione'
+import { t, useLingua } from '../lingua/lingua'
 
 const DOMANDE_PRONTE = ['A cosa serve?', 'Come lo prendo?', 'Se dimentico una dose?', 'Posso prenderlo con altri medicinali?']
 const ZOOM = { minimo: 75, massimo: 175, passo: 25 }
@@ -33,6 +34,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
   const [bozza, setBozza] = useState('')
   const finestra = useDialogo<HTMLDivElement>(onChiudi)
   const fineDomande = useRef<HTMLDivElement>(null)
+  const lingua = useLingua()
 
   useEffect(() => {
     fineDomande.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -45,13 +47,12 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
     setVista('leggi')
   }
 
-  function chiedi(domanda: string) {
-    if (foglietto.chiedi(domanda)) setBozza('')
-  }
-
   function invio(evento: FormEvent) {
     evento.preventDefault()
-    chiedi(bozza)
+    const domanda = bozza.trim()
+    // L'agente del foglietto riceve le domande in italiano: quelle scritte in inglese si traducono prima.
+    const prepara = lingua === 'en' ? (segnale: AbortSignal) => domandaPerReferto(domanda, lingua, segnale) : undefined
+    if (foglietto.chiedi(domanda, { prepara })) setBozza('')
   }
 
 
@@ -219,7 +220,7 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
             </div>
             {scambi.map((scambio, indice) => (
               <div key={indice} className="referto-scambio">
-                <p className="referto-domanda">{scambio.domanda}</p>
+                <p className="referto-domanda">{scambio.mostra ?? scambio.domanda}</p>
                 <section className={scambio.stato === 'errore' ? 'referto-box referto-errore' : 'referto-box'}>
                   {scambio.stato === 'attesa' && (
                     <p className="referto-attesa" role="status">
@@ -236,9 +237,15 @@ export function LettoreFoglietto({ farmaco, onChiudi }: { farmaco: FarmacoDaLegg
           </div>
           <div className="referto-piede">
             <div className="referto-suggerimenti">
-              {DOMANDE_PRONTE.map((pronta) => t(pronta)).map((domanda) => (
-                <button key={domanda} type="button" className="referto-chip" disabled={inAttesa || !info} onClick={() => chiedi(domanda)}>
-                  {domanda}
+              {DOMANDE_PRONTE.map((domanda) => (
+                <button
+                  key={domanda}
+                  type="button"
+                  className="referto-chip"
+                  disabled={inAttesa || !info}
+                  onClick={() => foglietto.chiedi(domanda, { mostra: t(domanda) })}
+                >
+                  {t(domanda)}
                 </button>
               ))}
             </div>
@@ -297,9 +304,23 @@ function RispostaDelFoglietto({
 }) {
   const fonti = risposta.brani.filter((b) => b.sezione === risposta.sezione)
   const sezione = fonti[0] ?? risposta.brani.find((b) => b.sezione === risposta.sezione)
+  // La risposta la scrive l'agente in italiano: in inglese si traduce; i brani del foglietto restano com'è il documento.
+  const traduzione = useTraduzione([risposta.risposta])
+  if (!traduzione.pronta) {
+    return (
+      <p className="referto-attesa" role="status">
+        <span className="rotella" aria-hidden="true" />
+        {t('Sto traducendo la risposta in inglese…')}
+      </p>
+    )
+  }
+  const tradotta = traduzione.testi[0]
   return (
     <>
-      <p>{risposta.risposta}</p>
+      <p>{tradotta.testo}</p>
+      {!tradotta.tradotto && (
+        <span className="referto-citazione">{t('Mostrato in italiano: la traduzione non ha passato il controllo.')}</span>
+      )}
       {risposta.trovata && farmaco.doseScritta && SULLA_DOSE.test(scambio.domanda) && (
         <div className="referto-ricetta">
           {t('Nella tua ricetta il medico ha scritto:')} <strong>{t(farmaco.doseScritta)}</strong>

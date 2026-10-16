@@ -53,6 +53,8 @@ export const config = {
     attesaPrimaRispostaMs: Number(process.env.MODELLO_ATTESA_MS ?? 20_000),
   },
   promptMother: process.env.PROMPT_MOTHER_FILE ?? fileDati('prompt-mother.md'),
+  /** Prompt del traduttore dell'interfaccia in inglese (stesso modello, separato dal Mother agent). */
+  promptTraduzione: { en: fileDati('prompt-traduzione-en.md'), it: fileDati('prompt-traduzione-it.md') },
   /** Stringa di connessione MongoDB (database Referto). */
   mongoUri: process.env.MONGODB_URI ?? '',
 };

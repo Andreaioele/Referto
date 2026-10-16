@@ -328,7 +328,7 @@ export const INGLESE: Record<string, string> = {
   "Apri sul sito AIFA": "Open on the AIFA website",
   "Per dubbi sulla terapia parlane con il medico o con il farmacista.": "If you have doubts about your treatment, talk to your doctor or pharmacist.",
   "Nella tua ricetta il medico ha scritto:": "On your prescription the doctor wrote:",
-  "Cosa dice il foglietto": "What the leaflet says",
+  "Cosa dice il foglietto": "What the leaflet says (in Italian)",
   "Non trovato nel foglietto": "Not found in the leaflet",
   "Il servizio non è disponibile in questo momento. Riprova tra poco.": "The service is not available right now. Please try again shortly.",
   "Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.": "The package leaflet is not available right now. Please try again shortly.",
@@ -376,4 +376,13 @@ export const INGLESE: Record<string, string> = {
   "Penicillina": "Penicillin",
   "A positivo": "A positive",
   "Lingua": "Language",
+  "Mostrato in italiano: la traduzione non ha passato il controllo.": "Shown in Italian: the translation did not pass the check.",
+  "Sto traducendo la spiegazione in inglese…": "Translating the explanation into English…",
+  "Sto traducendo la risposta in inglese…": "Translating the answer into English…",
+  // Testi fissi del backend (risposte senza modello ed errori): tradotti qui, senza chiamare la traduzione.
+  "Il servizio di spiegazione non ha risposto. Riprova tra qualche minuto.": "The explanation service did not respond. Please try again in a few minutes.",
+  "Il servizio di spiegazione è sovraccarico. Riprova tra qualche minuto.": "The explanation service is overloaded. Please try again in a few minutes.",
+  "Questa conversazione non è più disponibile. Riapri il referto per ricominciare.": "This conversation is no longer available. Open the report again to start over.",
+  "Mi dispiace, questa parola non compare nel referto che mi hai mandato: posso aiutarti solo a capire quello che c'è scritto lì. Se vuoi, chiedimi di un'altra parola del referto.": "I’m sorry, this word does not appear in the report you sent me: I can only help you understand what is written there. If you like, ask me about another word in the report.",
+  "Non ho trovato questa informazione nel foglietto. Puoi chiedere al medico o al farmacista.": "I could not find this information in the leaflet. You can ask your doctor or pharmacist.",
 }

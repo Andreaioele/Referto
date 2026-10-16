@@ -29,6 +29,7 @@ trovava alcuni farmaci presenti (Cardioaspirin), saltava la ricerca e impiegava
 | `POST /api/terminologia/cerca` | Spiega fino a 10 parole o sigle mediche con il glossario a strati (definizione, fonte, link) | sì |
 | `GET /api/salute` | Stato e data del prontuario | no |
 | `POST /api/chat` | Inoltra un messaggio al Mother agent e ritrasmette la risposta in streaming; con MongoDB usa la cache delle spiegazioni e salva conversazioni e trace | no (limite per IP) |
+| `POST /api/traduzione` | Traduce fino a 8 pezzi di testo per l'interfaccia in inglese (risposte di Referto verso `en`, domande verso `it`), con controllo deterministico; 503 senza `RADEON_API_KEY` | no (30 al minuto per IP) |
 | `POST /api/sessioni/utenti` | Crea un utente con il nickname (login fake); l'id va in `X-Utente-Id` | no |
 | `GET /api/sessioni/utenti/:id` | Verifica che un utente esista | no |
 | `GET /api/sessioni/utente` | L'utente corrente (header `X-Utente-Id`, se no l'utente predefinito) | sì |
@@ -348,6 +349,29 @@ Nest 11 (CommonJS) e non 12: Nest 12 è solo ESM e complica Jest. Dettagli in
 
 - Nessuna tolleranza agli errori di battitura ("Cardioaspirina").
 - Alias esteri non riconosciuti se seguiti dal dosaggio ("Lipitor 40 mg"), come nell'app.
+
+## Traduzione per l'interfaccia in inglese (`src/traduzione/`, 16/10/2026)
+
+- Il Mother agent **non cambia**: scrive sempre in italiano. Con l'interfaccia
+  in inglese il frontend manda qui le parti della sua risposta, già divise
+  (sintesi, spiegazione, limiti…: i titoli non passano dal modello), e le
+  domande scritte in inglese, che vanno al Mother agent in italiano.
+- Stesso modello del motore diretto (`MODELLO_MOTHER`, riserva
+  `MODELLO_MOTHER_RISERVA` se sovraccarico), chiamata non in streaming,
+  `temperature: 0`, prompt solo di traduzione in `data/prompt-traduzione-en.md`
+  e `data/prompt-traduzione-it.md` (certezza del medico con equivalenti fissi,
+  citazioni «…» identiche, numeri invariati).
+- **Riserva deterministica** (`verifica.ts`): una traduzione si accetta solo con
+  gli stessi numeri dell'originale (né uno in meno né uno in più, «13,4» = «13.4»),
+  tutte le citazioni «…» identiche e una lunghezza plausibile. Se no si riprova
+  una volta, poi torna l'originale con `tradotto: false` e la persona legge
+  l'italiano con una nota.
+- Le traduzioni riuscite restano in memoria (500 voci); nei log solo l'esito
+  (`scartata (numeri)`), mai i testi. Senza `RADEON_API_KEY` la rotta risponde
+  503 e il frontend mostra l'italiano.
+- Test: `test/traduzione.spec.ts` (controllo, servizio con il modello finto,
+  rotta, e che i testi fissi del backend tradotti in `frontend/src/lingua/en.ts`
+  siano ancora scritti così).
 
 ## Foglietti illustrativi (`src/foglietti/`, 14/10/2026)
 
