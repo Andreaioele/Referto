@@ -73,7 +73,7 @@ export interface Prenotabile {
 
 /**
  * Una struttura: nome, tipo, distanza, indirizzo, e i pulsanti per chiamare,
- * vederla sulla mappa (in una finestra del portale) e (nella ricerca) prenotare una visita.
+ * vederla sulla mappa (in un pannello laterale del portale) e (nella ricerca) prenotare una visita.
  */
 export function RigaStruttura({
   struttura,
@@ -126,7 +126,7 @@ export function RigaStruttura({
           </button>
         )}
         {haPosizione ? (
-          // La mappa si apre in una finestra del portale (FinestraMappa).
+          // La mappa si apre in un pannello laterale del portale (FinestraMappa).
           <button
             type="button"
             className="bottone-leggero bottone-icona"
@@ -144,7 +144,20 @@ export function RigaStruttura({
         )}
         {azioni}
       </div>
-      {mappaAperta && <FinestraMappa luogo={{ ...struttura, indirizzo }} onChiudi={() => setMappaAperta(false)} />}
+      {mappaAperta && (
+        <FinestraMappa
+          luogo={{
+            nome: struttura.nome,
+            indirizzo,
+            lat: struttura.lat,
+            lon: struttura.lon,
+            descrizione: `${struttura.professione ?? NOMI_TIPO[struttura.tipo]}, ${distanzaLeggibile(struttura.distanzaKm)}`,
+            orari: struttura.orari,
+            telefono: struttura.telefono,
+          }}
+          onChiudi={() => setMappaAperta(false)}
+        />
+      )}
     </li>
   )
 }

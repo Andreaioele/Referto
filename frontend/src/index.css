@@ -933,36 +933,75 @@ details summary {
   justify-content: flex-end;
 }
 
-/* ---------- Finestra della mappa (Leaflet + OpenStreetMap) ---------- */
-.finestra-mappa {
-  width: min(960px, 100%);
-  overflow: hidden;
+/* ---------- Pannello della mappa (MapLibre + OpenFreeMap Positron) ----------
+   Entra da destra come il widget Referto, ma con i colori del portale. */
+.velo-laterale {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(27, 36, 51, 0.32);
+  animation: velo-entra 0.2s ease-out;
 }
 
-.finestra-mappa-titolo {
+.pannello-mappa {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 520px;
+  max-width: 100%;
+  padding: 20px;
+  background: var(--p-sfondo);
+  box-shadow: -18px 0 50px rgba(27, 36, 51, 0.22);
+  overflow-y: auto;
+  animation: pannello-entra 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes velo-entra {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pannello-entra {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velo-laterale,
+  .pannello-mappa {
+    animation: none;
+  }
+}
+
+.pannello-mappa-testa {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pannello-mappa-titolo {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
 
-.finestra-mappa-titolo p {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0;
-}
-
-.finestra-mappa-titolo svg {
+.pannello-mappa-testa .bottone-leggero {
   flex: none;
-  margin-top: 3px;
 }
 
+/* La mappa prende lo spazio che resta, ma non scende sotto una misura comoda. */
 .mappa {
   position: relative;
-  flex: none;
-  height: min(62vh, 560px);
-  min-height: 280px;
+  flex: 1 0 300px;
+  max-height: 560px;
   border: 1px solid var(--p-bordo);
   border-radius: 12px;
   overflow: hidden;
@@ -973,6 +1012,47 @@ details summary {
   position: absolute;
   inset: 0;
   font: inherit;
+}
+
+.pannello-mappa-aiuto {
+  margin-top: -6px;
+}
+
+.pannello-mappa-dati {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 6px 16px;
+  border: 1px solid var(--p-linea);
+  border-radius: 12px;
+  background: var(--p-carta);
+}
+
+.pannello-mappa-dati > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.pannello-mappa-dati > div + div {
+  border-top: 1px solid var(--p-linea);
+}
+
+.pannello-mappa-dati dt {
+  flex: none;
+  margin-top: 2px;
+  color: var(--p-blu);
+}
+
+.pannello-mappa-dati dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.pannello-mappa-chiama {
+  flex: none;
 }
 
 .mappa-stato {
@@ -995,16 +1075,17 @@ details summary {
 }
 
 /* Pulsanti + e − più grandi, per chi ha la mano meno ferma (regole più
-   specifiche di quelle di Leaflet, che arrivano dopo con la mappa). */
-.mappa .leaflet-control-zoom.leaflet-bar a {
+   specifiche di quelle di MapLibre, che arrivano dopo con la mappa). */
+.mappa .maplibregl-ctrl-group button {
   width: 44px;
   height: 44px;
-  font-size: 26px;
-  line-height: 44px;
-  color: var(--p-ink);
 }
 
-.mappa .leaflet-container .leaflet-control-attribution {
+.mappa .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  background-size: 30px;
+}
+
+.mappa .maplibregl-ctrl-attrib {
   font-size: 13px;
 }
 
@@ -2333,7 +2414,8 @@ p.referto-errore {
     text-align: center;
   }
 
-  .scheda-testa .bottone-leggero {
+  .scheda-testa .bottone-leggero,
+  .pannello-mappa-testa .bottone-leggero {
     width: auto;
   }
 
@@ -2617,16 +2699,14 @@ p.referto-errore {
     border-radius: 0;
   }
 
-  /* Mappa a tutto schermo: la mappa prende lo spazio che resta. */
-  .finestra-mappa {
-    height: 100dvh;
-    min-height: 0;
+  /* Pannello della mappa a tutto schermo. */
+  .pannello-mappa {
+    width: 100%;
     padding: 16px;
   }
 
   .mappa {
-    flex: 1;
-    height: auto;
+    flex-basis: 280px;
   }
 
   .foglio-referto {

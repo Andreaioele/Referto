@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { StrutturaVicina } from './cliente'
 import { disegnaMappa } from './mappa'
@@ -19,6 +19,8 @@ const bicocca: StrutturaVicina = {
   lon: 9.2131,
   fonte: 'comune-milano',
   distanzaKm: 1.3,
+  orari: 'Lun-Ven 7:30-12',
+  telefono: '02 1234 5678',
 }
 
 afterEach(() => {
@@ -39,11 +41,15 @@ function apriMappa() {
 }
 
 describe('FinestraMappa', () => {
-  it('«Mappa» apre la mappa nella pagina, centrata sulla struttura, con nome e indirizzo', async () => {
+  it('«Mappa» apre il pannello laterale: mappa centrata sulla struttura e le sue informazioni', async () => {
     apriMappa()
     const finestra = screen.getByRole('dialog', { name: 'CDI Bicocca' })
     expect(finestra.getAttribute('aria-modal')).toBe('true')
+    expect(finestra.classList.contains('pannello-mappa')).toBe(true)
     expect(screen.getByText('Viale Sarca 336 (Bicocca)', { selector: '#indirizzo-mappa' })).toBeTruthy()
+    expect(within(finestra).getByText(/^Laboratorio analisi, /)).toBeTruthy()
+    expect(within(finestra).getByText('Lun-Ven 7:30-12')).toBeTruthy()
+    expect(within(finestra).getByRole('link', { name: 'Chiama' }).getAttribute('href')).toBe('tel:0212345678')
     expect(screen.getByRole('status').textContent).toContain('Carico la mappa')
     // Nessun link verso altre schede: la mappa è dentro la finestra.
     expect(finestra.querySelector('a[target="_blank"]')).toBeNull()
@@ -88,6 +94,18 @@ describe('FinestraMappa', () => {
     await import('./mappa')
     await new Promise((fine) => setTimeout(fine, 0))
     expect(disegnaMappa).not.toHaveBeenCalled()
+  })
+
+  it('senza orari né telefono mostra solo l’indirizzo, senza «Chiama»', () => {
+    render(
+      <ul>
+        <RigaStruttura struttura={{ ...bicocca, orari: undefined, telefono: undefined }} />
+      </ul>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mappa: CDI Bicocca' }))
+    const finestra = screen.getByRole('dialog', { name: 'CDI Bicocca' })
+    expect(within(finestra).queryByRole('link', { name: 'Chiama' })).toBeNull()
+    expect(within(finestra).queryByText('Orari')).toBeNull()
   })
 
   it('se la mappa non si carica lo dice, e la finestra resta chiudibile', async () => {

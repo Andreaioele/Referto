@@ -1,6 +1,6 @@
 ---
 tags: [area/interfaccia]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-17
 ---
 
 # Frontend (React + Vite)
@@ -48,7 +48,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/portale/Strutture.tsx`, `Professionisti.tsx`, `MieiLuoghi.tsx`, `prenotazioni.ts`, `distanza.ts` | "Le mie strutture" e "I miei professionisti" (solo luoghi e medici delle proprie visite e prenotazioni) |
 | `src/portale/SchedaStudio.tsx` | Card dello studio in "Le mie strutture": prossima visita, storico, Chiama, Mappa, Prenota |
 | `src/referto/StruttureVicine.tsx`, `strutture-testi.ts`, `classificazioni.ts` | Strutture per referto e per tipo, testi, classificazioni già fatte |
-| `src/referto/FinestraMappa.tsx`, `mappa.ts` | Mappa di una struttura in una finestra del portale (Leaflet + OpenStreetMap) |
+| `src/referto/FinestraMappa.tsx`, `mappa.ts` | Mappa di una struttura in un pannello laterale del portale (MapLibre + OpenFreeMap Positron) |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
 | `src/index.css` | Tema del portale e tema di Referto, versione per telefono sotto i 760 px |
 
@@ -282,6 +282,54 @@ strutture"/"Cerca professionisti" in "I miei documenti".
 - Test: `referto/FinestraMappa.test.tsx` (apertura, Esc, "Chiudi", clic fuori,
   fuoco, errore, chiusura prima del caricamento) e `referto/mappa.test.ts`
   (Leaflet vero in jsdom: tile OpenStreetMap, segnaposto, attribuzione).
+
+### Mappa in un pannello laterale, in scala di grigi (17/10/2026)
+
+La finestra al centro è diventata un **pannello che entra da destra**, come il
+widget Referto ma con i colori del portale (`.velo-laterale` + `.pannello-mappa`,
+520 px; sotto i 760 px a tutto schermo). Dall'alto: nome e tipo con la distanza
+("Ambulatorio, a 3 km da casa") e "Chiudi"; la mappa, che prende lo spazio che
+resta (almeno 300 px, al massimo 560); la riga d'aiuto; una scheda con
+indirizzo, orari e telefono; il pulsante "Chiama" (`tel:`). Orari e telefono
+compaiono solo se ci sono. Il comportamento resta quello di `useDialogo`
+(fuoco, Esc, clic fuori, pagina ferma); l'entrata è un'animazione di 0,26 s,
+spenta con `prefers-reduced-motion`.
+
+- **Dati:** `FinestraMappa` riceve una `SchedaLuogo` (luogo della mappa più
+  `descrizione`, `orari`, `telefono` facoltativi); la compongono
+  `RigaStruttura` e `SchedaStudio`.
+- **Grigio:** la prima prova (tile standard di OpenStreetMap con
+  `filter: grayscale(1)`) non convinceva: la mappa standard è disegnata per il
+  colore e in grigio diventa una trama fitta di icone e numeri civici. Vedi
+  sotto, «Stile Positron».
+- Test: `FinestraMappa.test.tsx` controlla anche descrizione, orari e "Chiama"
+  (e la loro assenza).
+
+### Stile Positron con MapLibre (17/10/2026)
+
+La mappa usa lo stile **Positron** di OpenFreeMap (`tiles.openfreemap.org/styles/positron`):
+dati di OpenStreetMap disegnati in grigio chiaro, pochi punti d'interesse,
+niente numeri civici; il segnaposto blu è l'unico colore. OpenFreeMap è
+gratuito, senza chiavi né registrazione. Scartati: CARTO Positron raster (ora
+chiede una chiave API: le tile arrivano con la scritta «API KEY REQUIRED») e
+Stadia (chiave o dominio registrato fuori da localhost).
+
+- **Libreria:** Positron è vettoriale, quindi Leaflet è sostituito da
+  **MapLibre GL 6** (licenza BSD-3); `leaflet` e `@types/leaflet` tolti.
+- **Leggibilità:** a stile caricato i nomi delle strade (`highway-name-*`)
+  passano da `#666` a `#3d434b` e da 13 a 15 px (17 px a zoom 18).
+- **Comportamento:** zoom 16, rotellina spenta, niente rotazione (nord sempre in
+  alto), pulsanti + e − da 44 px in alto a sinistra, attribuzione estesa
+  («OpenFreeMap © OpenMapTiles Data from OpenStreetMap»).
+- **Worker:** MapLibre cerca il suo worker accanto al proprio file, che Vite
+  sposta; in sviluppo Vite gli inietta anche il suo client, che in un worker
+  non parte. `mappa.ts` importa il codice del worker con `?raw` e lo passa a
+  `setWorkerUrl` come blob: stesso comportamento in sviluppo e in produzione.
+- **Peso:** il pezzo `mappa` (MapLibre e worker) è di circa **430 kB gzip**
+  (Leaflet ne pesava 44), più 11 kB di CSS. Si scarica solo all'apertura della
+  prima mappa; la pagina iniziale non cambia. Vedi [[14-problemi-noti-e-prossimi-passi]].
+- Test: `mappa.test.ts` con MapLibre finto (jsdom non ha WebGL): stile,
+  centro, niente rotazione, segnaposto, smontaggio, nomi delle strade.
 
 ### Card dello studio in "Le mie strutture" (15/10/2026)
 

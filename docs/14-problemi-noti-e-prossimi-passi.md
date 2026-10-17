@@ -1,6 +1,6 @@
 ---
 tags: [area/progetto]
-aggiornato: 2026-10-16
+aggiornato: 2026-10-17
 ---
 
 # Problemi noti e prossimi passi
@@ -25,6 +25,7 @@ Aggiornare questa nota quando un problema si risolve (e scriverlo in
 | Glossario a strati (`cercaTermine`): copre circa metà delle parole difficili di RadGraph-IT; mancano soprattutto aggettivi e descrittori radiologici («ispessimento», «pervio»); restano abbinamenti sbagliati da Wikidata («radiazioni» → particella α); lo strato curato è una bozza non revisionata da un medico | `backend/data/glossario_medico.json` | [[specifica-terminologia]] |
 | Una spiegazione guasta (solo markup DSML) è nella cache dell'anteprima per il referto di prova «RADIOGRAFIA DEL TORACE in due proiezioni…» (16/10/2026, conversazione `6ad156d3fa274bf09627fcf8`): sparisce al prossimo cambio di prompt o va cancellata a mano da `spiegazioni` | MongoDB | [[15-backend]] |
 | L'agente Mother su Evolus non ha `cercaTermine` e ha ancora il prompt senza le regole TERMINI: sincronizzarlo solo dopo aver aggiunto lo strumento (Web API `/api/terminologia/cerca`) | Evolus | [[15-backend]] |
+| Mappa delle strutture pesante: MapLibre + worker circa 430 kB gzip (Leaflet 44), scaricati alla prima apertura; dipende da OpenFreeMap, gratuito ma senza garanzie di servizio | `frontend/src/referto/mappa.ts` | [[16-frontend]] |
 | Cache del glossario indipendente dal modello | `parole_salvate.json` | [[06-glossario-hpo]] |
 | Referti vuoti o quasi nei dataset | `datasets/` | [[10-dataset-e-valutazione]] |
 | Gemma 4 31B non ancora provato sul cluster | `output-test` | [[10-dataset-e-valutazione]] |

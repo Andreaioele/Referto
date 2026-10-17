@@ -130,7 +130,20 @@ export function SchedaStudio() {
         </div>
       )}
 
-      {mappaAperta && <FinestraMappa luogo={{ nome: STUDIO, indirizzo, lat, lon }} onChiudi={() => setMappaAperta(false)} />}
+      {mappaAperta && (
+        <FinestraMappa
+          luogo={{
+            nome: STUDIO,
+            indirizzo,
+            lat,
+            lon,
+            descrizione: `Ambulatorio, ${distanzaLeggibile(distanza)}`,
+            orari: `Aperto ${orari.giorni}, ${orari.ore}`,
+            telefono: numero,
+          }}
+          onChiudi={() => setMappaAperta(false)}
+        />
+      )}
     </article>
   )
 }

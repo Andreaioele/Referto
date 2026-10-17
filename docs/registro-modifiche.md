@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-17
 ---
 
 # Registro delle modifiche
@@ -10,6 +10,8 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-17 · chat-frontend · Mappa: stile Positron di OpenFreeMap (grigio chiaro, senza chiavi) con MapLibre GL al posto di Leaflet e del filtro grigio; nomi delle strade più scuri e grandi; worker di MapLibre passato come blob · [[16-frontend]]
+- 2026-10-17 · chat-frontend · Mappa delle strutture in un pannello che entra da destra (mappa, indirizzo, orari, telefono e «Chiama») al posto della finestra al centro; tile OpenStreetMap in scala di grigi con il solo segnaposto a colori · [[16-frontend]]
 - 2026-10-16 · chat-frontend · Mother diretto: elenchi degli strumenti accettati anche come stringa (modello di riserva), righe di markup DSML tolte dalla risposta, risposta vuota trattata come errore · [[15-backend]]
 - 2026-10-16 · chat-frontend · Mother diretto: «Cos'è…» su una parola che non compare nel referto né nella conversazione riceve una risposta fissa e gentile, senza modello; stessa regola nel prompt · [[15-backend]]
 - 2026-10-16 · chat-frontend · Mother diretto: dopo un referto, «Cos'è / Cosa vuol dire…» obbliga la chiamata a `cercaTermine` (`tool_choice`, con ripiego se il server la rifiuta); `FiltroFonti` toglie le righe «Fonte:» non date da uno strumento · [[15-backend]]
