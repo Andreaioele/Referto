@@ -7,6 +7,16 @@ export interface Messaggio {
   errore?: boolean
   /** Il testo del referto mandato dal portale: non si ripete a schermo. */
   nascosto?: boolean
+  /** Cosa si mostra a schermo, se diverso da ciò che si manda (domanda in inglese mandata in italiano). */
+  mostra?: string
+}
+
+export interface OpzioniInvio {
+  nascosto?: boolean
+  /** Il testo da mostrare al posto di `testo` (es. la domanda pronta in inglese). */
+  mostra?: string
+  /** Prepara il messaggio da mandare partendo da `testo` (es. traduzione in italiano); la domanda si vede subito. */
+  prepara?: (segnale: AbortSignal) => Promise<string>
 }
 
 /** Un errore non cancella la parte di risposta già arrivata: la segue. */
@@ -27,17 +37,30 @@ export function useChat() {
 
   useEffect(() => () => controllo.current?.abort(), [])
 
-  const invia = useCallback(async (testo: string, opzioni: { nascosto?: boolean } = {}) => {
+  const invia = useCallback(async (testo: string, opzioni: OpzioniInvio = {}) => {
     const aggiornaRisposta = (modifica: (risposta: Messaggio) => Messaggio) =>
       setMessaggi((attuali) => [...attuali.slice(0, -1), modifica(attuali[attuali.length - 1])])
 
     controllo.current?.abort()
     const segnale = (controllo.current = new AbortController()).signal
     setInCorso(true)
-    setMessaggi((attuali) => [...attuali, { autore: 'persona', testo, nascosto: opzioni.nascosto }, { autore: 'referto', testo: '' }])
+    setMessaggi((attuali) => [
+      ...attuali,
+      { autore: 'persona', testo, nascosto: opzioni.nascosto, mostra: opzioni.mostra },
+      { autore: 'referto', testo: '' },
+    ])
+    let messaggio = testo
+    if (opzioni.prepara) {
+      try {
+        messaggio = await opzioni.prepara(segnale)
+      } catch {
+        return
+      }
+      if (segnale.aborted) return
+    }
     // spiega() finisce sempre con "fine" o "errore" (rete caduta, flusso interrotto compresi).
     await spiega(
-      testo,
+      messaggio,
       conversazione.current,
       (evento) => {
         if (evento.tipo === 'testo') aggiornaRisposta((r) => ({ ...r, testo: r.testo + evento.testo }))

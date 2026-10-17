@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 import { ContestoAzioni, type Azioni } from './azioni'
 import { usePercorso } from './percorsi'
 import type { Documento } from './portale/dati'
@@ -16,6 +16,7 @@ import { VisualizzaDocumento } from './portale/VisualizzaDocumento'
 import { LettoreFoglietto } from './referto/LettoreFoglietto'
 import type { FarmacoDaLeggere, RefertoDaSpiegare } from './referto/tipi'
 import { WidgetReferto } from './referto/WidgetReferto'
+import { useLingua } from './lingua/lingua'
 
 const CHIAVE_CONSENSO = 'referto-attivo'
 
@@ -41,6 +42,7 @@ type Finestra =
  */
 function App() {
   const percorso = usePercorso()
+  const lingua = useLingua()
   const [finestra, setFinestra] = useState<Finestra>(null)
   const [refertoAttivo, setRefertoAttivo] = useState(consensoSalvato)
 
@@ -96,12 +98,16 @@ function App() {
       pagina = <Home />
   }
 
+  // Cambio di lingua: tutto il portale si ridisegna da capo (anche il widget, che
+  // rispiega il referto nella lingua nuova), così nessun testo resta nella vecchia.
   return (
     <ContestoAzioni.Provider value={azioni}>
-      <Struttura percorso={percorso}>{pagina}</Struttura>
-      {finestra?.tipo === 'widget' && <WidgetReferto referto={finestra.referto} onChiudi={chiudi} />}
-      {finestra?.tipo === 'foglietto' && <LettoreFoglietto farmaco={finestra.farmaco} onChiudi={chiudi} />}
-      {finestra?.tipo === 'documento' && <VisualizzaDocumento documento={finestra.documento} onChiudi={chiudi} />}
+      <Fragment key={lingua}>
+        <Struttura percorso={percorso}>{pagina}</Struttura>
+        {finestra?.tipo === 'widget' && <WidgetReferto referto={finestra.referto} onChiudi={chiudi} />}
+        {finestra?.tipo === 'foglietto' && <LettoreFoglietto farmaco={finestra.farmaco} onChiudi={chiudi} />}
+        {finestra?.tipo === 'documento' && <VisualizzaDocumento documento={finestra.documento} onChiudi={chiudi} />}
+      </Fragment>
     </ContestoAzioni.Provider>
   )
 }

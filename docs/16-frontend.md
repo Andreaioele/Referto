@@ -49,6 +49,7 @@ finirebbe nel browser: le funzioni per i pazienti avranno rotte proprie.
 | `src/portale/SchedaStudio.tsx` | Card dello studio in "Le mie strutture": prossima visita, storico, Chiama, Mappa, Prenota |
 | `src/referto/StruttureVicine.tsx`, `strutture-testi.ts`, `classificazioni.ts` | Strutture per referto e per tipo, testi, classificazioni già fatte |
 | `src/referto/FinestraMappa.tsx`, `mappa.ts` | Mappa di una struttura in un pannello laterale del portale (MapLibre + OpenFreeMap Positron) |
+| `src/lingua/lingua.ts`, `en.ts`, `SelettoreLingua.tsx` | Lingua dell'interfaccia (IT / EN): `t('testo italiano')`, traduzioni inglesi, tasto nella testata |
 | `src/azioni.ts` | Azioni che le pagine chiedono all'app (punto di integrazione con Referto) |
 | `src/index.css` | Tema del portale e tema di Referto, versione per telefono sotto i 760 px |
 
@@ -63,6 +64,46 @@ npm test        # Vitest (jsdom): file *.test.ts(x) accanto al codice
 ```
 
 Su Vercel è il servizio `frontend` del progetto Services (`vercel.json` nella radice).
+
+## Lingua: italiano e inglese (16/10/2026)
+
+- Tasto **IT / EN** nella testata, accanto all'avatar (anche sul telefono);
+  la scelta resta in `localStorage` (`referto-lingua`), predefinito italiano.
+  Aggiorna anche `<html lang>` e il titolo della scheda.
+- Senza librerie (`src/lingua/lingua.ts`): **il testo italiano nel codice è la
+  chiave**. `t('Le mie visite')` restituisce l'italiano o la traduzione di
+  `en.ts`; `{nome}` si sostituisce (`t('Prossime ({n})', { n })`), `quanti()`
+  sceglie singolare o plurale. Vale anche per i dati del portale
+  (`t(visita.titolo)`). Date e numeri con `locale()` (`it-IT` / `en-GB`).
+- Al cambio di lingua `App` ridisegna da capo tutto il portale (`key` sulla
+  lingua): così anche le funzioni fuori da React (date, testi delle strutture,
+  errori del client) leggono la lingua nuova, e il widget rispiega il referto.
+- Restano in italiano per scelta i documenti originali (foglio del referto,
+  foglietto AIFA), le citazioni dal referto e i nomi propri
+  ([[specifica-multilingua]]).
+- **Risposte di Referto in inglese senza toccare il Mother agent**
+  (`referto/useTraduzione.ts`, `traduci()` in `cliente.ts`): il Mother agent
+  scrive in italiano; quando la risposta è finita le sue parti si mandano a
+  `POST /api/traduzione` ([[15-backend]]) e si mostrano in inglese. Durante la
+  generazione e la traduzione si vede l'attesa, non l'italiano. Un pezzo che
+  non passa il controllo del backend resta in italiano con la nota «Shown in
+  Italian…». I testi fissi (errori, «parola non nel referto») si traducono
+  dal dizionario, senza chiamata. Valori, citazioni e note del medico restano
+  copiati dal referto.
+- Le domande vanno al Mother agent **in italiano**: le domande pronte si
+  mostrano in inglese ma si mandano nel testo italiano (`domande-pronte.ts`),
+  quelle scritte in inglese si traducono prima (`useChat` con `mostra` e
+  `prepara`). Così il Mother agent riconosce «Cosa vuol dire…» come in
+  italiano. Lo stesso per il foglietto (`useFoglietto`): domande in italiano,
+  risposta tradotta, brani del foglio in italiano.
+- Test: `lingua/en.test.ts` controlla che ogni `t('…')` del codice e i testi
+  dei dati abbiano la traduzione, con gli stessi segnaposto;
+  `SelettoreLingua.test.tsx` prova il cambio IT → EN → IT sul menu;
+  `WidgetReferto.test.tsx` (in inglese) la traduzione delle parti, la nota per
+  quelle rimaste in italiano, le domande mandate in italiano e la riserva se la
+  traduzione non risponde; `useFoglietto.test.tsx` le domande del foglietto.
+- Sul telefono le voci della barra in basso in inglese sono brevi (Docs, Meds,
+  Places) per non sovrapporsi.
 
 ## Portale dimostrativo con Referto integrato (15/10/2026)
 
@@ -295,6 +336,9 @@ compaiono solo se ci sono. Il comportamento resta quello di `useDialogo`
 (fuoco, Esc, clic fuori, pagina ferma); l'entrata è un'animazione di 0,26 s,
 spenta con `prefers-reduced-motion`.
 
+- **Lingua:** i testi del pannello passano da `t()` come il resto del portale
+  (aggiunta la voce «Orari» in `en.ts`); descrizione e orari arrivano già
+  tradotti da `RigaStruttura` e `SchedaStudio`.
 - **Dati:** `FinestraMappa` riceve una `SchedaLuogo` (luogo della mappa più
   `descrizione`, `orari`, `telefono` facoltativi); la compongono
   `RigaStruttura` e `SchedaStudio`.

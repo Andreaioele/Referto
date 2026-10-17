@@ -1,5 +1,6 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { apriPdf } from './pdf'
+import { t } from '../lingua/lingua'
 
 /**
  * Client di Referto verso il backend (sempre su /api: Vite in sviluppo, Vercel
@@ -7,24 +8,24 @@ import { apriPdf } from './pdf'
  * usa non legge stati HTTP né flussi SSE.
  */
 
-/** Errore già scritto per la persona, da mostrare così com'è. */
+/** Errore già scritto per la persona (nella lingua scelta), da mostrare così com'è. */
 export class ErroreServizio extends Error {}
 
-const NON_DISPONIBILE = 'Il servizio non è disponibile in questo momento. Riprova tra poco.'
-const INTERROTTO = 'Collegamento interrotto. Riprova tra poco.'
-const RISPOSTA_INTERROTTA = 'La risposta si è interrotta. Riprova tra poco.'
-const FOGLIETTO_NON_DISPONIBILE = 'Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.'
+const NON_DISPONIBILE = () => t('Il servizio non è disponibile in questo momento. Riprova tra poco.')
+const INTERROTTO = () => t('Collegamento interrotto. Riprova tra poco.')
+const RISPOSTA_INTERROTTA = () => t('La risposta si è interrotta. Riprova tra poco.')
+const FOGLIETTO_NON_DISPONIBILE = () => t('Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.')
 
 /** Il messaggio per la persona per ogni stato HTTP, secondo cosa stava facendo. */
 function messaggioPerStato(stato: number, attivita: 'spiegazione' | 'foglietto'): string {
   if (stato === 429) {
     return attivita === 'spiegazione'
-      ? 'Hai inviato molti messaggi di seguito. Aspetta un minuto e riprova.'
-      : 'Hai fatto molte domande di seguito. Aspetta un minuto e riprova.'
+      ? t('Hai inviato molti messaggi di seguito. Aspetta un minuto e riprova.')
+      : t('Hai fatto molte domande di seguito. Aspetta un minuto e riprova.')
   }
-  if (attivita === 'foglietto' && stato === 404) return 'Questo farmaco non è nella banca dati AIFA.'
-  if (attivita === 'foglietto' && stato === 502) return FOGLIETTO_NON_DISPONIBILE
-  return NON_DISPONIBILE
+  if (attivita === 'foglietto' && stato === 404) return t('Questo farmaco non è nella banca dati AIFA.')
+  if (attivita === 'foglietto' && stato === 502) return FOGLIETTO_NON_DISPONIBILE()
+  return NON_DISPONIBILE()
 }
 
 function interrotta(segnale?: AbortSignal): boolean {
@@ -82,7 +83,7 @@ export async function spiega(
       signal: segnale,
     })
   } catch {
-    return errore(INTERROTTO)
+    return errore(INTERROTTO())
   }
   if (!risposta.ok || !risposta.body) return errore(messaggioPerStato(risposta.status, 'spiegazione'))
 
@@ -106,9 +107,9 @@ export async function spiega(
       }
     }
   } catch {
-    return errore(INTERROTTO)
+    return errore(INTERROTTO())
   }
-  errore(RISPOSTA_INTERROTTA)
+  errore(RISPOSTA_INTERROTTA())
 }
 
 /** Evento di una riga "data: {...}" del flusso; null per commenti e righe non valide. */
@@ -177,7 +178,7 @@ export async function apriFoglietto(
   if (pdf.status === 'fulfilled') void pdf.value.destroy()
   const motivo = info.status === 'rejected' ? info.reason : (pdf as PromiseRejectedResult).reason
   if (interrotta(segnale)) throw motivo
-  throw motivo instanceof ErroreServizio ? motivo : new ErroreServizio(FOGLIETTO_NON_DISPONIBILE)
+  throw motivo instanceof ErroreServizio ? motivo : new ErroreServizio(FOGLIETTO_NON_DISPONIBILE())
 }
 
 async function infoFoglietto(cod: string, forma: string, segnale?: AbortSignal): Promise<InfoFoglietto> {
@@ -204,7 +205,7 @@ export async function chiediAlFoglietto(
     })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
   if (!risposta.ok) throw new ErroreServizio(messaggioPerStato(risposta.status, 'foglietto'))
   return (await risposta.json()) as RispostaFoglietto
@@ -218,7 +219,7 @@ export interface Classificazione {
   area: string
 }
 
-const AREA_NON_CAPITA = 'Non sono riuscito a capire di che area è il referto. Puoi sceglierla tu qui sotto.'
+const AREA_NON_CAPITA = () => t('Non sono riuscito a capire di che area è il referto. Puoi sceglierla tu qui sotto.')
 
 /**
  * Chiede al Mother agent di leggere il referto e si ferma appena arriva la riga
@@ -262,7 +263,7 @@ export async function classifica(testo: string, segnale?: AbortSignal): Promise<
     ])
     if (segnale?.aborted) throw new DOMException('Classificazione annullata', 'AbortError')
     if (risultato) return risultato
-    throw new ErroreServizio(errore ?? AREA_NON_CAPITA)
+    throw new ErroreServizio(errore ?? AREA_NON_CAPITA())
   } finally {
     segnale?.removeEventListener('abort', annulla)
   }
@@ -340,9 +341,9 @@ async function getStrutture<T>(parametri: Record<string, string | number>, segna
     risposta = await fetch(`/api/strutture?${query}`, { signal: segnale })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
-  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE)
+  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE())
   return (await risposta.json()) as T
 }
 
@@ -372,8 +373,68 @@ export async function infoStrutture(segnale?: AbortSignal): Promise<InfoStruttur
     risposta = await fetch('/api/strutture/aree', { signal: segnale })
   } catch (motivo) {
     if (interrotta(segnale)) throw motivo
-    throw new ErroreServizio(INTERROTTO)
+    throw new ErroreServizio(INTERROTTO())
   }
-  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE)
+  if (!risposta.ok) throw new ErroreServizio(NON_DISPONIBILE())
   return (await risposta.json()) as InfoStrutture
+}
+
+/* ── Traduzione per l'interfaccia in inglese (POST /api/traduzione) ── */
+
+export interface Traduzione {
+  testo: string
+  /** false: la traduzione non c'è o non ha passato il controllo del backend, `testo` è l'originale. */
+  tradotto: boolean
+}
+
+const traduzioniFatte = new Map<string, Traduzione>()
+
+/**
+ * Traduce i testi nella lingua data: le risposte del Mother agent (sempre in
+ * italiano) verso l'inglese, le domande scritte in inglese verso l'italiano.
+ * Prima i testi fissi che il frontend conosce già (`en.ts`, deterministici),
+ * poi il backend. Non lancia mai, tranne quando `segnale` annulla: se il
+ * servizio non risponde restituisce gli originali con `tradotto: false`.
+ */
+export async function traduci(testi: string[], lingua: 'en' | 'it', segnale?: AbortSignal): Promise<Traduzione[]> {
+  const risultati: Array<Traduzione | undefined> = testi.map((testo) => {
+    if (!testo.trim()) return { testo, tradotto: true }
+    if (lingua === 'en' && testoFisso(testo)) return { testo: testoFisso(testo)!, tradotto: true }
+    return traduzioniFatte.get(`${lingua}\n${testo}`)
+  })
+  const mancanti = testi.filter((_, i) => !risultati[i])
+  for (let inizio = 0; inizio < mancanti.length; inizio += 8) {
+    const gruppo = mancanti.slice(inizio, inizio + 8)
+    let tradotti: Traduzione[]
+    try {
+      const risposta = await fetch('/api/traduzione', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testi: gruppo, lingua }),
+        signal: segnale,
+      })
+      if (!risposta.ok) throw new Error(`HTTP ${risposta.status}`)
+      tradotti = ((await risposta.json()) as { traduzioni: Traduzione[] }).traduzioni
+    } catch (motivo) {
+      if (interrotta(segnale)) throw motivo
+      tradotti = gruppo.map((testo) => ({ testo, tradotto: false }))
+    }
+    gruppo.forEach((testo, i) => {
+      const traduzione = tradotti[i] ?? { testo, tradotto: false }
+      if (traduzione.tradotto) traduzioniFatte.set(`${lingua}\n${testo}`, traduzione)
+      risultati[testi.indexOf(testo)] = traduzione
+    })
+  }
+  return testi.map((testo, i) => risultati[i] ?? { testo, tradotto: false })
+}
+
+/** La traduzione di un testo fisso (errori, risposte senza modello), se il frontend la conosce. */
+function testoFisso(testo: string): string | undefined {
+  const tradotto = t(testo.trim())
+  return tradotto !== testo.trim() ? tradotto : undefined
+}
+
+/** Solo per i test. */
+export function dimenticaTraduzioni(): void {
+  traduzioniFatte.clear()
 }

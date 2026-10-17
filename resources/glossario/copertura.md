@@ -1,6 +1,6 @@
 # Copertura del glossario a strati
 
-Glossario: 28082 chiavi; voci per strato {'curato': 79, 'hpo': 2675, 'wikidata': 16072} (creato 2026-10-15).
+Glossario: 28479 chiavi; voci per strato {'curato': 334, 'hpo': 2675, 'wikidata': 16050} (creato 2026-10-16).
 
 Parola difficile: Zipf < 3,5 in italiano (wordfreq). Corrispondenza sulla radice (singolare/plurale).
 
@@ -8,15 +8,15 @@ Parola difficile: Zipf < 3,5 in italiano (wordfreq). Corrispondenza sulla radice
 
 | Strati | Parole difficili coperte (occorrenze) | Parole difficili diverse coperte | Entità difficili coperte del tutto |
 |---|---|---|---|
-| curato | 201/2178 (9%) | 22/717 (3%) | 200/2144 (9%) |
+| curato | 1342/2178 (62%) | 409/717 (57%) | 1317/2144 (61%) |
 | hpo | 39/2178 (2%) | 16/717 (2%) | 39/2144 (2%) |
-| wikidata | 863/2178 (40%) | 242/717 (34%) | 847/2144 (40%) |
-| curato + hpo | 229/2178 (11%) | 35/717 (5%) | 228/2144 (11%) |
-| tutti | 1077/2178 (49%) | 269/717 (38%) | 1060/2144 (49%) |
+| wikidata | 800/2178 (37%) | 220/717 (31%) | 785/2144 (37%) |
+| curato + hpo | 1355/2178 (62%) | 416/717 (58%) | 1330/2144 (62%) |
+| tutti | 2005/2178 (92%) | 590/717 (82%) | 1973/2144 (92%) |
 
 Parole difficili non coperte (tutti gli strati), le più frequenti:
 
-enhancement (25), ispessimento (18), dilatazione (18), polmonari (17), ossee (16), pervie (15), attenuazione (14), vertebrale (13), ostruzione (12), chirurgiche (11), decorso (11), riempimento (11), pervia (11), ossea (9), vascolarizzazione (8), restringimento (8), resezione (8), quantita (8), intervallare (7), degenerative (7), sinistre (7), duttale (7), prominente (7), stranding (7), chiazze (6), giunzione (6), invariato (6), mediastinici (6), prominenti (6), ingranditi (6), densita (6), confluente (6), biliare (6), occlusione (6), mediana (6), cardiomediastinica (5), silhouette (5), giugulare (5), aterosclerotica (5), pregressa (5)
+quantita (8), sinistre (7), appropriate (4), normalita (3), posteriormente (3), destri (3), aspirato (2), sospette (2), destre (2), moderatamente (2), originano (2), visualizzate (2), sma (2), intra (2), sinusale (2), roux (2), misty (2), inferiormente (2), ill (2), tracking (2), sgonfia (2), colescisti (2), terminazione (2), ventricolostomia (2), pca (2), sinistri (2), supraclinoidee (2), moyamoya (2), sovrapposta (1), metalliche (1), ottusita (1), marcatori (1), sovrapposto (1), tenui (1), curly (1), affollamento (1), retratto (1), cabg (1), iliare (1), svc (1)
 
 ## Referti del portale
 
@@ -100,9 +100,9 @@ Parole difficili coperte: 3/5. Non coperte: poliambulatorio, secchezza.
 
 | Strato | Termini | Definizione in italiano | Solo definizione inglese o breve |
 |---|---|---|---|
-| curato | 27 | 27 | 0 |
+| curato | 271 | 271 | 0 |
 | hpo | 12 | 0 | 12 |
-| wikidata | 309 | 287 | 22 |
+| wikidata | 279 | 260 | 19 |
 
 Esempi di definizioni da Wikipedia (prime due frasi):
 
@@ -112,7 +112,6 @@ Esempi di definizioni da Wikipedia (prime due frasi):
 - **tosse** (MeSH, ICD-11, HPO): La tosse è un meccanismo fisiologico di difesa basato sull'espulsione improvvisa e violenta di aria dai polmoni. È un fenomeno riflesso di natura irritativa (ma anche controllabile e producibile volontariamente) che modifica il normale anda
 - **edema polmonare acuto** (MeSH, ICD-9, ICD-10-CM, ICD-11, HPO): Per edema polmonare acuto (EPA) si intende un aumento dei liquidi nello spazio extravascolare (interstizio e alveoli) a livello del parenchima polmonare. L'edema polmonare acuto può essere secondario a un aumento della pressione idrostatica
 - **mediastino** (MeSH, ICD-11, UBERON, FMA): Il mediastino (pronuncia corretta: /medjaˈstino/; pronuncia accettabile: /meˈdjastino/) è un compartimento anatomico che occupa la parte mediana del torace. Comprende strutture e organi dell'apparato circolatorio, dell'apparato respiratorio
-- **RNA messaggero** (MeSH): L'RNA messaggero o ARN messaggero (noto con l'abbreviazione di mRNA o ARNm o con il termine più generico di trascritto) è un tipo di RNA che codifica e porta informazioni durante la trascrizione dal DNA ai siti della sintesi proteica, per e
 - **radiografia del torace** (MeSH): In radiologia, una radiografia del torace è una proiezione radiografica utilizzata per diagnosticare alcune patologie che colpiscono il torace, il suo contenuto e le strutture vicine. Le radiografie al torace sono le radiografie più frequen
 - **atrio** (MeSH, ICD-11, UBERON, FMA): In anatomia, gli atri (detti anche orecchiette) sono le due cavità superiori del cuore umano e sono posti al di sopra dei due ventricoli; sono separati dal setto interatriale. Differiscono dai ventricoli per diversi motivi:
 hanno una capaci
@@ -120,36 +119,37 @@ hanno una capaci
 - **tachipnea** (MeSH, ICD-10, ICD-9, HPO): La tachipnea (dal greco antico ταχύς?, tachỳs, "veloce" e πνέα, pnèa, "respiro") è un sensibile aumento della frequenza respiratoria rispetto alla norma (12-16 atti respiratori al minuto nelle persone adulte).
 Si osserva nell'insufficienza 
 - **edema** (MeSH, ICD-10, ICD-9, ICD-11): L'edema (dal greco οἴδημα, òidema, "gonfiore") è un accumulo di liquidi negli spazi interstiziali dell'organismo. Il termine idropisìa o idrope, per quanto sinonimo di edema, indica l'accumulo del liquido sieroso in una cavità del corpo, so
+- **aspirazione** (MeSH, ICD-10, ICD-9): L'aspirazione è l'ingresso di sostanze, ad esempio il bolo, in trachea durante la deglutizione attraverso la rima glottica.
 
 ## Termini trovati fatti solo di parole comuni (da controllare)
 
-- tc → tomografia computerizzata (curato): 76
+- tc → tomografia computerizzata (curato): 74
 - torace → petto (wikidata): 63
 - reperti → reperto (curato): 53
 - mezzo di contrasto → mezzo di contrasto (curato): 51
 - rm → risonanza magnetica (curato): 33
+- lesioni → lesione (curato): 31
 - nella norma → nei limiti della norma (curato): 29
 - lobo → Lobo (wikidata): 28
+- lesione → lesione (curato): 27
 - proiezione → proiezione (curato): 25
-- somministrazione → via di somministrazione (wikidata): 23
-- radiazioni → particella α (wikidata): 21
+- calibro → calibro (curato): 23
+- radiazioni → radiazione (wikidata): 21
+- polmonare → polmonare (curato): 17
 - reni → rene (wikidata): 16
 - arteria polmonare → arteria polmonare (wikidata): 13
-- addominale → muscoli addominali (wikidata): 13
+- consolidamento → consolidazione (curato): 13
+- addominale → addominale (curato): 13
 - vasi → vaso sanguigno (wikidata): 13
 - proiezioni → proiezione (curato): 12
 - nei limiti della norma → nei limiti della norma (curato): 11
 - polmoni → polmone (wikidata): 11
 - infarto → infarto (wikidata): 11
+- laterale → laterale (curato): 9
 - sostanza bianca → sostanza bianca (wikidata): 9
 - diffusa → diffuso (curato): 8
 - appendice → appendice vermiforme (wikidata): 6
+- cronica → cronico (curato): 6
+- residuo → residuo (curato): 6
 - dolore addominale → dolore addominale (wikidata): 6
 - fratture → frattura ossea (wikidata): 5
-- arteria → arteria (wikidata): 5
-- vena porta → vena porta (wikidata): 5
-- polmone → polmone (wikidata): 4
-- aspirazione → aspirazione (wikidata): 4
-- vena cava superiore → vena cava superiore (wikidata): 4
-- rx → radiografia (curato): 4
-- addominali → muscoli addominali (wikidata): 4

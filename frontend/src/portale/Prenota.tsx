@@ -8,6 +8,7 @@ import { documenti } from './dati'
 import { casaDelPaziente, refertoDaSpiegare } from './perReferto'
 import { prendiPrenotazioneInAttesa } from './prenotazioni'
 import { SceltaOrario } from './SceltaOrario'
+import { t } from '../lingua/lingua'
 
 /**
  * "Prenota una visita" (demo): 1. scegli un referto; 2. Referto mostra subito
@@ -39,23 +40,25 @@ export function Prenota() {
   return (
     <>
       <div className="titolo-pagina">
-        <h1>Prenota una visita</h1>
-        <p className="tenue">Scegli un referto: ti mostriamo strutture e medici adatti vicino a casa, poi prenoti con una data, una telefonata o un'email.</p>
+        <h1>{t('Prenota una visita')}</h1>
+        <p className="tenue">
+          {t("Scegli un referto: ti mostriamo strutture e medici adatti vicino a casa, poi prenoti con una data, una telefonata o un'email.")}
+        </p>
       </div>
 
       {!refertoAttivo ? (
         <section className="scheda">
           <p>
-            Per prenotare a partire dai tuoi referti attiva Referto in <Collegamento href="/dati">I miei dati</Collegamento>.
+            {t('Per prenotare a partire dai tuoi referti attiva Referto in')} <Collegamento href="/dati">{t('I miei dati')}</Collegamento>.
           </p>
         </section>
       ) : (
         <>
           <section className="scheda" aria-labelledby="passo-referto">
             <div className="scheda-testa">
-              <h2 id="passo-referto">1. Per quale referto?</h2>
+              <h2 id="passo-referto">{t('1. Per quale referto?')}</h2>
             </div>
-            <div className="prenota-referti" role="group" aria-label="Referto">
+            <div className="prenota-referti" role="group" aria-label={t('Referto')}>
               {referti.map((r) => (
                 <button
                   key={r.id}
@@ -68,10 +71,10 @@ export function Prenota() {
                 >
                   <Icona nome="documento" dimensione={22} />
                   <span>
-                    <strong>{r.titolo}</strong>
+                    <strong>{t(r.titolo)}</strong>
                     <span className="tenue piccolo">
                       {r.data}
-                      {r.classificazione ? ` · ${r.classificazione.area}` : ''}
+                      {r.classificazione ? ` · ${t(r.classificazione.area)}` : ''}
                     </span>
                   </span>
                 </button>
@@ -82,18 +85,18 @@ export function Prenota() {
           {referto && (
             <section className="scheda" aria-labelledby="passo-dove">
               <div className="scheda-testa">
-                <h2 id="passo-dove">2. Dove o con chi</h2>
+                <h2 id="passo-dove">{t('2. Dove o con chi')}</h2>
               </div>
-              <h3>Professionisti</h3>
+              <h3>{t('Professionisti')}</h3>
               <StruttureDelReferto key={`p-${referto.id}`} referto={referto} casa={casa} categoria="professionisti" prenotabile={scegli('professionisti')} />
-              <h3>Strutture</h3>
+              <h3>{t('Strutture')}</h3>
               <StruttureDelReferto key={`s-${referto.id}`} referto={referto} casa={casa} categoria="strutture" prenotabile={scegli('strutture')} />
             </section>
           )}
 
           {referto && scelta && (
             <section className="scheda" id="passo-orario" aria-labelledby="titolo-orario">
-              <h2 className="nascosto">3. Come prenotare</h2>
+              <h2 className="nascosto">{t('3. Come prenotare')}</h2>
               <SceltaOrario
                 key={scelta.struttura.id}
                 struttura={scelta.struttura}

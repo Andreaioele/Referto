@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-15
+aggiornato: 2026-10-16
 ---
 
 # Referto: documentazione di progetto
@@ -42,7 +42,7 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
     Diagrammi interattivi dell'architettura (skill archify): [[archify/README|docs/archify]].
 10. Specifiche delle prossime funzionalità:
     [[specifica-terminologia]], [[specifica-visite-specialisti]],
-    [[specifica-storico-sessione]].
+    [[specifica-storico-sessione]], [[specifica-multilingua]].
 
 ## Mappa
 
@@ -73,6 +73,7 @@ graph LR
   indice --> specTerminologia[specifica-terminologia]
   indice --> specVisite[specifica-visite-specialisti]
   indice --> specStorico[specifica-storico-sessione]
+  indice --> specLingua[specifica-multilingua]
   specTerminologia --> glossario
   specTerminologia --> backend
   specVisite --> strutture

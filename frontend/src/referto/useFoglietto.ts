@@ -2,9 +2,13 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { useEffect, useRef, useState } from 'react'
 import { apriFoglietto, chiediAlFoglietto, ErroreServizio, type InfoFoglietto, type RispostaFoglietto } from './cliente'
 import type { FarmacoDaLeggere } from './tipi'
+import { t } from '../lingua/lingua'
 
 export interface Scambio {
+  /** La domanda come la riceve l'agente del foglietto (in italiano). */
   domanda: string
+  /** La domanda come la vede la persona, se diversa (interfaccia in inglese). */
+  mostra?: string
   stato: 'attesa' | 'pronta' | 'errore'
   risposta?: RispostaFoglietto
   errore?: string
@@ -40,7 +44,7 @@ export function useFoglietto(farmaco: FarmacoDaLeggere) {
       })
       .catch((motivo: unknown) => {
         if (caricamento.signal.aborted) return
-        setErrore(motivo instanceof ErroreServizio ? motivo.message : 'Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.')
+        setErrore(motivo instanceof ErroreServizio ? motivo.message : t('Il foglietto illustrativo non è disponibile in questo momento. Riprova tra poco.'))
       })
     return () => {
       caricamento.abort()
@@ -61,16 +65,29 @@ export function useFoglietto(farmaco: FarmacoDaLeggere) {
     setCitata(cita ? numero : null)
   }
 
-  /** Fa la domanda; restituisce false se non può partire (vuota, foglio non pronto, un'altra in corso). */
-  const chiedi = (domanda: string): boolean => {
+  /**
+   * Fa la domanda; restituisce false se non può partire (vuota, foglio non pronto, un'altra in corso).
+   * `mostra` è il testo a schermo se diverso; `prepara` trasforma la domanda prima di mandarla
+   * (traduzione in italiano), mentre a schermo si vede subito.
+   */
+  const chiedi = (
+    domanda: string,
+    { mostra, prepara }: { mostra?: string; prepara?: (segnale: AbortSignal) => Promise<string> } = {},
+  ): boolean => {
     const testo = domanda.trim()
     if (!testo || !info || domandaInCorso.current) return false
     const indice = scambi.length
     const aggiorna = (modifica: Partial<Scambio>) =>
       setScambi((attuali) => attuali.map((s, i) => (i === indice ? { ...s, ...modifica } : s)))
     const controllo = (domandaInCorso.current = new AbortController())
-    setScambi((attuali) => [...attuali, { domanda: testo, stato: 'attesa' }])
-    chiediAlFoglietto(cod, testo, forma, controllo.signal)
+    setScambi((attuali) => [...attuali, { domanda: testo, mostra, stato: 'attesa' }])
+    const richiesta = prepara
+      ? prepara(controllo.signal).then((daMandare) => {
+          if (daMandare !== testo) aggiorna({ domanda: daMandare })
+          return chiediAlFoglietto(cod, daMandare, forma, controllo.signal)
+        })
+      : chiediAlFoglietto(cod, testo, forma, controllo.signal)
+    richiesta
       .then((risposta) => {
         aggiorna({ stato: 'pronta', risposta })
         const sezione = risposta.sezione ? sezioni.find((s) => s.numero === risposta.sezione) : undefined
@@ -81,7 +98,7 @@ export function useFoglietto(farmaco: FarmacoDaLeggere) {
       })
       .catch((motivo: unknown) => {
         if (controllo.signal.aborted) return
-        aggiorna({ stato: 'errore', errore: motivo instanceof ErroreServizio ? motivo.message : 'Collegamento interrotto. Riprova tra poco.' })
+        aggiorna({ stato: 'errore', errore: motivo instanceof ErroreServizio ? motivo.message : t('Collegamento interrotto. Riprova tra poco.') })
       })
       .finally(() => {
         if (domandaInCorso.current === controllo) domandaInCorso.current = null

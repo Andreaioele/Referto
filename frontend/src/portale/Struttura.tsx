@@ -4,6 +4,8 @@ import { Collegamento } from '../Collegamento'
 import { useAzioni } from '../azioni'
 import { paziente, STUDIO } from './dati'
 import { PAGINE } from './pagine'
+import { SelettoreLingua } from '../lingua/SelettoreLingua'
+import { t } from '../lingua/lingua'
 
 
 /** Il segno "R" di Referto, usato su ogni pulsante che apre il widget. */
@@ -27,35 +29,36 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
           </span>
           <span className="testata-nome">
             <strong>{STUDIO}</strong>
-            <span>Area paziente</span>
+            <span>{t('Area paziente')}</span>
           </span>
         </Collegamento>
-        <span className="etichetta-demo">Portale dimostrativo · dati di esempio</span>
+        <span className="etichetta-demo">{t('Portale dimostrativo · dati di esempio')}</span>
         <div className="testata-utente">
-          <Collegamento className="avatar" href="/dati" aria-label="I miei dati">
+          <SelettoreLingua />
+          <Collegamento className="avatar" href="/dati" aria-label={t('I miei dati')}>
             {paziente.iniziali}
           </Collegamento>
           <span className="testata-utente-nome">
             {paziente.nome} {paziente.cognome}
           </span>
           <button type="button" className="bottone-leggero solo-computer">
-            Esci
+            {t('Esci')}
           </button>
         </div>
       </header>
-      <div className="etichetta-demo-telefono">Portale dimostrativo · dati di esempio</div>
+      <div className="etichetta-demo-telefono">{t('Portale dimostrativo · dati di esempio')}</div>
 
       <div className="corpo">
-        <nav className="menu" aria-label="Menu principale">
+        <nav className="menu" aria-label={t('Menu principale')}>
           {PAGINE.map((pagina) => (
             <Collegamento key={pagina.percorso} href={pagina.percorso} aria-current={pagina.percorso === percorso ? 'page' : undefined}>
               <Icona nome={pagina.icona} />
-              {pagina.nome}
+              {t(pagina.nome)}
             </Collegamento>
           ))}
           <Collegamento href="/prenota" className="menu-prenota" aria-current={percorso === '/prenota' ? 'page' : undefined}>
             <Icona nome="piu" dimensione={22} />
-            Prenota una visita
+            {t('Prenota una visita')}
           </Collegamento>
         </nav>
         <main className="contenuto">{children}</main>
@@ -65,16 +68,16 @@ export function Struttura({ percorso, children }: { percorso: string; children: 
         {refertoAttivo && (
           <button type="button" className="lanciatore" onClick={() => spiega()}>
             <MarchioReferto grande />
-            Capire un referto
+            {t('Capire un referto')}
           </button>
         )}
-        <nav className="barra-schede" aria-label="Menu principale">
+        <nav className="barra-schede" aria-label={t('Menu principale')}>
           {PAGINE.filter((pagina) => !pagina.soloComputer).map((pagina) => (
             <Collegamento key={pagina.percorso} href={pagina.percorso} aria-current={pagina.percorso === percorso ? 'page' : undefined}>
               <span className="barra-schede-icona">
                 <Icona nome={pagina.icona} />
               </span>
-              {pagina.breve}
+              {t(pagina.breve)}
             </Collegamento>
           ))}
         </nav>

@@ -8,6 +8,7 @@ import { RigaDocumento } from './elementi'
 import { casaDelPaziente, refertoDaSpiegare } from './perReferto'
 import { naviga } from '../percorsi'
 import { preparaPrenotazione, usePrenotazioni } from './prenotazioni'
+import { t } from '../lingua/lingua'
 
 const FILTRI: Array<{ valore: 'tutti' | Documento['tipo']; nome: string }> = [
   { valore: 'tutti', nome: 'Tutti' },
@@ -40,26 +41,26 @@ export function Documenti() {
     <>
       <div className="titolo-pagina titolo-con-azione">
         <div>
-          <h1>I miei documenti</h1>
-          <p className="tenue">Referti, ricette e fatture dello studio, sempre a portata di mano.</p>
+          <h1>{t('I miei documenti')}</h1>
+          <p className="tenue">{t('Referti, ricette e fatture dello studio, sempre a portata di mano.')}</p>
         </div>
         <button type="button" className="bottone-leggero solo-computer">
           <Icona nome="carica" dimensione={20} />
-          Carica un documento
+          {t('Carica un documento')}
         </button>
       </div>
 
-      <div className="filtri" role="group" aria-label="Quali documenti vedere">
+      <div className="filtri" role="group" aria-label={t('Quali documenti vedere')}>
         {FILTRI.map((voce) => (
           <button key={voce.valore} type="button" aria-pressed={voce.valore === filtro} onClick={() => setFiltro(voce.valore)}>
-            {voce.nome}
+            {t(voce.nome)}
           </button>
         ))}
       </div>
 
-      <section className="scheda scheda-elenco" aria-label="Documenti">
+      <section className="scheda scheda-elenco" aria-label={t('Documenti')}>
         {elenco.length === 0 ? (
-          <p className="tenue">Nessun documento di questo tipo.</p>
+          <p className="tenue">{t('Nessun documento di questo tipo.')}</p>
         ) : (
           elenco.map((documento) => {
             const referto = refertoAttivo ? refertoDaSpiegare(documento) : undefined
@@ -78,7 +79,7 @@ export function Documenti() {
                           onClick={() => apri(documento.id, 'strutture')}
                         >
                           <Icona nome="luogo" dimensione={20} />
-                          Cerca strutture
+                          {t('Cerca strutture')}
                         </button>
                         <button
                           type="button"
@@ -87,7 +88,7 @@ export function Documenti() {
                           onClick={() => apri(documento.id, 'professionisti')}
                         >
                           <Icona nome="stetoscopio" dimensione={20} />
-                          Cerca professionisti
+                          {t('Cerca professionisti')}
                         </button>
                       </>
                     )
@@ -117,15 +118,15 @@ export function Documenti() {
 
       <button type="button" className="bottone-leggero solo-telefono">
         <Icona nome="carica" dimensione={20} />
-        Carica un documento
+        {t('Carica un documento')}
       </button>
 
       <details className="scheda dettagli">
-        <summary>Che cos'è «Spiegamelo»?</summary>
+        <summary>{t("Che cos'è «Spiegamelo»?")}</summary>
         <p>
-          Accanto a ogni referto c'è il pulsante «Spiegamelo» di Referto, un servizio collegato al portale. Spiega con
-          parole semplici solo ciò che è scritto nel referto: non fa diagnosi e non sostituisce il medico. Con «Cerca
-          strutture» e «Cerca professionisti» trovi dove andare vicino a casa e puoi prenotare una visita.
+          {t(
+            "Accanto a ogni referto c'è il pulsante «Spiegamelo» di Referto, un servizio collegato al portale. Spiega con parole semplici solo ciò che è scritto nel referto: non fa diagnosi e non sostituisce il medico. Con «Cerca strutture» e «Cerca professionisti» trovi dove andare vicino a casa e puoi prenotare una visita.",
+          )}
         </p>
       </details>
     </>

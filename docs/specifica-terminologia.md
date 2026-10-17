@@ -62,9 +62,13 @@ Candidati da valutare:
 Nessuna fonte da sola è completa, in italiano semplice e con una licenza
 aperta. Il prototipo ne unisce tre, in ordine di priorità:
 
-1. **Curato** (`resources/glossario/termini_curati.json`, 79 termini): parole
-   frequenti nei referti (laboratorio, immagini, cuore, occhi) con una
-   definizione breve scritta da noi. È una bozza da far revisionare a un medico.
+1. **Curato** (`resources/glossario/termini_curati.json`, 334 termini): parole
+   frequenti nei referti (laboratorio, immagini, cuore, occhi) e, dal
+   16/10/2026, descrittori radiologici («ispessimento», «pervio»,
+   «enhancement»), aggettivi di sede («polmonare», «mediastinico»),
+   dispositivi e interventi, con una definizione breve scritta da noi. Dice che
+   cosa è o che cosa descrive la parola, mai che cosa significa per la salute.
+   È una bozza da far revisionare a un medico.
 2. **HPO** (già in uso): circa 2.700 voci con il nome italiano, ma con la
    definizione in inglese.
 3. **Wikidata**: circa 16.000 voci con un nome italiano e almeno un codice medico
@@ -81,29 +85,51 @@ Il glossario e la cache di Wikidata restano fuori da Git. La corrispondenza è
 sulla radice (singolare e plurale) e la parola più lunga vince. Una parola
 sola molto comune non conta come termine (Zipf ≥ 4 secondo wordfreq).
 
+**Esclusioni di Wikidata** (`ESCLUSIONI_WIKIDATA` nello script, 16/10/2026):
+abbinamenti sbagliati trovati controllando i termini di RadGraph-IT fatti solo
+di parole comuni. Per alcune voci si tolgono solo certi sinonimi
+(«addominali» → muscoli addominali, «somministrazione» → via di
+somministrazione, «trascritto» → RNA messaggero, «vescica» → bolla della
+pelle, «prominenza» → apofisi); altre si tolgono del tutto (dissezione
+anatomica, recidiva come aggravante del reato, periferica del computer, foche,
+falco, venerdì, domenica, Florida). Un nome con lettere greche non diventa
+chiave: «radiazioni α» senza la α resterebbe «radiazioni». Le parole tolte,
+se servono, le spiega lo strato curato («addominale», «vescica»,
+«dissezione»).
+
 **Copertura** sui 50 referti di RadGraph-IT, radiologia con entità annotate a
-mano (parola difficile = Zipf < 3,5):
+mano (parola difficile = Zipf < 3,5); rapporto completo in
+`resources/glossario/copertura.md`:
 
-| Strati | Parole difficili coperte | Parole difficili diverse | Entità difficili coperte |
+| Strati | Parole difficili coperte (15/10 → 16/10) | Parole difficili diverse | Entità difficili coperte |
 |---|---|---|---|
-| curato | 9% | 3% | 9% |
-| HPO | 2% | 2% | 2% |
-| Wikidata | 40% | 34% | 40% |
-| tutti | 49% | 38% | 49% |
+| curato | 9% → 62% | 3% → 57% | 9% → 61% |
+| HPO | 2% → 2% | 2% → 2% | 2% → 2% |
+| Wikidata | 40% → 37% | 34% → 31% | 40% → 37% |
+| tutti | 49% → 92% | 38% → 82% | 49% → 92% |
 
-Dei 309 termini diversi trovati da Wikidata, il 93% ha una definizione in
+Wikidata scende un poco perché le esclusioni tolgono abbinamenti sbagliati che
+prima contavano come coperti. **Attenzione:** le voci curate nuove sono state
+scelte proprio tra le parole non coperte di questi 50 referti, quindi il 92% è
+misurato sugli stessi dati e sovrastima la copertura su referti nuovi. Per una
+stima onesta serve un altro gruppo di referti italiani annotati. Le parole
+ancora scoperte sono soprattutto parole comuni («quantità», «sinistre»,
+«appropriate»), sigle ambigue (SMA, PCA) e traduzioni sbagliate del dataset
+(«misty», «tracking»).
+
+Dei 279 termini diversi trovati da Wikidata, il 93% ha una definizione in
 italiano da Wikipedia. Nei 4 referti del portale le parole difficili scoperte
 sono quasi solo «poliambulatorio», «referto» e «cardiologica». Quel numero
 però non è una prova: la lista curata è stata scritta dopo averli letti.
 
 **Cosa resta da fare prima di usarlo nel tool:**
-- Le parole difficili non coperte sono quasi tutte aggettivi e descrittori
-  radiologici: «ispessimento», «dilatazione», «attenuazione», «enhancement»,
-  «pervio», «polmonari», «ossee», «vertebrale». Nessuna ontologia li copre:
-  vanno aggiunti allo strato curato, circa 100-150 voci.
-- Wikidata ha ancora alcuni abbinamenti sbagliati («radiazioni» → particella α,
-  «addominale» → muscoli addominali). Servono una lista di esclusioni e un
-  controllo a campione.
+- Far revisionare a un medico le 334 voci curate, in particolare quelle con
+  due significati («basale», «sclerotico», «reattivo», «decorso»).
+- Misurare la copertura su referti italiani diversi da quelli usati per
+  scegliere le voci curate.
+- Controllare di nuovo a campione gli abbinamenti di Wikidata su altri tipi di
+  referto (laboratorio, cardiologia): la lista di esclusioni nasce solo dalla
+  radiologia.
 - Le frasi di Wikipedia sono lunghe e tecniche, e a volte parlano di diagnosi
   o cure. Il modello deve riscriverle in italiano semplice senza aggiungere
   fatti, con la frase originale come riserva e citazione.

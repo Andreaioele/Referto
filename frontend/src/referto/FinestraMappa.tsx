@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Icona } from '../Icona'
 import { useDialogo } from '../useDialogo'
 import type { LuogoSullaMappa } from './mappa'
+import { t } from '../lingua/lingua'
 
 /** Il luogo da mostrare con le informazioni della scheda (tutte facoltative tranne quelle della mappa). */
 export interface SchedaLuogo extends LuogoSullaMappa {
@@ -62,31 +63,31 @@ export function FinestraMappa({ luogo, onChiudi }: { luogo: SchedaLuogo; onChiud
           </div>
           <button type="button" className="bottone-leggero" onClick={onChiudi} data-fuoco-iniziale>
             <Icona nome="chiudi" dimensione={20} />
-            Chiudi
+            {t('Chiudi')}
           </button>
         </div>
 
         <div className="mappa">
-          <div ref={tela} className="mappa-tela" role="region" aria-label={`Mappa: ${nome}`} />
+          <div ref={tela} className="mappa-tela" role="region" aria-label={`${t('Mappa')}: ${nome}`} />
           {stato === 'attesa' && (
             <p className="mappa-stato" role="status">
               <span className="rotella" aria-hidden="true" />
-              Carico la mappa…
+              {t('Carico la mappa…')}
             </p>
           )}
           {stato === 'errore' && (
             <p className="mappa-stato referto-errore" role="alert">
-              Non riesco a mostrare la mappa in questo momento. Riprova tra poco.
+              {t('Non riesco a mostrare la mappa in questo momento. Riprova tra poco.')}
             </p>
           )}
         </div>
-        <p className="tenue piccolo pannello-mappa-aiuto">Trascina la mappa per spostarti, usa + e − per ingrandire.</p>
+        <p className="tenue piccolo pannello-mappa-aiuto">{t('Trascina la mappa per spostarti, usa + e − per ingrandire o rimpicciolire.')}</p>
 
         <dl className="pannello-mappa-dati">
           <div>
             <dt>
               <Icona nome="luogo" dimensione={22} />
-              <span className="nascosto">Indirizzo</span>
+              <span className="nascosto">{t('Indirizzo')}</span>
             </dt>
             <dd id="indirizzo-mappa">{indirizzo}</dd>
           </div>
@@ -94,7 +95,7 @@ export function FinestraMappa({ luogo, onChiudi }: { luogo: SchedaLuogo; onChiud
             <div>
               <dt>
                 <Icona nome="orologio" dimensione={22} />
-                <span className="nascosto">Orari</span>
+                <span className="nascosto">{t('Orari')}</span>
               </dt>
               <dd>{orari}</dd>
             </div>
@@ -103,7 +104,7 @@ export function FinestraMappa({ luogo, onChiudi }: { luogo: SchedaLuogo; onChiud
             <div>
               <dt>
                 <Icona nome="telefono" dimensione={22} />
-                <span className="nascosto">Telefono</span>
+                <span className="nascosto">{t('Telefono')}</span>
               </dt>
               <dd>{telefono}</dd>
             </div>
@@ -112,7 +113,7 @@ export function FinestraMappa({ luogo, onChiudi }: { luogo: SchedaLuogo; onChiud
         {numero && (
           <a className="bottone pannello-mappa-chiama" href={`tel:${numero}`}>
             <Icona nome="telefono" dimensione={22} />
-            Chiama
+            {t('Chiama')}
           </a>
         )}
       </div>

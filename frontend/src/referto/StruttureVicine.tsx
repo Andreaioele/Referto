@@ -17,6 +17,7 @@ import {
 import { FinestraMappa } from './FinestraMappa'
 import { distanzaLeggibile, nessunRisultato, titoloGruppo } from './strutture-testi'
 import type { PuntoDiPartenza, RefertoDaSpiegare } from './tipi'
+import { locale, t } from '../lingua/lingua'
 
 /**
  * Le strutture di Milano per la sezione "Le mie strutture": per un referto
@@ -100,28 +101,28 @@ export function RigaStruttura({
       <div className="struttura-testo">
         <strong>{struttura.nome}</strong>
         <span className="tenue">
-          {struttura.professione ?? NOMI_TIPO[struttura.tipo]}, {distanzaLeggibile(struttura.distanzaKm)}
+          {t(struttura.professione ?? NOMI_TIPO[struttura.tipo])}, {distanzaLeggibile(struttura.distanzaKm)}
         </span>
         <span>{indirizzo}</span>
-        {struttura.orari && <span className="tenue piccolo">Orari: {struttura.orari}</span>}
+        {struttura.orari && <span className="tenue piccolo">{t('Orari:')} {struttura.orari}</span>}
         {nota && <span className="struttura-nota">{nota}</span>}
       </div>
       <div className="azioni">
         {prenotabile &&
           (prenotabile.prenotate.has(struttura.id) ? (
-            <span className="pastiglia pastiglia-chiara">Prenotazione richiesta</span>
+            <span className="pastiglia pastiglia-chiara">{t('Prenotazione richiesta')}</span>
           ) : (
             <button type="button" className="bottone" onClick={() => prenotabile.onPrenota(struttura)}>
-              {prenotabile.etichetta ?? 'Prenota una visita'}
+              {prenotabile.etichetta ?? t('Prenota una visita')}
             </button>
           ))}
         {/* Telefono e mappa come icone; se il dato manca il pulsante resta, spento. */}
         {telefono ? (
-          <a className="bottone-leggero bottone-icona" href={`tel:${telefono}`} aria-label={`Chiama ${struttura.nome}`} title="Chiama">
+          <a className="bottone-leggero bottone-icona" href={`tel:${telefono}`} aria-label={`${t('Chiama')} ${struttura.nome}`} title={t('Chiama')}>
             <Icona nome="telefono" dimensione={22} />
           </a>
         ) : (
-          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label="Telefono non disponibile" title="Telefono non disponibile">
+          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label={t('Telefono non disponibile')} title={t('Telefono non disponibile')}>
             <Icona nome="telefono" dimensione={22} />
           </button>
         )}
@@ -131,14 +132,14 @@ export function RigaStruttura({
             type="button"
             className="bottone-leggero bottone-icona"
             aria-haspopup="dialog"
-            aria-label={`Mappa: ${struttura.nome}`}
-            title="Mappa"
+            aria-label={`${t('Mappa')}: ${struttura.nome}`}
+            title={t('Mappa')}
             onClick={() => setMappaAperta(true)}
           >
             <Icona nome="mappa" dimensione={22} />
           </button>
         ) : (
-          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label="Posizione non disponibile" title="Posizione non disponibile">
+          <button type="button" className="bottone-leggero bottone-icona" disabled aria-label={t('Posizione non disponibile')} title={t('Posizione non disponibile')}>
             <Icona nome="mappa" dimensione={22} />
           </button>
         )}
@@ -151,7 +152,7 @@ export function RigaStruttura({
             indirizzo,
             lat: struttura.lat,
             lon: struttura.lon,
-            descrizione: `${struttura.professione ?? NOMI_TIPO[struttura.tipo]}, ${distanzaLeggibile(struttura.distanzaKm)}`,
+            descrizione: `${t(struttura.professione ?? NOMI_TIPO[struttura.tipo])}, ${distanzaLeggibile(struttura.distanzaKm)}`,
             orari: struttura.orari,
             telefono: struttura.telefono,
           }}
@@ -183,7 +184,7 @@ export function ElencoStrutture({
       </ul>
       {!tutte && strutture.length > visibili && (
         <button type="button" className="bottone-leggero strutture-altre" onClick={() => setTutte(true)}>
-          Mostra altre {strutture.length - visibili}
+          {t('Mostra altre {n}', { n: strutture.length - visibili })}
         </button>
       )}
     </>
@@ -225,7 +226,7 @@ export function StruttureDelReferto({
       .then((risultato) => salvaClassificazione(referto.id, risultato))
       .catch((motivo: unknown) => {
         if (controllo.signal.aborted) return
-        setErroreClassifica(motivo instanceof ErroreServizio ? motivo.message : 'Collegamento interrotto. Riprova tra poco.')
+        setErroreClassifica(motivo instanceof ErroreServizio ? motivo.message : t('Collegamento interrotto. Riprova tra poco.'))
       })
     return () => controllo.abort()
   }, [referto.id, referto.testo, classificazione, areaScelta])
@@ -241,7 +242,7 @@ export function StruttureDelReferto({
         setRicerca({
           area,
           errore:
-            motivo instanceof ErroreServizio ? motivo.message : 'Non riesco a cercare le strutture in questo momento. Riprova tra poco.',
+            motivo instanceof ErroreServizio ? motivo.message : t('Non riesco a cercare le strutture in questo momento. Riprova tra poco.'),
         })
       })
     return () => controllo.abort()
@@ -252,10 +253,10 @@ export function StruttureDelReferto({
   return (
     <div className="strutture-risultato">
       {!area && !errore && (
-        <Caricamento testo="Referto sta leggendo il referto per capire di quale area si occupa… può servire un minuto." />
+        <Caricamento testo={t('Referto sta leggendo il referto per capire di quale area si occupa… può servire un minuto.')} />
       )}
       {area && !esito && (
-        <Caricamento testo={categoria === 'professionisti' ? 'Cerco i professionisti vicino a casa…' : 'Cerco le strutture vicino a casa…'} />
+        <Caricamento testo={categoria === 'professionisti' ? t('Cerco i professionisti vicino a casa…') : t('Cerco le strutture vicino a casa…')} />
       )}
       {errore && (
         <>
@@ -266,8 +267,8 @@ export function StruttureDelReferto({
       {esito && 'gruppi' in esito && (
         <>
           <p className="strutture-area">
-            {classificazione && !areaScelta ? `${classificazione.esame}: ` : 'Area scelta: '}
-            <strong>{esito.trovata.etichetta}</strong>
+            {classificazione && !areaScelta ? `${t(classificazione.esame)}: ` : `${t('Area scelta:')} `}
+            <strong>{t(esito.trovata.etichetta)}</strong>
           </p>
           {esito.gruppi.length === 0 && <p>{nessunRisultato(esito.trovata, categoria)}</p>}
           {esito.gruppi.map((gruppo) => (
@@ -277,10 +278,12 @@ export function StruttureDelReferto({
             </section>
           ))}
           <p className="tenue piccolo">
-            Referto non sceglie per te: chiedi al tuo medico dove fare la visita o l'esame. Telefona prima di andare, orari e
-            prenotazioni possono cambiare. Per le urgenze chiama il <strong>112</strong>.
+            {t(
+              "Referto non sceglie per te: chiedi al tuo medico dove fare la visita o l'esame. Telefona prima di andare, orari e prenotazioni possono cambiare. Per le urgenze chiama il",
+            )}{' '}
+            <strong>112</strong>.
           </p>
-          <SceltaArea onScegli={setAreaScelta} testo="Non è l'area giusta? Scegline un'altra" />
+          <SceltaArea onScegli={setAreaScelta} testo={t("Non è l'area giusta? Scegline un'altra")} />
         </>
       )}
     </div>
@@ -288,7 +291,7 @@ export function StruttureDelReferto({
 }
 
 /** Elenco delle aree, per scegliere a mano quando la classificazione manca o non convince. */
-function SceltaArea({ onScegli, testo = 'Scegli tu l’area' }: { onScegli: (area: string) => void; testo?: string }) {
+function SceltaArea({ onScegli, testo = t('Scegli tu l’area') }: { onScegli: (area: string) => void; testo?: string }) {
   const [info, setInfo] = useState<InfoStrutture | null>(null)
   useEffect(() => {
     const controllo = new AbortController()
@@ -301,11 +304,11 @@ function SceltaArea({ onScegli, testo = 'Scegli tu l’area' }: { onScegli: (are
       <span>{testo}</span>
       <select defaultValue="" onChange={(e) => e.target.value && onScegli(e.target.value)}>
         <option value="" disabled>
-          Scegli…
+          {t('Scegli…')}
         </option>
         {info.aree.map((a) => (
           <option key={a.id} value={a.id}>
-            {a.etichetta}
+            {t(a.etichetta)}
           </option>
         ))}
       </select>
@@ -326,7 +329,7 @@ export function CercaVicino({ casa, tipi }: { casa: PuntoDiPartenza; tipi: Array
         if (controllo.signal.aborted) return
         setRisultato({
           tipo,
-          errore: motivo instanceof ErroreServizio ? motivo.message : 'Non riesco a cercare in questo momento. Riprova tra poco.',
+          errore: motivo instanceof ErroreServizio ? motivo.message : t('Non riesco a cercare in questo momento. Riprova tra poco.'),
         })
       })
     return () => controllo.abort()
@@ -336,17 +339,17 @@ export function CercaVicino({ casa, tipi }: { casa: PuntoDiPartenza; tipi: Array
   const errore = attuale?.errore
   return (
     <>
-      <div className="filtri" role="group" aria-label="Che cosa cercare vicino a casa">
+      <div className="filtri" role="group" aria-label={t('Che cosa cercare vicino a casa')}>
         {tipi.map((voce) => (
           <button key={voce.tipo} type="button" aria-pressed={voce.tipo === tipo} onClick={() => setTipo(voce.tipo)}>
-            {voce.nome}
+            {t(voce.nome)}
           </button>
         ))}
       </div>
       {errore ? (
         <p className="referto-errore">{errore}</p>
       ) : !attuale?.strutture ? (
-        <Caricamento testo="Cerco vicino a casa…" />
+        <Caricamento testo={t('Cerco vicino a casa…')} />
       ) : (
         <ElencoStrutture key={tipo} strutture={attuale.strutture} visibili={5} />
       )}
@@ -363,13 +366,16 @@ export function FontiStrutture() {
     return () => controllo.abort()
   }, [])
   if (!info) return null
-  const data = new Date(`${info.generato}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  const data = new Date(`${info.generato}T00:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' })
   return (
     <details className="scheda dettagli">
-      <summary>Da dove vengono questi dati</summary>
+      <summary>{t('Da dove vengono questi dati')}</summary>
       <p>
-        {info.totale} tra strutture, medici e farmacie del Comune di {info.citta}, aggiornati al {data}. Le distanze sono in
-        linea d'aria da casa tua.
+        {t("{totale} tra strutture, medici e farmacie del Comune di {citta}, aggiornati al {data}. Le distanze sono in linea d'aria da casa tua.", {
+          totale: info.totale,
+          citta: info.citta,
+          data,
+        })}
       </p>
       <ul className="strutture-fonti">
         {info.fonti.map((f) => (

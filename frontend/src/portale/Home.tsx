@@ -5,6 +5,7 @@ import { documenti, messaggioStudio, paziente, prossimeVisite } from './dati'
 import { dataLunga, oggiPerEsteso, saluto } from './date'
 import { MarchioReferto } from './Struttura'
 import { RigaDocumento, SchedaVisita } from './elementi'
+import { t } from '../lingua/lingua'
 
 export function Home() {
   const { spiega, apriDocumento, refertoAttivo } = useAzioni()
@@ -25,19 +26,20 @@ export function Home() {
         <section className="scheda avviso-referto" aria-labelledby="titolo-nuovo-referto">
           {refertoAttivo && <MarchioReferto grande />}
           <div className="avviso-referto-testo">
-            <h2 id="titolo-nuovo-referto">È arrivato un nuovo referto</h2>
+            <h2 id="titolo-nuovo-referto">{t('È arrivato un nuovo referto')}</h2>
             <p>
-              {nuovo.titolo} del {dataLunga(nuovo.giorni)}. {refertoAttivo ? 'Puoi aprirlo oppure fartelo spiegare in parole semplici.' : 'Puoi aprirlo quando vuoi.'}
+              {t('{titolo} del {data}.', { titolo: t(nuovo.titolo), data: dataLunga(nuovo.giorni) })}{' '}
+              {refertoAttivo ? t('Puoi aprirlo oppure fartelo spiegare in parole semplici.') : t('Puoi aprirlo quando vuoi.')}
             </p>
           </div>
           <div className="azioni">
             <button type="button" className="bottone-leggero" onClick={() => apriDocumento(nuovo)}>
-              Apri il referto
+              {t('Apri il referto')}
             </button>
             {refertoAttivo && (
               <button type="button" className="bottone bottone-referto" onClick={() => spiega(nuovo)}>
                 <MarchioReferto />
-                Fatti spiegare il referto
+                {t('Fatti spiegare il referto')}
               </button>
             )}
           </div>
@@ -47,28 +49,28 @@ export function Home() {
       {prossima && (
         <section className="scheda" aria-labelledby="titolo-prossima">
           <div className="scheda-testa">
-            <h2 id="titolo-prossima">La prossima visita</h2>
+            <h2 id="titolo-prossima">{t('La prossima visita')}</h2>
             <Collegamento href="/visite" className="solo-computer">
-              Vedi tutte le visite
+              {t('Vedi tutte le visite')}
             </Collegamento>
           </div>
           <SchedaVisita visita={prossima} inEvidenza nuda />
           <Collegamento href="/visite" className="solo-telefono collegamento-centrato">
-            Vedi tutte le visite
+            {t('Vedi tutte le visite')}
           </Collegamento>
         </section>
       )}
 
       <Collegamento href="/prenota" className="bottone solo-telefono">
         <Icona nome="piu" dimensione={22} />
-        Prenota una visita
+        {t('Prenota una visita')}
       </Collegamento>
 
       <section className="scheda" aria-labelledby="titolo-documenti">
         <div className="scheda-testa">
-          <h2 id="titolo-documenti">Ultimi documenti</h2>
+          <h2 id="titolo-documenti">{t('Ultimi documenti')}</h2>
           <Collegamento href="/documenti" className="solo-computer">
-            Vedi tutti i documenti
+            {t('Vedi tutti i documenti')}
           </Collegamento>
         </div>
         <div className="elenco-documenti">
@@ -77,7 +79,7 @@ export function Home() {
           ))}
         </div>
         <Collegamento href="/documenti" className="solo-telefono collegamento-centrato">
-          Vedi tutti i documenti
+          {t('Vedi tutti i documenti')}
         </Collegamento>
       </section>
 
@@ -86,8 +88,8 @@ export function Home() {
           <Icona nome="messaggio" dimensione={22} />
         </span>
         <div>
-          <h3>Un messaggio dallo studio</h3>
-          <p className="tenue">{messaggioStudio}</p>
+          <h3>{t('Un messaggio dallo studio')}</h3>
+          <p className="tenue">{t(messaggioStudio)}</p>
         </div>
       </section>
     </>
