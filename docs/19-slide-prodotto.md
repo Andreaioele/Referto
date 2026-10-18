@@ -81,7 +81,7 @@ MP4: `render` prenderebbe solo la prima slide.
 | 11 | Trace e privacy | | [[09-trace-e-privacy]]; i numeri della trace sono d'esempio, come nel video |
 | 12 | Accessibilità | | [[05-webapp-e-interfaccia]], [[16-frontend]] (IT / EN, barra in basso sotto i 760 px, consenso in «I miei dati») |
 | 13 | Integrazione in altri portali | | `referto/tipi.ts`, `portale/perReferto.ts`, regola `no-restricted-imports` ([[16-frontend]]) |
-| 14 | Chiusura: l'ultima parola al medico | | Come la scena 9 del video |
+| 14 | Chiusura: marchio e nome in alto, poi «The last word always belongs to your doctor.», il 112 e lo slogan | | Come la scena 9 del video |
 
 ## Regole per il contenuto
 
