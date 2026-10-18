@@ -64,3 +64,7 @@ resources/glossario/glossario_strati.json
 
 # Slide del prodotto (HyperFrames): file di lavoro locali
 resources/slide/.hyperframes/
+
+# Cover della submission (HyperFrames): file di lavoro locali
+resources/cover/.hyperframes/
+resources/cover/export/

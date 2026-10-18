@@ -1,0 +1,10 @@
+{
+  "name": "cover",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npx --yes hyperframes@0.8.164 check",
+    "cover": "npx --yes hyperframes@0.8.164 snapshot --at 1 --no-end --zoom 0,0,1920,1080 --zoom-scale 1 -o export && cp export/frame-00-at-1s.png referto-cover.png",
+    "cover:2x": "npx --yes hyperframes@0.8.164 snapshot --at 1 --no-end --zoom 0,0,1920,1080 --zoom-scale 2 -o export && cp export/frame-00-at-1s.png referto-cover@2x.png"
+  }
+}

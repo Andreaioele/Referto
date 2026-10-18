@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-18 · chat-frontend · Cover della submission in `resources/cover/` (1920×1080 e 3840×2160): marchio, slogan e punti chiave a sinistra, widget vero con la riga del referto e la scheda AIFA a destra, nello stile di slide e video · [[20-cover]]
 - 2026-10-18 · chat-frontend · Slide, chiusura riordinata: marchio e nome in alto, poi la frase sul medico, il 112 e lo slogan (tolta l'icona dello stetoscopio) · [[19-slide-prodotto]]
 - 2026-10-18 · chat-frontend · Slide del prodotto con HyperFrames in `resources/slide/` (14 slide, note per chi presenta, frammenti; widget e dati veri del portale), separate dal video e dal pitch · [[19-slide-prodotto]]
 - 2026-10-18 · chat-frontend · Pulizia di `resources/`: tolti file non più usati da codice, test o Evolus (`ISTRUZIONI.md`, `Modelfile.example`, `modelli_*.pdf`, `submit_h100.sh`, `merge_datasets.py`, `datasets/mtsamples.csv`, `evolus/agenti/archivio/`, i file dell'agente Referto Farmaci e le schede locali); restano i documenti della Conoscenza del Mother, l'OpenAPI di `cercaFarmaci`, `carica_farmaci.py` (usato da `sincronizza_prompt.py`) e quanto serve ai test · [[15-backend]] · [[10-dataset-e-valutazione]]

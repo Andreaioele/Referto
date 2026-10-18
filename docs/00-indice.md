@@ -22,7 +22,8 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 | `resources/` | App Python di riferimento (Flask), dataset, script, prove |
 | `docs/` | Questa documentazione |
 
-Le slide del prodotto sono in `resources/slide/` ([[19-slide-prodotto]]).
+Le slide del prodotto sono in `resources/slide/` ([[19-slide-prodotto]]), la cover
+della submission in `resources/cover/` ([[20-cover]]).
 
 Le note dalla 02 alla 12 descrivono l'app Python: i loro percorsi
 (`glossario/`, `static/`, `traces/` …) sono relativi a `resources/`.
@@ -46,6 +47,7 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
     [[specifica-terminologia]], [[specifica-visite-specialisti]],
     [[specifica-storico-sessione]], [[specifica-multilingua]].
 11. [[19-slide-prodotto]]: le slide che presentano il prodotto (HyperFrames, modalità presentazione).
+12. [[20-cover]]: l'immagine di copertina della submission.
 
 ## Mappa
 
@@ -86,6 +88,7 @@ graph LR
   specStorico --> frontend
   panoramica --> slide[19-slide-prodotto]
   slide --> frontend
+  slide --> cover[20-cover]
 ```
 
 ## Mappa dei file del codice
@@ -111,3 +114,4 @@ I file Python sono in `resources/`.
 | `test_app.py` | Test automatici | [[12-test-e-sviluppo]] |
 | `check-usage-app/` | Dashboard dell'usage dell'API AMD | [[11-modelli-e-ollama]] |
 | `slide/` | Slide del prodotto (HyperFrames) | [[19-slide-prodotto]] |
+| `cover/` | Cover della submission (HyperFrames) | [[20-cover]] |
