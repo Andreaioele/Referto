@@ -111,26 +111,20 @@ Scrivi `/bye` per terminare la sessione.
    Google per scaricare i file.
 3. Scarica una versione compatibile con Ollama. La pagina del modello contiene
    anche il collegamento alle quantizzazioni utilizzabili con Ollama e llama.cpp.
-4. Copia il file di esempio:
-
-```bash
-cp Modelfile.example Modelfile
-```
-
-5. Modifica la prima riga del `Modelfile` indicando il percorso assoluto del
+4. Crea un file `Modelfile` con una sola riga, il percorso assoluto del
    file GGUF o della cartella Safetensors:
 
 ```text
 FROM /percorso/assoluto/al/modello.gguf
 ```
 
-6. Crea il modello locale con il nome usato dall’app:
+5. Crea il modello locale con il nome usato dall’app:
 
 ```bash
 ollama create medgemma:4b-it-q4_K_M -f Modelfile
 ```
 
-7. Verifica l’importazione:
+6. Verifica l’importazione:
 
 ```bash
 ollama show medgemma:4b-it-q4_K_M
@@ -450,11 +444,10 @@ python3 spiega_referto.py referto.pdf \
 
 Usa `--senza-decision-model` per eseguire il percorso standard completo.
 
-## Esecuzione su Cluster GPU (NVIDIA H100 / SLURM)
+## Esecuzione batch su GPU (es. NVIDIA H100)
 
 Per elaborare in batch dataset clinici su larga scala (es. `all_datasets_merged.jsonl` con oltre 5.000 referti) su nodi di calcolo ad alte prestazioni come **NVIDIA H100 (80GB VRAM)**:
 
-### 1. Esecuzione diretta con Python
 ```bash
 python3 cluster_agent_task.py \
   --dataset all_datasets_merged.jsonl \
@@ -470,17 +463,6 @@ Parametri principali:
 - `-l, --limit`: limita ai primi L referti;
 - `--resume`: riprende il lavoro saltando i referti già presenti nel file di output (tollerante a interruzioni);
 - `-o, --output`: percorso personalizzato del file `.jsonl` di output (genera in automatico anche il `*_summary.json`).
-
-### 2. Sottomissione SLURM automatica
-È disponibile lo script preconfigurato `submit_h100.sh`:
-```bash
-sbatch submit_h100.sh all_datasets_merged.jsonl 4
-```
-Lo script:
-1. Alloca le risorse richieste (`--gres=gpu:1`, 8 CPU, 64GB RAM);
-2. Rileva l'hardware e avvia Ollama se non già in ascolto;
-3. Esegue `cluster_agent_task.py` con logging in tempo reale e salvataggio atomico dei risultati in `risultati/`;
-4. Registra le trace complete in `traces/` compatibili con la Cronologia web.
 
 ## Test
 

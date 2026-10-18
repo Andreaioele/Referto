@@ -1,6 +1,6 @@
 ---
 tags: [area/valutazione]
-aggiornato: 2026-10-14
+aggiornato: 2026-10-18
 ---
 
 # Dataset e valutazione
@@ -11,11 +11,10 @@ Torna a [[00-indice]] · Modelli in [[11-modelli-e-ollama]].
 
 | File | Referti | Note |
 |---|---|---|
-| `all_datasets_merged.jsonl` | 5.016 | MTSamples (4.966, inglese) + RadGraph-IT (50, italiano); creato da `merge_datasets.py` |
+| `all_datasets_merged.jsonl` | 5.016 | MTSamples (4.966, inglese) + RadGraph-IT (50, italiano); unione di `mtsamples_all.jsonl` e `radgraph_it_50.jsonl` (lo script `merge_datasets.py` è stato tolto il 18/10/2026) |
 | `mtsamples_all.jsonl` | 4.966 | Trascrizioni cliniche MTSamples, con `medical_specialty` |
 | `mtsamples_cardio_pulmonary.jsonl`, `mtsamples_radiology.jsonl` | 371, 273 | Sottoinsiemi |
 | `radgraph_it_50.jsonl` | 50 | Radiografie del torace in italiano (formato a token `sentences`) |
-| `mtsamples.csv` | — | Fonte originale MTSamples |
 
 Formato: un oggetto JSON per riga con `doc_key`, `dataset`, `text` (o
 `sentences` per RadGraph). `dataset_record_to_text()` in `spiega_referto.py`
@@ -33,7 +32,6 @@ vuote: è la causa del problema della sezione Indicazioni
   scrive un CSV (`CSV_FIELDNAMES`: stato, errore, durata, token, chiamate,
   testo del referto, spiegazione) più trace e riepilogo JSON. `--resume`
   riparte dai `doc_key` già fatti. Codice di uscita 1 se qualche referto è in errore.
-- `submit_h100.sh`: script SLURM singolo, più vecchio (da lanciare dentro `resources/`).
 - **Pipeline SLURM a shard** (`slurm/`: `submit.sh`, `config.sh`,
   `run_shard.sbatch`, `prepare_shards.py`, `merge.sbatch`, `merge_outputs.py`):
   sta **solo sul branch `output-test`**, non su `main` ([[13-git-e-workflow]]).

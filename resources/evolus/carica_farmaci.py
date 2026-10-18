@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Carica le schede dei farmaci nella Conoscenza dell'agente Referto Farmaci su Evolus.
 
+L'agente Farmaci non è più collegato al Mother: il modulo resta perché
+sincronizza_prompt.py usa le sue funzioni per l'API di Evolus.
+
 Metti i file nella cartella ``evolus/farmaci/`` e lancia:
 
     python evolus/carica_farmaci.py

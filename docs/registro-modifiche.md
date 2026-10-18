@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-18 · chat-frontend · Pulizia di `resources/`: tolti file non più usati da codice, test o Evolus (`ISTRUZIONI.md`, `Modelfile.example`, `modelli_*.pdf`, `submit_h100.sh`, `merge_datasets.py`, `datasets/mtsamples.csv`, `evolus/agenti/archivio/`, i file dell'agente Referto Farmaci e le schede locali); restano i documenti della Conoscenza del Mother, l'OpenAPI di `cercaFarmaci`, `carica_farmaci.py` (usato da `sincronizza_prompt.py`) e quanto serve ai test · [[15-backend]] · [[10-dataset-e-valutazione]]
 - 2026-10-17 · chat-frontend · Mappa: stile Positron di OpenFreeMap (grigio chiaro, senza chiavi) con MapLibre GL al posto di Leaflet e del filtro grigio; nomi delle strade più scuri e grandi; worker di MapLibre passato come blob · [[16-frontend]]
 - 2026-10-17 · chat-frontend · Mappa delle strutture in un pannello che entra da destra (mappa, indirizzo, orari, telefono e «Chiama») al posto della finestra al centro; tile OpenStreetMap in scala di grigi con il solo segnaposto a colori · [[16-frontend]]
 - 2026-10-16 · ita-eng · Interfaccia in inglese senza toccare il Mother agent: nuova rotta `POST /api/traduzione` (stesso modello, prompt di sola traduzione, stessi numeri e citazioni o torna l'italiano); il widget e il foglietto mostrano le risposte tradotte e mandano le domande in italiano · [[15-backend]] · [[16-frontend]] · [[specifica-multilingua]]

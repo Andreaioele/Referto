@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-16
+aggiornato: 2026-10-18
 ---
 
 # Referto: documentazione di progetto
@@ -102,6 +102,6 @@ I file Python sono in `resources/`.
 | `farmaci_referti.py`, `farmaci/` | Farmaci dei referti e prontuario AIFA | [[08-referti-e-farmaci-aifa]] |
 | `trace_store.py`, `performance_metrics.py` | Trace e metriche delle chiamate | [[09-trace-e-privacy]] |
 | `benchmarking.py` | Benchmark A/B con e senza decision model | [[04-decision-model]] |
-| `cluster_agent_task.py`, `submit_h100.sh`, `merge_datasets.py` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |
+| `cluster_agent_task.py`, `datasets/` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |
 | `test_app.py` | Test automatici | [[12-test-e-sviluppo]] |
 | `check-usage-app/` | Dashboard dell'usage dell'API AMD | [[11-modelli-e-ollama]] |

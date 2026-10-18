@@ -48,10 +48,6 @@ docs/.obsidian/*
 # Profilo del paziente (città): dato personale, resta su questo computer
 profilo/
 
-# Schede farmaci generate dagli open data AIFA (resources/evolus/costruisci_schede_farmaci.py)
-resources/evolus/farmaci/*
-!resources/evolus/farmaci/.gitkeep
-
 # Backend (NestJS) e frontend (React + Vite): dipendenze, build e Vercel
 node_modules/
 dist/

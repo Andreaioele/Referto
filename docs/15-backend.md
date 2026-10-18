@@ -1,6 +1,6 @@
 ---
 tags: [area/core]
-aggiornato: 2026-10-16
+aggiornato: 2026-10-18
 ---
 
 # Backend (NestJS)
@@ -140,7 +140,10 @@ Chat e domande sui foglietti usano il motore scelto tramite `MotoreChat`
 
 Su Evolus restano due agenti: **Referto Mother agent** (risponde alla chat,
 cerca i farmaci con la Web API `cercaFarmaci` → `POST /api/farmaci/cerca`) e
-**Referto Farmaci** (RAG sulle schede AIFA, oggi non collegato al Mother).
+**Referto Farmaci** (RAG sulle schede AIFA, oggi non collegato né al Mother
+né al backend). I file di questo secondo agente (prompt, generatore e prova
+delle schede) sono stati tolti dal repository il 18/10/2026: restano nella
+storia di Git.
 
 La risposta del Mother a un referto si apre con la riga
 `ARGOMENTO: <esame> · <area>` (es. `ARGOMENTO: Ecografia della tiroide ·
@@ -167,14 +170,17 @@ sincronizzato anche sull'agente Evolus; provato lì il 15/10/2026 con «i 7 re
 di Roma», la ricetta della carbonara, un esame del sangue con Cardioaspirin e
 le domande successive (anche una fuori tema dentro la stessa conversazione).
 
-- `agenti/*.md`: prompt di ogni agente, con `agentId` e configurazione
-  nell'intestazione; `sincronizza_prompt.py <file>` carica il prompt su Evolus
-  senza toccare gli altri campi. In `agenti/archivio/` i prompt di Lettore,
-  Spiegatore, Valutatore e Revisore, non più presenti su Evolus.
-- `farmaci/`, `costruisci_schede_farmaci.py`, `carica_farmaci.py`,
-  `prova_farmaci.py`: schede AIFA in Markdown e caricamento nella Conoscenza
-  dell'agente Farmaci. Le schede si rigenerano con lo script e sono escluse
-  da Git (`.gitignore`).
+- `agenti/mother.md`: prompt del Mother, con `agentId` e configurazione
+  nell'intestazione (copia in `backend/data/prompt-mother.md`, confrontata da
+  `test/mother-diretto.spec.ts`); `sincronizza_prompt.py <file>` carica il
+  prompt su Evolus senza toccare gli altri campi.
+- `faq.md`, `esempi.md`, `glossario.md`, `sicurezza.md`,
+  `linee-guida-referto.md`: i cinque documenti della Conoscenza del Mother su
+  Evolus (il prompt rimanda al glossario della base di conoscenza). Se si
+  cambiano qui, vanno ricaricati su Evolus.
+- `carica_farmaci.py`: caricava le schede AIFA nella Conoscenza dell'agente
+  Farmaci; resta perché `sincronizza_prompt.py` ne usa le funzioni per
+  l'API di Evolus (`API_BASE`, `load_headers`, `request`).
 - `openapi-referto-farmaci.json`: la Web API importata nel Mother.
 - Credenziali da `EVOLUS_API_KEY`/`EVOLUS_APPLICATION_ID` o dalla configurazione
   MCP locale, mai nel repository.
