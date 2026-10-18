@@ -1,0 +1,69 @@
+<template id="s12-accessibile-template">
+  <div id="s12-accessibile-root" data-composition-id="s12-accessibile" data-width="1920" data-height="1080">
+    <style>
+      #s12 .titolo {
+        font-size: 62px;
+      }
+      #s12-griglia {
+        margin-top: 64px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+      }
+      .s12-punto {
+        padding: 38px 40px;
+      }
+      .s12-punto .punto-titolo {
+        margin-top: 26px;
+        font-size: 36px;
+      }
+      .s12-punto .punto-testo {
+        font-size: 27px;
+      }
+    </style>
+    <div class="slide" id="s12">
+      <p class="occhiello">For every patient</p>
+      <h2 class="titolo">Designed so <em>a 70-year-old</em> can use it without help.</h2>
+      <div id="s12-griglia">
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"></path></svg></span>
+          <p class="punto-titolo">Large text, large buttons</p>
+          <p class="punto-testo">Easy to read and easy to tap, in one calm theme.</p>
+        </div>
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 12h6"></path></svg></span>
+          <p class="punto-titolo">One thing at a time</p>
+          <p class="punto-testo">Short sections, always in the same order.</p>
+        </div>
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span>
+          <p class="punto-titolo">Details folded away</p>
+          <p class="punto-testo">“How this explanation was made” opens only on request.</p>
+        </div>
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg></span>
+          <p class="punto-titolo">Italian and English</p>
+          <p class="punto-testo">One IT / EN switch; the report and quotes stay as written.</p>
+        </div>
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg></span>
+          <p class="punto-titolo">Works on the phone</p>
+          <p class="punto-testo">Below 760 px the menu becomes a bottom bar.</p>
+        </div>
+        <div class="carta s12-punto">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg></span>
+          <p class="punto-titolo">The patient decides</p>
+          <p class="punto-testo">One consent in “My data” hides every Referto button.</p>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#s12 .titolo", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+        tl.fromTo(".s12-punto", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.1 }, 0.4);
+        window.__timelines["s12-accessibile"] = tl;
+      })();
+    </script>
+  </div>
+</template>

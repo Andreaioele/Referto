@@ -1,0 +1,10 @@
+{
+  "name": "slide",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.164 present",
+    "studio": "npx --yes hyperframes@0.8.164 preview --background",
+    "check": "npx --yes hyperframes@0.8.164 check"
+  }
+}

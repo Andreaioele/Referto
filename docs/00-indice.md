@@ -22,6 +22,8 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 | `resources/` | App Python di riferimento (Flask), dataset, script, prove |
 | `docs/` | Questa documentazione |
 
+Le slide del prodotto sono in `resources/slide/` ([[19-slide-prodotto]]).
+
 Le note dalla 02 alla 12 descrivono l'app Python: i loro percorsi
 (`glossario/`, `static/`, `traces/` …) sono relativi a `resources/`.
 L'app Python verrà portata un pezzo alla volta in backend e frontend.
@@ -43,6 +45,7 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
 10. Specifiche delle prossime funzionalità:
     [[specifica-terminologia]], [[specifica-visite-specialisti]],
     [[specifica-storico-sessione]], [[specifica-multilingua]].
+11. [[19-slide-prodotto]]: le slide che presentano il prodotto (HyperFrames, modalità presentazione).
 
 ## Mappa
 
@@ -81,6 +84,8 @@ graph LR
   specStorico --> farmaci
   specStorico --> backend
   specStorico --> frontend
+  panoramica --> slide[19-slide-prodotto]
+  slide --> frontend
 ```
 
 ## Mappa dei file del codice
@@ -105,3 +110,4 @@ I file Python sono in `resources/`.
 | `cluster_agent_task.py`, `datasets/` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |
 | `test_app.py` | Test automatici | [[12-test-e-sviluppo]] |
 | `check-usage-app/` | Dashboard dell'usage dell'API AMD | [[11-modelli-e-ollama]] |
+| `slide/` | Slide del prodotto (HyperFrames) | [[19-slide-prodotto]] |

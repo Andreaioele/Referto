@@ -1,0 +1,87 @@
+<template id="s03-percorso-template">
+  <div id="s03-percorso-root" data-composition-id="s03-percorso" data-width="1920" data-height="1080">
+    <style>
+      #s03-passi {
+        margin-top: 90px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 48px;
+      }
+      .s03-passo {
+        position: relative;
+        padding: 48px 46px 54px;
+        min-height: 470px;
+      }
+      .s03-numero {
+        position: absolute;
+        right: 40px;
+        top: 26px;
+        color: #e5f3ed;
+        font-size: 150px;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .s03-passo .punto-titolo {
+        position: relative;
+        margin-top: 40px;
+        font-size: 46px;
+      }
+      .s03-passo .punto-testo {
+        position: relative;
+        font-size: 32px;
+      }
+      .s03-passo .icona {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        border-radius: 26px;
+      }
+      .s03-passo .icona svg {
+        width: 50px;
+        height: 50px;
+      }
+      #s03-p2 .icona {
+        background: #176b58;
+        color: #fff;
+        font-size: 50px;
+        font-weight: 900;
+      }
+    </style>
+    <div class="slide" id="s03">
+      <p class="occhiello">How patients use it</p>
+      <h2 class="titolo">Three steps, <em>no app to install</em>: open the report, tap one button, read and ask.</h2>
+      <div id="s03-passi">
+        <div class="carta s03-passo" id="s03-p1">
+          <span class="s03-numero">1</span>
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg></span>
+          <p class="punto-titolo">Open the report</p>
+          <p class="punto-testo">It is already in the clinic’s portal, under My documents.</p>
+        </div>
+        <div class="carta s03-passo" id="s03-p2">
+          <span class="s03-numero">2</span>
+          <span class="icona">R</span>
+          <p class="punto-titolo">Tap “Explain this to me”</p>
+          <p class="punto-testo">One button next to the report. No copy and paste, no upload.</p>
+        </div>
+        <div class="carta s03-passo" id="s03-p3">
+          <span class="s03-numero">3</span>
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+          <p class="punto-titolo">Read, then ask</p>
+          <p class="punto-testo">The explanation is written while you watch; then ask in your own words.</p>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        // Frammenti (tempi locali): 3 primo passo, 5.5 secondo, 8 terzo.
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        tl.fromTo("#s03 .titolo", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+        entra("#s03-p1", 1.2);
+        entra("#s03-p2", 4.6);
+        entra("#s03-p3", 7.1);
+        window.__timelines["s03-percorso"] = tl;
+      })();
+    </script>
+  </div>
+</template>

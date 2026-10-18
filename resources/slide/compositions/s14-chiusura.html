@@ -1,0 +1,74 @@
+<template id="s14-chiusura-template">
+  <div id="s14-chiusura-root" data-composition-id="s14-chiusura" data-width="1920" data-height="1080">
+    <style>
+      #s14-fondo {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: radial-gradient(1400px 900px at 50% 40%, #1f8068 0%, #176b58 50%, #0f5143 100%);
+        color: #fff;
+      }
+      #s14-icona {
+        display: grid;
+        place-items: center;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+      }
+      #s14-frase {
+        margin-top: 44px;
+        max-width: 1400px;
+        font-size: 84px;
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+      }
+      #s14-112 {
+        margin-top: 30px;
+        font-size: 38px;
+        font-weight: 600;
+        color: #e5f3ed;
+      }
+      #s14-marca {
+        margin-top: 90px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-size: 44px;
+        font-weight: 900;
+      }
+      #s14-marca .marchio {
+        background: #fff;
+        color: #176b58;
+      }
+      #s14-slogan {
+        margin-top: 16px;
+        font-size: 32px;
+        color: #e5f3ed;
+      }
+    </style>
+    <div class="slide" id="s14-fondo">
+      <span id="s14-icona"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a4 4 0 0 0 8 0V3"></path><path d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle cx="20" cy="11" r="2"></circle></svg></span>
+      <h2 id="s14-frase">The last word always belongs to your doctor.</h2>
+      <p id="s14-112">Referto explains; it does not decide. In an emergency, call 112.</p>
+      <div id="s14-marca"><span class="marchio">R</span>Referto</div>
+      <p id="s14-slogan">Your medical report, explained in plain words · AMD Developer ACT III · Track Health</p>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        entra("#s14-icona", 0.1);
+        entra("#s14-frase", 0.3);
+        entra("#s14-112", 0.6);
+        entra("#s14-marca", 0.9);
+        entra("#s14-slogan", 1.1);
+        window.__timelines["s14-chiusura"] = tl;
+      })();
+    </script>
+  </div>
+</template>

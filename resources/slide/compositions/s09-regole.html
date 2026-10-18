@@ -1,0 +1,67 @@
+<template id="s09-regole-template">
+  <div id="s09-regole-root" data-composition-id="s09-regole" data-width="1920" data-height="1080">
+    <style>
+      #s09 .titolo {
+        font-size: 62px;
+      }
+      #s09-griglia {
+        margin-top: 60px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px 40px;
+      }
+      .s09-regola {
+        display: flex;
+        gap: 30px;
+        padding: 40px 44px;
+      }
+      .s09-regola .punto-titolo {
+        font-size: 38px;
+      }
+      .s09-regola .punto-testo {
+        font-size: 28px;
+      }
+      #s09-r4 {
+        background: #176b58;
+        border-color: #176b58;
+        color: #fff;
+      }
+      #s09-r4 .punto-testo {
+        color: #e5f3ed;
+      }
+      #s09-r4 .icona {
+        background: #fff;
+      }
+    </style>
+    <div class="slide" id="s09">
+      <p class="occhiello">Product rules</p>
+      <h2 class="titolo">Referto <em>never diagnoses and never advises</em>: it explains only what is written.</h2>
+      <div id="s09-griglia">
+        <div class="carta s09-regola" id="s09-r1">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></span>
+          <div><p class="punto-titolo">Only the report</p><p class="punto-testo">Drugs and instructions only if the doctor wrote them, in a box of their own.</p></div>
+        </div>
+        <div class="carta s09-regola" id="s09-r2">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span>
+          <div><p class="punto-titolo">A source for every answer</p><p class="punto-testo">A “Source” line that no tool returned is removed while the answer streams.</p></div>
+        </div>
+        <div class="carta s09-regola" id="s09-r3">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M4 16V5a2 2 0 0 1 2-2h11"></path></svg></span>
+          <div><p class="punto-titolo">Copied, not generated</p><p class="punto-testo">Values and the doctor’s notes come from the report through code, word for word.</p></div>
+        </div>
+        <div class="carta s09-regola" id="s09-r4">
+          <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+          <div><p class="punto-titolo">The doctor has the last word</p><p class="punto-testo">Every explanation ends the same way: talk to your doctor; in an emergency call 112.</p></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#s09 .titolo", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+        tl.fromTo(".s09-regola", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.15 }, 0.4);
+        window.__timelines["s09-regole"] = tl;
+      })();
+    </script>
+  </div>
+</template>

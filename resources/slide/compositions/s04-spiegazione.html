@@ -1,0 +1,159 @@
+<template id="s04-spiegazione-template">
+  <div id="s04-spiegazione-root" data-composition-id="s04-spiegazione" data-width="1920" data-height="1080">
+    <style>
+      #s04 {
+        display: grid;
+        grid-template-columns: 900px 1fr;
+        gap: 90px;
+      }
+      #s04 .titolo {
+        font-size: 62px;
+      }
+      #s04-parti {
+        margin-top: 46px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .s04-parte {
+        display: flex;
+        gap: 26px;
+        padding: 22px 28px;
+        border-radius: 24px;
+        border: 2px solid transparent;
+      }
+      .s04-num {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #e5f3ed;
+        color: #176b58;
+        font-size: 30px;
+        font-weight: 900;
+      }
+      .s04-parte .punto-titolo {
+        font-size: 36px;
+      }
+      .s04-parte .punto-titolo span {
+        color: #4d5a56;
+        font-weight: 600;
+        font-size: 28px;
+      }
+      .s04-parte .punto-testo {
+        margin-top: 4px;
+        font-size: 28px;
+      }
+      #s04-destra {
+        position: relative;
+      }
+      #s04-zoom {
+        position: absolute;
+        left: 40px;
+        top: -10px;
+        transform: scale(1.42);
+        transform-origin: 0 0;
+      }
+      #s04-zoom .referto-pannello {
+        height: 650px;
+      }
+      #s04-flusso {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      #s04 .s04-tradotto {
+        background: #e5f3ed;
+        border-radius: 4px;
+      }
+    </style>
+    <div class="slide" id="s04">
+      <div>
+        <p class="occhiello">The explanation</p>
+        <h2 class="titolo">Every explanation has <em>the same four parts</em>, so patients know where to look.</h2>
+        <div id="s04-parti">
+          <div class="s04-parte" id="s04-r1">
+            <span class="s04-num">1</span>
+            <div><p class="punto-titolo">In short <span>· In breve</span></p><p class="punto-testo">Why the visit was done and what it found.</p></div>
+          </div>
+          <div class="s04-parte" id="s04-r2">
+            <span class="s04-num">2</span>
+            <div><p class="punto-titolo">In plain words <span>· In parole semplici</span></p><p class="punto-testo">Medical terms explained right where they appear.</p></div>
+          </div>
+          <div class="s04-parte" id="s04-r3">
+            <span class="s04-num">3</span>
+            <div><p class="punto-titolo">What the doctor wrote <span>· Dal referto</span></p><p class="punto-testo">Copied word for word, never rewritten.</p></div>
+          </div>
+          <div class="s04-parte" id="s04-r4">
+            <span class="s04-num">4</span>
+            <div><p class="punto-titolo">What comes next</p><p class="punto-testo">The visit already booked, clinics nearby, and the safety note.</p></div>
+          </div>
+        </div>
+      </div>
+      <div id="s04-destra" class="ui">
+        <div id="s04-zoom" class="widget">
+          <div class="referto-pannello">
+            <div class="referto-testa"><span class="referto-marchio">R</span><div class="referto-testa-testo"><strong>Referto</strong><span>Ti spiego il referto in parole semplici</span></div></div>
+            <div class="referto-contesto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg><span>Stai leggendo: <strong>Visita cardiologica con elettrocardiogramma</strong></span></div>
+            <div class="referto-corpo">
+              <div id="s04-flusso" data-layout-allow-occlusion data-layout-allow-overflow>
+                <p class="referto-argomento">Visita cardiologica · Cardiologia</p>
+                <section class="referto-box" id="s04-breve">
+                  <h3>In breve</h3>
+                  <p>La visita è stata fatta per controllare la pressione arteriosa. Alla visita la pressione era 145/90 mmHg e la frequenza cardiaca 72 battiti al minuto. L'elettrocardiogramma mostrava ritmo sinusale con conduzione nella norma e nessuna alterazione della ripolarizzazione. La conclusione scritta è ipertensione arteriosa.</p>
+                </section>
+                <section class="referto-box" id="s04-semplice">
+                  <h3>In parole semplici</h3>
+                  <p>La pressione misurata era 145/90 mmHg: il referto indica il valore della pressione sistolica (145) e di quella diastolica (90). La frequenza cardiaca era di 72 battiti al minuto. L'elettrocardiogramma ha registrato un ritmo sinusale, <span class="s04-tradotto">cioè il ritmo normale del cuore,</span> alla frequenza di 72 bpm, con conduzione nella norma <span class="s04-tradotto">(il modo in cui il segnale elettrico si trasmette nel cuore)</span> e nessuna alterazione della ripolarizzazione <span class="s04-tradotto">(la fase di recupero del muscolo cardiaco dopo ogni battito).</span> Nelle conclusioni il medico scrive "ipertensione arteriosa".</p>
+                </section>
+                <section class="referto-box" id="s04-medico">
+                  <h3>Cosa ha scritto il medico</h3>
+                  <p class="referto-nota">«Terapia: ramipril 5 mg, 1 compressa al mattino. Esami del sangue e nuova visita tra un mese.»</p>
+                  <span class="referto-citazione">Dal referto</span>
+                </section>
+                <section class="referto-box referto-visita" id="s04-visita"><span class="icona-tonda"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span><p>Hai già una <strong>visita cardiologica di controllo</strong> sabato 24 ottobre: lì puoi parlarne con il medico.</p><a href="#">Vedi la visita</a></section>
+                <section class="referto-box referto-visita" id="s04-strutture"><span class="icona-tonda"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span><p>Cerca strutture e medici di <strong>cardiologia</strong> vicino a casa tua.</p><a href="#">Cerca strutture</a></section>
+                <div class="referto-sicurezza" id="s04-sicurezza"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg><span>Referto non fa diagnosi e non dà consigli: spiega solo ciò che è scritto. Per ogni dubbio parlane con il tuo medico. Per le urgenze chiama il <strong>112</strong>.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        // Frammenti (tempi locali): 2.5, 5, 7.5, 10. A ogni frammento si accende
+        // una parte a sinistra e il riquadro corrispondente del widget, che
+        // scorre come nell'app. Ogni cambio è un fromTo con partenza esplicita.
+        const tl = gsap.timeline({ paused: true });
+        const righe = ["#s04-r1", "#s04-r2", "#s04-r3", "#s04-r4"];
+        const riquadri = ["#s04-breve", "#s04-semplice", "#s04-medico", ["#s04-visita", "#s04-strutture", "#s04-sicurezza"]];
+        // Scorrimento che centra il riquadro acceso nell'area visibile del
+        // corpo (518 px, padding 20): misurato nel deck il 18/10/2026.
+        const scorri = [0, 296, 592, 860];
+        const spento = { opacity: 0.4, backgroundColor: "rgba(255,255,255,0)", borderColor: "rgba(23,107,88,0)" };
+        const acceso = { opacity: 1, backgroundColor: "rgba(255,255,255,1)", borderColor: "rgba(23,107,88,1)" };
+        const boxSpento = { boxShadow: "0 0 0 0px rgba(23,107,88,0)" };
+        const boxAcceso = { boxShadow: "0 0 0 3px rgba(23,107,88,1)" };
+
+        tl.fromTo("#s04 .titolo", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+        tl.fromTo(righe, { ...spento, x: -20 }, { ...spento, x: 0, duration: 0.5, stagger: 0.08 }, 0.3);
+        tl.fromTo("#s04-zoom", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.4);
+
+        const inizi = [1.6, 4.2, 6.7, 9.2];
+        inizi.forEach((t, i) => {
+          tl.fromTo(righe[i], { ...spento }, { ...acceso, duration: 0.5, immediateRender: false }, t);
+          tl.fromTo(riquadri[i], { ...boxSpento }, { ...boxAcceso, duration: 0.5, immediateRender: false }, t);
+          if (i > 0) {
+            tl.fromTo(righe[i - 1], { ...acceso }, { ...spento, duration: 0.5, immediateRender: false }, t);
+            tl.fromTo(riquadri[i - 1], { ...boxAcceso }, { ...boxSpento, duration: 0.5, immediateRender: false }, t);
+            tl.fromTo("#s04-flusso", { y: -scorri[i - 1] }, { y: -scorri[i], duration: 0.6, ease: "power2.inOut", immediateRender: false }, t);
+          }
+        });
+        window.__timelines["s04-spiegazione"] = tl;
+      })();
+    </script>
+  </div>
+</template>

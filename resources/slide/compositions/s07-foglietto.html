@@ -1,0 +1,126 @@
+<template id="s07-foglietto-template">
+  <div id="s07-foglietto-root" data-composition-id="s07-foglietto" data-width="1920" data-height="1080">
+    <style>
+      #s07 {
+        display: grid;
+        grid-template-columns: 760px 1fr;
+        gap: 80px;
+      }
+      #s07 .titolo {
+        font-size: 60px;
+      }
+      #s07 .sotto {
+        font-size: 32px;
+      }
+      #s07-scena {
+        position: relative;
+      }
+      #s07-pagina {
+        position: absolute;
+        left: -40px;
+        top: 30px;
+        width: 480px;
+        height: 680px;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 30px 80px rgba(16, 40, 34, 0.18), 0 0 0 1px rgba(16, 40, 34, 0.1);
+      }
+      #s07-pagina img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      #s07-citata {
+        position: absolute;
+        left: -16px;
+        top: 740px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #18221f;
+      }
+      #s07-zoom {
+        position: absolute;
+        left: 320px;
+        top: 120px;
+        width: 400px;
+        transform: scale(1.38);
+        transform-origin: 0 0;
+      }
+      #s07-domande {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 20px;
+        background: #f5f7f6;
+        box-shadow: 0 40px 100px rgba(16, 40, 34, 0.2), 0 0 0 1px rgba(16, 40, 34, 0.08);
+      }
+      #s07-testa {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      #s07-testa strong {
+        display: block;
+        font-size: 17px;
+      }
+      #s07-testa span:not(.referto-marchio) {
+        color: #4d5a56;
+        font-size: 14px;
+      }
+      #s07-domande .referto-box {
+        font-size: 16px;
+      }
+      #s07-sezione {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        align-self: flex-start;
+        padding: 8px 12px;
+        border: 1px solid #b9dccd;
+        border-radius: 10px;
+        background: #e5f3ed;
+        color: #0f5143;
+        font-size: 14px;
+        font-weight: 700;
+      }
+    </style>
+    <div class="slide" id="s07">
+      <div>
+        <p class="occhiello">Leaflet</p>
+        <h2 class="titolo">Questions about a drug are answered <em>from its official leaflet</em>, with the section to read.</h2>
+        <p class="sotto">The real AIFA PDF, with larger text on demand. Each answer jumps to the page where it is written.</p>
+      </div>
+      <div id="s07-scena" class="ui">
+        <div id="s07-pagina"><img src="assets/ui/foglietto-triatec-p1.png" alt="Page 1 of the official Triatec leaflet (AIFA)" data-layout-ignore /></div>
+        <p id="s07-citata"><span class="pastiglia pastiglia-referto">Citata nella risposta</span>Sezione 1</p>
+        <div id="s07-zoom">
+          <div id="s07-domande">
+            <div id="s07-testa"><span class="referto-marchio piccolo-marchio">R</span><div><strong>Domande su questo foglietto</strong><span>Rispondo solo con ciò che c'è scritto</span></div></div>
+            <p class="referto-domanda">A cosa serve?</p>
+            <section class="referto-box" id="s07-risposta">
+              <p>Il foglietto dice che Triatec contiene ramipril, un ACE inibitore. Può essere usato per trattare la pressione alta del sangue (ipertensione), per ridurre il rischio di un attacco cardiaco o di un ictus, per ridurre il rischio o ritardare il peggioramento di problemi renali e per l'insufficienza cardiaca.</p>
+              <span id="s07-sezione"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg>Sezione 1 · Cos’è TRIATEC e a cosa serve</span>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        entra("#s07 .titolo", 0.1, { y: 30 });
+        entra("#s07 .sotto", 0.3, { y: 20 });
+        entra("#s07-pagina", 0.4, { y: 40 });
+        entra("#s07-citata", 0.9, { y: 10 });
+        entra("#s07-zoom", 0.8, { x: 60 });
+        window.__timelines["s07-foglietto"] = tl;
+      })();
+    </script>
+  </div>
+</template>

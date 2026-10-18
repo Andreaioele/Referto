@@ -1,0 +1,125 @@
+<template id="s11-trace-template">
+  <div id="s11-trace-root" data-composition-id="s11-trace" data-width="1920" data-height="1080">
+    <style>
+      #s11 .titolo {
+        font-size: 62px;
+      }
+      #s11-scena {
+        margin-top: 64px;
+        display: grid;
+        grid-template-columns: 900px 1fr;
+        gap: 80px;
+      }
+      #s11-trace {
+        padding: 40px 44px;
+        border-radius: 28px;
+        background: #0b1512;
+        color: #e5f3ed;
+        box-shadow: 0 40px 100px rgba(16, 40, 34, 0.25);
+      }
+      #s11-testa {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 30px;
+        font-weight: 800;
+      }
+      #s11-testa span {
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: rgba(143, 214, 189, 0.16);
+        color: #8fd6bd;
+        font-size: 22px;
+      }
+      #s11-righe {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 14px 24px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 25px;
+      }
+      #s11-righe dt {
+        color: #9fb3ab;
+      }
+      #s11-righe dd {
+        color: #fff;
+      }
+      #s11-privacy {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 24px;
+        border: 3px solid #2f9b7f;
+        border-radius: 18px;
+        color: #8fd6bd;
+        font-size: 30px;
+        font-weight: 800;
+      }
+      #s11-punti {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+      .s11-punto {
+        display: flex;
+        gap: 28px;
+      }
+      .s11-punto .punto-titolo {
+        font-size: 36px;
+      }
+      .s11-punto .punto-testo {
+        font-size: 28px;
+      }
+    </style>
+    <div class="slide" id="s11">
+      <p class="occhiello">Traces and privacy</p>
+      <h2 class="titolo">Every run leaves a trace to measure it, <em>never the text of the report</em>.</h2>
+      <div id="s11-scena">
+        <div id="s11-trace">
+          <div id="s11-testa">Trace · one explanation <span>example</span></div>
+          <dl id="s11-righe">
+            <dt>engine · model</dt><dd>direct · DeepSeek-V4.1-Flash</dd>
+            <dt>duration</dt><dd>21.4 s</dd>
+            <dt>first text</dt><dd>3.2 s</dd>
+            <dt>tokens in → out</dt><dd>1,840 → 620</dd>
+            <dt>tools</dt><dd>cercaFarmaci ✓ · cercaTermine ✓</dd>
+            <dt>outcome</dt><dd>ok</dd>
+          </dl>
+          <div id="s11-privacy">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            Report text: never stored in traces
+          </div>
+        </div>
+        <div id="s11-punti">
+          <div class="s11-punto" id="s11-p1">
+            <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></span>
+            <div><p class="punto-titolo">Measure every version</p><p class="punto-testo">Timings, tokens and tool calls compare one prompt or model with the next.</p></div>
+          </div>
+          <div class="s11-punto" id="s11-p2">
+            <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg></span>
+            <div><p class="punto-titolo">Explained once</p><p class="punto-testo">Cached by a SHA-256 fingerprint of the report: the same report opens instantly.</p></div>
+          </div>
+          <div class="s11-punto" id="s11-p3">
+            <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></span>
+            <div><p class="punto-titolo">Logs stay technical</p><p class="punto-testo">Status and timings only; deleting a conversation deletes its traces.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        entra("#s11 .titolo", 0.1, { y: 30 });
+        entra("#s11-trace", 0.4, { y: 40 });
+        entra("#s11-privacy", 1.0, { y: 10 });
+        entra("#s11-p1", 0.6, { x: 40 });
+        entra("#s11-p2", 0.8, { x: 40 });
+        entra("#s11-p3", 1.0, { x: 40 });
+        window.__timelines["s11-trace"] = tl;
+      })();
+    </script>
+  </div>
+</template>

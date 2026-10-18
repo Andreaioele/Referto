@@ -1,0 +1,76 @@
+<template id="s01-titolo-template">
+  <div id="s01-titolo-root" data-composition-id="s01-titolo" data-width="1920" data-height="1080">
+    <style>
+      #s01-fondo {
+        background: radial-gradient(1500px 1000px at 78% 20%, #1f8068 0%, #176b58 45%, #0f5143 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 160px;
+      }
+      #s01-marchio {
+        width: 132px;
+        height: 132px;
+        border-radius: 36px;
+        background: #fff;
+        color: #176b58;
+        font-size: 74px;
+      }
+      #s01-nome {
+        margin-top: 48px;
+        font-size: 168px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+      }
+      #s01-slogan {
+        margin-top: 30px;
+        max-width: 1200px;
+        font-size: 56px;
+        font-weight: 600;
+        line-height: 1.2;
+        color: #e5f3ed;
+      }
+      #s01-piede {
+        position: absolute;
+        left: 160px;
+        right: 160px;
+        bottom: 84px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.28);
+        font-size: 30px;
+        font-weight: 700;
+        color: #e5f3ed;
+      }
+      #s01-piede span:last-child {
+        color: #fff;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 26px;
+      }
+    </style>
+    <div class="slide" id="s01-fondo">
+      <div class="marchio" id="s01-marchio">R</div>
+      <h1 id="s01-nome">Referto</h1>
+      <p id="s01-slogan">Your medical report, explained in plain words, right next to the report.</p>
+      <div id="s01-piede">
+        <span>AMD Developer ACT III · Track Health</span>
+        <span>Product overview</span>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#s01-marchio", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.1);
+        tl.fromTo("#s01-nome", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.3);
+        tl.fromTo("#s01-slogan", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.55);
+        tl.fromTo("#s01-piede", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0.9);
+        window.__timelines["s01-titolo"] = tl;
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,203 @@
+<template id="s02-cosa-template">
+  <div id="s02-cosa-root" data-composition-id="s02-cosa" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Public Sans";
+        src: url("assets/fonts/public-sans-latin-wght.woff2") format("woff2");
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: "Nunito Sans";
+        src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+        font-weight: 200 1000;
+      }
+      #s02 {
+        display: grid;
+        grid-template-columns: 760px 1fr;
+        gap: 80px;
+        align-items: center;
+      }
+      #s02 .titolo {
+        font-size: 64px;
+      }
+      #s02-scena {
+        position: relative;
+        height: 900px;
+      }
+      /* Portale finto dello studio, con la riga del referto e «Spiegamelo» */
+      #s02-portale {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 60px;
+        padding: 34px 38px 38px;
+      }
+      #s02-portale-testa {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #556070;
+        font-family: "Public Sans", sans-serif;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      #s02-portale-testa strong {
+        color: #1b2433;
+        font-size: 32px;
+      }
+      #s02-riga {
+        margin-top: 26px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding: 26px;
+        border: 1px solid #dde3ea;
+        border-radius: 20px;
+        background: #f4f6f9;
+        font-family: "Public Sans", sans-serif;
+      }
+      #s02-riga .s02-doc {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #e3ebf6;
+        color: #1f4e8c;
+      }
+      #s02-riga-testo {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #s02-riga-testo strong {
+        color: #1b2433;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+      #s02-riga-testo span {
+        color: #556070;
+        font-size: 22px;
+      }
+      #s02-bottone {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: none;
+        padding: 16px 26px 16px 16px;
+        border-radius: 16px;
+        background: #176b58;
+        color: #fff;
+        font-family: "Nunito Sans", sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+      }
+      #s02-bottone .marchio {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #fff;
+        color: #176b58;
+        font-size: 26px;
+      }
+      #s02-traduci {
+        position: absolute;
+        right: 36px;
+        top: 556px;
+        padding: 14px 24px;
+        border-radius: 14px;
+        background: #18221f;
+        color: #fff;
+        font-size: 30px;
+        font-weight: 700;
+      }
+      /* Testata del widget che si apre */
+      #s02-widget {
+        position: absolute;
+        left: 120px;
+        right: 0;
+        top: 650px;
+        overflow: hidden;
+        border-radius: 24px;
+        box-shadow: 0 40px 100px rgba(16, 40, 34, 0.22);
+      }
+      #s02-widget-testa {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 26px 30px;
+        background: #176b58;
+        color: #fff;
+      }
+      #s02-widget-testa .marchio {
+        background: #fff;
+        color: #176b58;
+      }
+      #s02-widget-testa strong {
+        display: block;
+        font-size: 36px;
+      }
+      #s02-widget-testa span {
+        font-size: 26px;
+        color: #e5f3ed;
+      }
+      #s02-widget-corpo {
+        padding: 26px 30px 30px;
+        background: #f5f7f6;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      #s02-widget-corpo div {
+        height: 22px;
+        border-radius: 11px;
+        background: #dfe6e3;
+      }
+    </style>
+    <div class="slide" id="s02">
+      <div>
+        <p class="occhiello">What it is</p>
+        <h2 class="titolo" id="s02-titolo">Referto explains a medical report in plain words, <em>right next to the report</em>.</h2>
+        <p class="sotto" id="s02-sotto">A widget inside the clinic’s patient portal. Nothing to upload, nothing to install, no account to create.</p>
+      </div>
+      <div id="s02-scena">
+        <div class="carta" id="s02-portale">
+          <div id="s02-portale-testa"><strong>My documents</strong><span>Poliambulatorio Valle Serena</span></div>
+          <div id="s02-riga">
+            <span class="s02-doc"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg></span>
+            <div id="s02-riga-testo">
+              <strong>Visita cardiologica con elettrocardiogramma</strong>
+              <span>Referto · 13 settembre 2026 · Dott.ssa Elena Marchi</span>
+            </div>
+            <span id="s02-bottone"><span class="marchio">R</span>Spiegamelo</span>
+          </div>
+        </div>
+        <div id="s02-traduci">“Spiegamelo” = Explain this to me</div>
+        <div id="s02-widget">
+          <div id="s02-widget-testa">
+            <span class="marchio">R</span>
+            <div><strong>Referto</strong><span>Ti spiego il referto in parole semplici</span></div>
+          </div>
+          <div id="s02-widget-corpo">
+            <div style="width: 88%"></div>
+            <div style="width: 96%"></div>
+            <div style="width: 70%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#s02-titolo", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+        tl.fromTo("#s02-sotto", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+        tl.fromTo("#s02-portale", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+        tl.fromTo("#s02-traduci", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.9);
+        tl.fromTo("#s02-widget", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.7, ease: "power3.out" }, 1.1);
+        window.__timelines["s02-cosa"] = tl;
+      })();
+    </script>
+  </div>
+</template>

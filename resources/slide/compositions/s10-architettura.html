@@ -1,0 +1,150 @@
+<template id="s10-architettura-template">
+  <div id="s10-architettura-root" data-composition-id="s10-architettura" data-width="1920" data-height="1080">
+    <style>
+      #s10 .titolo {
+        font-size: 62px;
+      }
+      #s10-diagramma {
+        position: relative;
+        margin-top: 50px;
+        height: 600px;
+      }
+      .s10-nodo {
+        position: absolute;
+        width: 360px;
+        min-height: 240px;
+        padding: 30px 32px;
+      }
+      .s10-nodo small {
+        display: block;
+        color: #176b58;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .s10-nodo strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 34px;
+        line-height: 1.15;
+      }
+      .s10-nodo span {
+        display: block;
+        margin-top: 8px;
+        color: #4d5a56;
+        font-size: 24px;
+        line-height: 1.35;
+      }
+      #s10-n1 { left: 0; top: 56px; }
+      #s10-n2 { left: 450px; top: 56px; }
+      #s10-n3 { left: 900px; top: 56px; }
+      #s10-amd {
+        position: absolute;
+        left: 1330px;
+        top: 0;
+        width: 350px;
+        height: 390px;
+        border: 4px dashed #176b58;
+        border-radius: 34px;
+      }
+      #s10-amd-etichetta {
+        position: absolute;
+        left: 1330px;
+        top: 12px;
+        width: 350px;
+        text-align: center;
+        color: #176b58;
+        font-size: 26px;
+        font-weight: 900;
+      }
+      #s10-n4 {
+        left: 1355px;
+        top: 56px;
+        width: 300px;
+        background: #176b58;
+        border-color: #176b58;
+        color: #fff;
+      }
+      #s10-n4 small,
+      #s10-n4 span {
+        color: #e5f3ed;
+      }
+      .s10-strumento {
+        position: absolute;
+        width: 360px;
+        padding: 24px 30px;
+        background: #e5f3ed;
+        border-color: #b9dccd;
+        box-shadow: none;
+      }
+      .s10-strumento strong {
+        display: block;
+        font-size: 30px;
+      }
+      .s10-strumento span {
+        display: block;
+        margin-top: 4px;
+        color: #4d5a56;
+        font-size: 24px;
+      }
+      #s10-t1 { left: 900px; top: 430px; }
+      #s10-t2 { left: 1290px; top: 430px; width: 390px; }
+      #s10-t3 { left: 450px; top: 430px; }
+      #s10-linee {
+        position: absolute;
+        inset: 0;
+        width: 1680px;
+        height: 600px;
+        color: #176b58;
+      }
+    </style>
+    <div class="slide" id="s10">
+      <p class="occhiello">Under the hood</p>
+      <h2 class="titolo">One agent, deterministic tools, and a model <em>running on AMD</em>.</h2>
+      <div id="s10-diagramma">
+        <svg id="s10-linee" viewBox="0 0 1680 600" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-hidden="true">
+          <g id="s10-frecce">
+            <path d="M366 176h78M432 164l12 12-12 12"></path>
+            <path d="M816 176h78M882 164l12 12-12 12"></path>
+            <path d="M1266 176h82M1336 164l12 12-12 12"></path>
+          </g>
+          <g id="s10-rami" stroke-dasharray="10 12">
+            <path d="M1080 296v134"></path>
+            <path d="M1200 296v110h280v24"></path>
+            <path d="M630 296v134"></path>
+          </g>
+        </svg>
+        <div class="carta s10-nodo" id="s10-n1"><small>Portal</small><strong>Referto widget</strong><span>React, inside the clinic’s patient portal</span></div>
+        <div class="carta s10-nodo" id="s10-n2"><small>Backend</small><strong>Referto API</strong><span>NestJS on Vercel, streams the answer</span></div>
+        <div class="carta s10-nodo" id="s10-n3"><small>Agent</small><strong>Mother agent</strong><span>On Evolus, or our direct engine with the same prompt</span></div>
+        <div id="s10-amd"></div>
+        <div class="carta s10-nodo" id="s10-n4"><small>Model</small><strong>DeepSeek-V4.1-Flash</strong><span>Fallback: DeepSeek-V4-Flash when overloaded</span></div>
+        <p id="s10-amd-etichetta">AMD Token Factory</p>
+        <div class="carta s10-strumento" id="s10-t3"><strong>Facilities</strong><span>Open data, from the report’s area</span></div>
+        <div class="carta s10-strumento" id="s10-t1"><strong>cercaFarmaci</strong><span>AIFA, 12,654 medicines</span></div>
+        <div class="carta s10-strumento" id="s10-t2"><strong>cercaTermine</strong><span>Glossary, 17,298 terms (direct engine)</span></div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        // Frammenti (tempi locali): 2.5 la catena principale, 5.5 strumenti e AMD.
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.5, ease: "power3.out" }, t);
+        entra("#s10 .titolo", 0.1, { y: 30 });
+        entra("#s10-n1", 0.5, { y: 30 });
+        entra("#s10-n2", 0.8, { y: 30 });
+        entra("#s10-n3", 1.1, { y: 30 });
+        entra("#s10-n4", 1.4, { y: 30 });
+        tl.fromTo("#s10-frecce", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.0);
+        tl.fromTo("#s10-rami", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 3.8);
+        entra("#s10-t3", 3.9, { y: 30 });
+        entra("#s10-t1", 4.1, { y: 30 });
+        entra("#s10-t2", 4.3, { y: 30 });
+        tl.fromTo("#s10-amd", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 4.4);
+        entra("#s10-amd-etichetta", 4.6, { y: 10 });
+        window.__timelines["s10-architettura"] = tl;
+      })();
+    </script>
+  </div>
+</template>

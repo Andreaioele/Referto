@@ -1,0 +1,110 @@
+<template id="s05-domande-template">
+  <div id="s05-domande-root" data-composition-id="s05-domande" data-width="1920" data-height="1080">
+    <style>
+      #s05 {
+        display: grid;
+        grid-template-columns: 860px 1fr;
+        gap: 110px;
+      }
+      #s05 .titolo {
+        font-size: 62px;
+      }
+      #s05-punti {
+        margin-top: 56px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+      .s05-punto {
+        display: flex;
+        gap: 28px;
+      }
+      .s05-punto .punto-titolo {
+        font-size: 38px;
+      }
+      .s05-punto .punto-testo {
+        font-size: 29px;
+      }
+      #s05-zoom {
+        margin-top: 40px;
+        transform: scale(1.42);
+        transform-origin: 0 0;
+        width: 520px;
+      }
+      #s05-chat {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 20px;
+        border-radius: 22px;
+        background: #f5f7f6;
+        box-shadow: 0 40px 100px rgba(16, 40, 34, 0.18), 0 0 0 1px rgba(16, 40, 34, 0.08);
+      }
+      #s05 .s05-traduzione {
+        align-self: flex-end;
+        margin-top: -6px;
+        color: #4d5a56;
+        font-size: 14px;
+        font-style: italic;
+      }
+      #s05-fonte {
+        align-self: flex-start;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #e5f3ed;
+        color: #0f5143;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      #s05-fissa {
+        border-color: #b9dccd;
+      }
+    </style>
+    <div class="slide" id="s05">
+      <div>
+        <p class="occhiello">Questions</p>
+        <h2 class="titolo">Patients ask in their own words, and <em>every answer names its source</em>.</h2>
+        <div id="s05-punti">
+          <div class="s05-punto" id="s05-p1">
+            <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5V21h16"></path></svg></span>
+            <div><p class="punto-titolo">A glossary of 17,298 terms</p><p class="punto-testo">Our curated layer first, then HPO, then Wikidata with Italian Wikipedia.</p></div>
+          </div>
+          <div class="s05-punto" id="s05-p2">
+            <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3M8 11h6"></path></svg></span>
+            <div><p class="punto-titolo">Not in the report? It says so.</p><p class="punto-testo">A check without the model answers before any guess.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="ui">
+        <div id="s05-zoom">
+          <div id="s05-chat">
+            <p class="referto-domanda">Cos'è il ritmo sinusale?</p>
+            <p class="s05-traduzione">What is a sinus rhythm?</p>
+            <section class="referto-box" id="s05-risposta">
+              <p>Il ritmo sinusale è il ritmo del cuore guidato dal suo «segnapassi» naturale, il nodo del seno. Nel tuo referto l'elettrocardiogramma riporta un ritmo sinusale, alla frequenza di 72 bpm.</p>
+              <span id="s05-fonte">Fonte: Glossario di Referto</span>
+            </section>
+            <p class="referto-domanda" id="s05-d2">Cos'è la fibrillazione?</p>
+            <p class="s05-traduzione">What is fibrillation?</p>
+            <section class="referto-box" id="s05-fissa">
+              <p>Mi dispiace, questa parola non compare nel referto che mi hai mandato: posso aiutarti solo a capire quello che c'è scritto lì. Se vuoi, chiedimi di un'altra parola del referto.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, t);
+        entra("#s05 .titolo", 0.1);
+        entra("#s05-p1", 0.4);
+        entra("#s05-p2", 0.6);
+        entra("#s05-chat", 0.5);
+        entra("#s05-d2", 1.1);
+        entra("#s05-fissa", 1.3);
+        window.__timelines["s05-domande"] = tl;
+      })();
+    </script>
+  </div>
+</template>

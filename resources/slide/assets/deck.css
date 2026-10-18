@@ -1,0 +1,166 @@
+/* Stile comune delle slide: tema di Referto (frontend/src/index.css),
+   Nunito Sans al posto di Avenir come nel video. */
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("fonts/nunito-sans-latin-wght.woff2") format("woff2");
+  font-weight: 200 1000;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-latin-500.woff2") format("woff2");
+  font-weight: 500;
+}
+
+.slide {
+  --ink: #18221f;
+  --muted: #4d5a56;
+  --paper: #ffffff;
+  --canvas: #f5f7f6;
+  --line: #dfe6e3;
+  --green: #176b58;
+  --green-dark: #0f5143;
+  --mint: #e5f3ed;
+  --mint-bordo: #b9dccd;
+  --ambra: #8a4a00;
+  --notte: #0b1512;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 88px 120px 96px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Nunito Sans", sans-serif;
+}
+.slide * {
+  box-sizing: border-box;
+}
+:where(.slide) :where(h1, h2, h3, p, ul, li, dl, dd) {
+  margin: 0;
+  padding: 0;
+}
+:where(.slide) ul {
+  list-style: none;
+}
+
+/* Testata: occhiello e affermazione della slide */
+.occhiello {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--green);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.occhiello .marchio {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  font-size: 22px;
+}
+.titolo {
+  margin-top: 26px;
+  max-width: 1500px;
+  font-size: 68px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+.titolo em {
+  font-style: normal;
+  color: var(--green);
+}
+.sotto {
+  margin-top: 22px;
+  max-width: 1200px;
+  color: var(--muted);
+  font-size: 36px;
+  line-height: 1.38;
+}
+
+/* Marchio: il quadrato verde con la «R» (frontend/public/favicon.svg) */
+.marchio {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--green);
+  color: #fff;
+  font-weight: 800;
+  font-size: 34px;
+  line-height: 1;
+}
+
+/* Carte e punti */
+.carta {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--paper);
+  box-shadow: 0 24px 60px rgba(16, 40, 34, 0.08);
+}
+.icona {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: var(--mint);
+  color: var(--green);
+}
+.icona svg {
+  width: 40px;
+  height: 40px;
+}
+.punto-titolo {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.punto-testo {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 30px;
+  line-height: 1.4;
+}
+.etichetta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--green-dark);
+  font-size: 26px;
+  font-weight: 800;
+}
+.fonte {
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+/* Widget vero (classi di referto-ui.css dentro .ui), ingrandito per la sala */
+.slide .ui {
+  background: transparent;
+}
+.widget {
+  width: 520px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--canvas);
+  box-shadow: 0 40px 100px rgba(16, 40, 34, 0.22), 0 0 0 1px rgba(16, 40, 34, 0.08);
+}
+.slide .ui .referto-pannello {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  box-shadow: none;
+}
+.slide .ui .referto-corpo {
+  overflow: hidden;
+}

@@ -1,6 +1,6 @@
 ---
 tags: [area/indice]
-aggiornato: 2026-10-17
+aggiornato: 2026-10-18
 ---
 
 # Registro delle modifiche
@@ -10,6 +10,7 @@ Torna a [[00-indice]]. Regola: **ogni modifica al codice aggiunge qui una riga**
 
 Formato: `AAAA-MM-GG · branch · cosa cambia · [[nota]]`
 
+- 2026-10-18 · chat-frontend · Slide del prodotto con HyperFrames in `resources/slide/` (14 slide, note per chi presenta, frammenti; widget e dati veri del portale), separate dal video e dal pitch · [[19-slide-prodotto]]
 - 2026-10-18 · chat-frontend · Pulizia di `resources/`: tolti file non più usati da codice, test o Evolus (`ISTRUZIONI.md`, `Modelfile.example`, `modelli_*.pdf`, `submit_h100.sh`, `merge_datasets.py`, `datasets/mtsamples.csv`, `evolus/agenti/archivio/`, i file dell'agente Referto Farmaci e le schede locali); restano i documenti della Conoscenza del Mother, l'OpenAPI di `cercaFarmaci`, `carica_farmaci.py` (usato da `sincronizza_prompt.py`) e quanto serve ai test · [[15-backend]] · [[10-dataset-e-valutazione]]
 - 2026-10-17 · chat-frontend · Mappa: stile Positron di OpenFreeMap (grigio chiaro, senza chiavi) con MapLibre GL al posto di Leaflet e del filtro grigio; nomi delle strade più scuri e grandi; worker di MapLibre passato come blob · [[16-frontend]]
 - 2026-10-17 · chat-frontend · Mappa delle strutture in un pannello che entra da destra (mappa, indirizzo, orari, telefono e «Chiama») al posto della finestra al centro; tile OpenStreetMap in scala di grigi con il solo segnaposto a colori · [[16-frontend]]

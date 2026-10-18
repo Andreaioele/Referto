@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Referto · Product deck</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/ui/referto-ui.css" />
+    <link rel="stylesheet" href="assets/deck.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #f5f7f6;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Slide di presentazione del prodotto Referto (non il pitch: niente mercato).
+      Ogni slide è una sotto-composizione in compositions/ con tempi locali;
+      l'isola qui sotto dà ordine, note per chi presenta e frammenti (tempi
+      assoluti). Dopo una modifica all'isola va riavviato `present`, che la
+      legge una volta sola all'avvio. Contenuti e fonti: docs/19-slide-prodotto.md.
+    -->
+    <script type="application/hyperframes-slideshow+json">
+      {
+        "slides": [
+          {
+            "sceneId": "s01-titolo",
+            "notes": "Referto is a widget for patient portals. It explains a medical report in plain words, right next to the report. Today we show the product: what the patient sees, the rules it follows, and what runs underneath."
+          },
+          {
+            "sceneId": "s02-cosa",
+            "notes": "The patient does not upload anything: the report is already in the clinic's portal. Next to it there is one button, 'Spiegamelo', Explain this to me. Referto works in Italian, for Italian patients; the interface also has English."
+          },
+          {
+            "sceneId": "s03-percorso",
+            "notes": "Three steps. Open the report. Tap Explain this to me. Read the explanation, then ask questions in your own words. No app, no account, no copy and paste.",
+            "fragments": [15, 17.5, 20]
+          },
+          {
+            "sceneId": "s04-spiegazione",
+            "notes": "This is the real answer of our agent to the demo report. Same four parts every time: In short, In plain words, What the doctor wrote, and what comes next. The doctor's note is copied word for word and labelled 'From the report'. At the bottom, always: no diagnosis, no advice, call 112 in an emergency.",
+            "fragments": [24.5, 27, 29.5, 32]
+          },
+          {
+            "sceneId": "s05-domande",
+            "notes": "Patients can ask follow-up questions. For 'what does this word mean', the agent must look it up in our layered glossary and cite it. If the word is not in the report, a check without the model answers that it is not there, instead of guessing."
+          },
+          {
+            "sceneId": "s06-farmaci",
+            "notes": "Drugs are never suggested. Only a drug the doctor wrote is looked up, deterministically, in the AIFA database of 12,654 medicines, with its official leaflet.",
+            "fragments": [42.5, 45.5]
+          },
+          {
+            "sceneId": "s07-foglietto",
+            "notes": "The leaflet reader shows the official AIFA PDF. Questions are answered only from the leaflet, and every answer names the section and jumps to the page where it is written."
+          },
+          {
+            "sceneId": "s08-strutture",
+            "notes": "The agent writes the medical area of the report. The backend turns it into the nearest places from open data: 7,687 places in Milan from the City of Milan and OpenStreetMap. Only the area and the position are used, never the report."
+          },
+          {
+            "sceneId": "s09-regole",
+            "notes": "These are product rules, not prompts we hope the model follows. Values and notes are copied from the report by code. Source lines that do not match a tool result are removed while the answer streams. The safety strip is always there."
+          },
+          {
+            "sceneId": "s10-architettura",
+            "notes": "The portal widget calls our NestJS backend on Vercel. The backend talks to the Mother agent, on Evolus or with our direct engine. The model is DeepSeek-V4.1-Flash on AMD Token Factory, with a fallback model if it is overloaded. The tools are deterministic: AIFA drugs, the glossary, and facilities from open data.",
+            "fragments": [68.5, 71.5]
+          },
+          {
+            "sceneId": "s11-trace",
+            "notes": "Every generation leaves a trace: engine, model, timings, tokens, tools and outcome. Never the report text. Explanations are cached by a SHA-256 fingerprint of the report, so the same report is not explained twice."
+          },
+          {
+            "sceneId": "s12-accessibile",
+            "notes": "Our reference user is 70 years old. Large text and large buttons, one thing at a time, technical details folded away, Italian and English, and a phone layout."
+          },
+          {
+            "sceneId": "s13-integrazione",
+            "notes": "Referto does not know the portal. Each portal writes one small adapter to Referto's types; only the report text goes to the agent. A lint rule stops Referto from importing portal code."
+          },
+          {
+            "sceneId": "s14-chiusura",
+            "notes": "Referto explains, it does not decide. The last word always belongs to the doctor. Thank you."
+          }
+        ]
+      }
+    </script>
+
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="98"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="s01-titolo" data-composition-id="s01-titolo" data-composition-src="compositions/s01-titolo.html" data-start="0" data-duration="6" data-label="Referto" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s02-cosa" data-composition-id="s02-cosa" data-composition-src="compositions/s02-cosa.html" data-start="6" data-duration="6" data-label="What it is" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s03-percorso" data-composition-id="s03-percorso" data-composition-src="compositions/s03-percorso.html" data-start="12" data-duration="10" data-label="Three steps" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s04-spiegazione" data-composition-id="s04-spiegazione" data-composition-src="compositions/s04-spiegazione.html" data-start="22" data-duration="12" data-label="The explanation" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s05-domande" data-composition-id="s05-domande" data-composition-src="compositions/s05-domande.html" data-start="34" data-duration="6" data-label="Questions" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s06-farmaci" data-composition-id="s06-farmaci" data-composition-src="compositions/s06-farmaci.html" data-start="40" data-duration="8" data-label="Medications" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s07-foglietto" data-composition-id="s07-foglietto" data-composition-src="compositions/s07-foglietto.html" data-start="48" data-duration="6" data-label="Leaflet" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s08-strutture" data-composition-id="s08-strutture" data-composition-src="compositions/s08-strutture.html" data-start="54" data-duration="6" data-label="Where to go" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s09-regole" data-composition-id="s09-regole" data-composition-src="compositions/s09-regole.html" data-start="60" data-duration="6" data-label="Rules" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s10-architettura" data-composition-id="s10-architettura" data-composition-src="compositions/s10-architettura.html" data-start="66" data-duration="8" data-label="Architecture" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s11-trace" data-composition-id="s11-trace" data-composition-src="compositions/s11-trace.html" data-start="74" data-duration="6" data-label="Traces" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s12-accessibile" data-composition-id="s12-accessibile" data-composition-src="compositions/s12-accessibile.html" data-start="80" data-duration="6" data-label="Accessibility" data-track-index="1" data-width="1920" data-height="1080"></div>
+      <div id="s13-integrazione" data-composition-id="s13-integrazione" data-composition-src="compositions/s13-integrazione.html" data-start="86" data-duration="6" data-label="Integration" data-track-index="0" data-width="1920" data-height="1080"></div>
+      <div id="s14-chiusura" data-composition-id="s14-chiusura" data-composition-src="compositions/s14-chiusura.html" data-start="92" data-duration="6" data-label="Closing" data-track-index="1" data-width="1920" data-height="1080"></div>
+    </div>
+    <script>
+      // Il player di present carica il runtime solo se trova il registro.
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

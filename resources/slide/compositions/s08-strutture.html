@@ -1,0 +1,143 @@
+<template id="s08-strutture-template">
+  <div id="s08-strutture-root" data-composition-id="s08-strutture" data-width="1920" data-height="1080">
+    <style>
+      #s08 .titolo {
+        font-size: 62px;
+      }
+      #s08-scena {
+        margin-top: 56px;
+        display: grid;
+        grid-template-columns: 1fr 560px;
+        gap: 60px;
+      }
+      #s08-area {
+        color: #4d5a56;
+        font-size: 28px;
+      }
+      #s08-area strong {
+        color: #18221f;
+      }
+      #s08-elenco {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .s08-struttura {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        padding: 26px 30px;
+      }
+      .s08-struttura .icona {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+      }
+      .s08-struttura .icona svg {
+        width: 34px;
+        height: 34px;
+      }
+      .s08-testo {
+        flex: 1;
+      }
+      .s08-testo strong {
+        display: block;
+        font-size: 32px;
+      }
+      .s08-testo span {
+        color: #4d5a56;
+        font-size: 26px;
+      }
+      .s08-km {
+        color: #176b58;
+        font-size: 34px;
+        font-weight: 900;
+      }
+      #s08-s1 {
+        border-color: #176b58;
+        box-shadow: 0 0 0 2px #176b58, 0 24px 60px rgba(16, 40, 34, 0.08);
+      }
+      #s08-mappa {
+        position: relative;
+        overflow: hidden;
+        height: 640px;
+      }
+      #s08-mappa img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #s08-pin {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 54px;
+        height: 72px;
+        margin-left: -27px;
+        margin-top: -72px;
+        color: #176b58;
+      }
+      #s08-attribuzione {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.85);
+        color: #4d5a56;
+        font-size: 16px;
+      }
+      #s08-fonti {
+        margin-top: 30px;
+      }
+    </style>
+    <div class="slide" id="s08">
+      <p class="occhiello">Where to go</p>
+      <h2 class="titolo">The report’s specialty leads to <em>the nearest places</em>, from open data.</h2>
+      <div id="s08-scena">
+        <div>
+          <p id="s08-area">Visita cardiologica con elettrocardiogramma: <strong>Cardiology</strong></p>
+          <div id="s08-elenco">
+            <div class="carta s08-struttura" id="s08-s1">
+              <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span>
+              <div class="s08-testo"><strong>Trust medical Polispecialistico Bazzini</strong><span>Via Antonio Bazzini 24 · Mon–Fri 08:00–19:30</span></div>
+              <span class="s08-km">2.3 km</span>
+            </div>
+            <div class="carta s08-struttura" id="s08-s2">
+              <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span>
+              <div class="s08-testo"><strong>Smart Clinic Cinque Giornate</strong><span>Via Pietro Calvi 36</span></div>
+              <span class="s08-km">4.7 km</span>
+            </div>
+            <div class="carta s08-struttura" id="s08-s3">
+              <span class="icona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span>
+              <div class="s08-testo"><strong>Poliambulatorio - Via Sassi</strong><span>Via Giuseppe Antonio Sassi 4</span></div>
+              <span class="s08-km">5.7 km</span>
+            </div>
+          </div>
+          <p class="fonte" id="s08-fonti">7,687 places in Milan from City of Milan open data and OpenStreetMap, in 19 areas. Only the area and the home position are used, never the report.</p>
+        </div>
+        <div class="carta" id="s08-mappa">
+          <img src="assets/mappa/positron-bazzini.png" alt="Map around Via Antonio Bazzini 24, Milan" data-layout-ignore />
+          <svg id="s08-pin" viewBox="0 0 36 48" aria-hidden="true"><path d="M18 46C18 46 33 29 33 17A15 15 0 0 0 3 17c0 12 15 29 15 29z" fill="currentColor" stroke="#fff" stroke-width="2"></path><circle cx="18" cy="17" r="6" fill="#fff"></circle></svg>
+          <span id="s08-attribuzione">OpenFreeMap © OpenMapTiles · © OpenStreetMap contributors</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        entra("#s08 .titolo", 0.1, { y: 30 });
+        entra("#s08-area", 0.3, { y: 20 });
+        entra("#s08-s1", 0.45, { y: 30 });
+        entra("#s08-s2", 0.6, { y: 30 });
+        entra("#s08-s3", 0.75, { y: 30 });
+        entra("#s08-mappa", 0.6, { x: 60 });
+        tl.fromTo("#s08-pin", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.5, ease: "bounce.out" }, 1.1);
+        entra("#s08-fonti", 1.2, { y: 10 });
+        window.__timelines["s08-strutture"] = tl;
+      })();
+    </script>
+  </div>
+</template>

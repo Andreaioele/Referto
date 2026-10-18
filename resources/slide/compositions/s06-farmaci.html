@@ -1,0 +1,144 @@
+<template id="s06-farmaci-template">
+  <div id="s06-farmaci-root" data-composition-id="s06-farmaci" data-width="1920" data-height="1080">
+    <style>
+      #s06 .titolo {
+        font-size: 62px;
+      }
+      #s06-scena {
+        margin-top: 70px;
+        display: grid;
+        grid-template-columns: 1fr 150px 1fr;
+        align-items: center;
+      }
+      .s06-carta {
+        padding: 44px 48px;
+      }
+      .s06-carta h3 {
+        font-size: 34px;
+        font-weight: 800;
+      }
+      #s06-nota {
+        margin-top: 24px;
+        padding-left: 24px;
+        border-left: 5px solid #b9dccd;
+        font-size: 34px;
+        line-height: 1.45;
+      }
+      #s06-farmaco {
+        padding: 0 8px;
+        border-radius: 8px;
+        background: #e5f3ed;
+        color: #0f5143;
+        font-weight: 800;
+      }
+      .s06-pastiglia {
+        display: inline-block;
+        margin-top: 26px;
+        padding: 6px 16px;
+        border: 1px solid #dfe6e3;
+        border-radius: 10px;
+        background: #f5f7f6;
+        color: #4d5a56;
+        font-size: 24px;
+      }
+      #s06-freccia {
+        display: grid;
+        place-items: center;
+        color: #176b58;
+      }
+      #s06-aifa-testa {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #4d5a56;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      #s06-trovato {
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: #e5f3ed;
+        color: #0f5143;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      #s06-aifa h3 {
+        margin-top: 14px;
+        font-size: 52px;
+        font-weight: 900;
+        color: #176b58;
+      }
+      #s06-aifa dl {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px 24px;
+        font-size: 26px;
+      }
+      #s06-aifa dt {
+        color: #4d5a56;
+      }
+      #s06-aifa dd {
+        font-weight: 700;
+      }
+      #s06-aifa .fonte {
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 1px solid #dfe6e3;
+      }
+      #s06-piede {
+        margin-top: 56px;
+        display: flex;
+        gap: 24px;
+      }
+    </style>
+    <div class="slide" id="s06">
+      <p class="occhiello">Medications</p>
+      <h2 class="titolo">A drug appears <em>only if the doctor wrote it</em>, matched to the official AIFA database.</h2>
+      <div id="s06-scena">
+        <section class="carta s06-carta" id="s06-medico">
+          <h3>Cosa ha scritto il medico</h3>
+          <p id="s06-nota">«Terapia: <span id="s06-farmaco">ramipril</span> 5 mg, 1 compressa al mattino. Esami del sangue e nuova visita tra un mese.»</p>
+          <span class="s06-pastiglia">Dal referto</span>
+        </section>
+        <div id="s06-freccia">
+          <svg width="110" height="60" viewBox="0 0 110 60" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 30h92M74 8l24 22-24 22"></path></svg>
+        </div>
+        <section class="carta s06-carta" id="s06-aifa">
+          <div id="s06-aifa-testa"><span>Prontuario AIFA</span><span id="s06-trovato">Trovato</span></div>
+          <h3>ramipril</h3>
+          <dl>
+            <dt>Principio attivo</dt>
+            <dd>ramipril</dd>
+            <dt>ATC</dt>
+            <dd>C09AA05 · sistema cardiovascolare</dd>
+            <dt>Categoria</dt>
+            <dd>inibitori dell'enzima di conversione dell'angiotensina (ACE), non associati</dd>
+          </dl>
+          <p class="fonte">Fonte: AIFA, elenco confezioni (CC BY 4.0) · aggiornato al 13 ottobre 2026</p>
+        </section>
+      </div>
+      <div id="s06-piede">
+        <span class="etichetta">12,654 medicines</span>
+        <span class="etichetta">Matched by code, not by the model</span>
+        <span class="etichetta">Never suggested</span>
+      </div>
+    </div>
+    <script>
+      (function () {
+        // Frammenti (tempi locali): 2.5 la nota del medico, 5.5 la scheda AIFA.
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power3.out" }, t);
+        entra("#s06 .titolo", 0.1, { y: 30 });
+        entra("#s06-medico", 0.6, { y: 40 });
+        tl.fromTo("#s06-farmaco", { backgroundColor: "rgba(229,243,237,0)" }, { backgroundColor: "rgba(229,243,237,1)", duration: 0.5 }, 1.4);
+        entra("#s06-freccia", 4.0, { x: -40 });
+        entra("#s06-aifa", 4.3, { x: 60 });
+        entra("#s06-piede", 4.8, { y: 20 });
+        window.__timelines["s06-farmaci"] = tl;
+      })();
+    </script>
+  </div>
+</template>

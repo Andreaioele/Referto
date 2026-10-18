@@ -1,0 +1,108 @@
+<template id="s13-integrazione-template">
+  <div id="s13-integrazione-root" data-composition-id="s13-integrazione" data-width="1920" data-height="1080">
+    <style>
+      #s13 .titolo {
+        font-size: 62px;
+      }
+      #s13-flusso {
+        margin-top: 80px;
+        display: grid;
+        grid-template-columns: 1fr 90px 1fr 90px 1.25fr;
+        align-items: center;
+      }
+      .s13-blocco {
+        padding: 36px 38px;
+        min-height: 400px;
+      }
+      .s13-blocco small {
+        display: block;
+        color: #176b58;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .s13-blocco strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 36px;
+        line-height: 1.15;
+      }
+      .s13-blocco ul {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: #4d5a56;
+        font-size: 26px;
+      }
+      .s13-blocco code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 24px;
+        color: #0f5143;
+      }
+      #s13-b3 {
+        background: #176b58;
+        border-color: #176b58;
+        color: #fff;
+      }
+      #s13-b3 small,
+      #s13-b3 ul {
+        color: #e5f3ed;
+      }
+      #s13-b3 code {
+        color: #fff;
+      }
+      .s13-freccia {
+        display: grid;
+        place-items: center;
+        color: #176b58;
+      }
+      #s13-piede {
+        margin-top: 48px;
+        display: flex;
+        gap: 24px;
+      }
+    </style>
+    <div class="slide" id="s13">
+      <p class="occhiello">Integration</p>
+      <h2 class="titolo">Referto plugs into <em>any patient portal</em> through one small adapter.</h2>
+      <div id="s13-flusso">
+        <div class="carta s13-blocco" id="s13-b1">
+          <small>The portal</small>
+          <strong>Its own data</strong>
+          <ul><li>Visits and bookings</li><li>Documents and reports</li><li>Prescriptions</li></ul>
+        </div>
+        <div class="s13-freccia"><svg width="70" height="44" viewBox="0 0 70 44" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h58M44 6l18 16-18 16"></path></svg></div>
+        <div class="carta s13-blocco" id="s13-b2">
+          <small>Adapter</small>
+          <strong>One file per portal</strong>
+          <ul><li><code>perReferto.ts</code></li><li>Maps portal data to Referto’s types</li></ul>
+        </div>
+        <div class="s13-freccia"><svg width="70" height="44" viewBox="0 0 70 44" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h58M44 6l18 16-18 16"></path></svg></div>
+        <div class="carta s13-blocco" id="s13-b3">
+          <small>Referto widget</small>
+          <strong><code>RefertoDaSpiegare</code></strong>
+          <ul><li>Title and date</li><li>Report text: the only thing sent to the agent</li><li>Values and doctor’s notes, copied</li><li>The booked visit, if still ahead</li></ul>
+        </div>
+      </div>
+      <div id="s13-piede">
+        <span class="etichetta">Referto imports nothing from the portal: a lint rule enforces it</span>
+        <span class="etichetta">Same theme in every portal</span>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tl = gsap.timeline({ paused: true });
+        const entra = (sel, t, da) => tl.fromTo(sel, { opacity: 0, ...da }, { opacity: 1, x: 0, y: 0, duration: 0.55, ease: "power3.out" }, t);
+        entra("#s13 .titolo", 0.1, { y: 30 });
+        entra("#s13-b1", 0.4, { y: 30 });
+        entra("#s13-b2", 0.7, { y: 30 });
+        entra("#s13-b3", 1.0, { y: 30 });
+        tl.fromTo(".s13-freccia", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.3 }, 0.6);
+        entra("#s13-piede", 1.3, { y: 20 });
+        window.__timelines["s13-integrazione"] = tl;
+      })();
+    </script>
+  </div>
+</template>

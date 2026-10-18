@@ -61,3 +61,6 @@ docs/archify/**/*.delivery.json
 # Glossario a strati (prototipo cercaTermine): cache di Wikidata/Wikipedia e risultato generato
 resources/glossario/cache_strati/
 resources/glossario/glossario_strati.json
+
+# Slide del prodotto (HyperFrames): file di lavoro locali
+resources/slide/.hyperframes/
