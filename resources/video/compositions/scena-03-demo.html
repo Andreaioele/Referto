@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scene 3 e 4 del copione (demo: la spiegazione e la domanda), in una sola
+      composizione perché il widget resta aperto. Tempi locali: 0 = 28,5 s del
+      video; voce 03 a 1,4 s, voce 04 a 33,2 s.
+      Portale e widget sono quelli veri: HTML preso dall'app (frontend/src) e
+      stili da assets/ui/referto-ui.css. La spiegazione è la risposta reale del
+      Mother agent a questo referto (Evolus, 15/10/2026). La risposta alla
+      domanda usa la voce reale del glossario (curato:ritmo-sinusale).
+    -->
+    <template>
+      <link rel="stylesheet" href="assets/ui/referto-ui.css" />
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+        }
+        #s3-fondo {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1400px 900px at 50% 40%, #f7faf9 0%, #e3ece8 100%);
+        }
+        #s3-camera {
+          position: absolute;
+          inset: 0;
+          transform-origin: 0 0;
+        }
+        /* Finestra del browser: 1440×900 di contenuto, come l'app vera */
+        #s3-finestra {
+          position: absolute;
+          left: 240px;
+          top: 68px;
+          width: 1440px;
+          height: 944px;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #ffffff;
+          box-shadow: 0 40px 120px rgba(16, 40, 34, 0.28), 0 0 0 1px rgba(16, 40, 34, 0.08);
+        }
+        #s3-barra {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #eef1f0;
+          border-bottom: 1px solid #dde3e0;
+        }
+        #s3-puntini {
+          position: absolute;
+          left: 18px;
+          top: 15px;
+          display: flex;
+          gap: 8px;
+        }
+        #s3-puntini span {
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          background: #cfd7d3;
+        }
+        #s3-indirizzo {
+          padding: 5px 22px;
+          border-radius: 8px;
+          background: #ffffff;
+          color: #5b6763;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        #s3-schermo {
+          position: absolute;
+          left: 0;
+          top: 44px;
+          width: 1440px;
+          height: 900px;
+          overflow: hidden;
+        }
+        /* Il widget resta dentro la finestra (nell'app è fisso sul viewport) */
+        #s3-schermo .referto-velo,
+        #s3-schermo .referto-pannello,
+        #s3-schermo .aggancio {
+          position: absolute;
+        }
+        #s3-schermo .referto-velo {
+          opacity: 0;
+        }
+        /* Nell'app il pannello sta dentro il velo (z-index 40): qui gli è accanto */
+        #s3-schermo .referto-pannello {
+          z-index: 41;
+        }
+        #s3-schermo .referto-corpo {
+          position: relative;
+          overflow: hidden;
+        }
+        #s3-flusso {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        #s3-flusso > * {
+          opacity: 0;
+        }
+        #s3-attesa {
+          position: absolute;
+          left: 20px;
+          top: 20px;
+          opacity: 0;
+        }
+        .s3-tradotto {
+          border-radius: 5px;
+          background-color: rgba(229, 243, 237, 0);
+        }
+        #s3-alone-riga {
+          position: absolute;
+          border: 3px solid #176b58;
+          border-radius: 14px;
+          box-shadow: 0 0 0 8px rgba(23, 107, 88, 0.14);
+          opacity: 0;
+        }
+        #s3-cursore {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 30px;
+          height: 30px;
+          opacity: 0;
+        }
+        #s3-clic {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 60px;
+          height: 60px;
+          margin: -30px 0 0 -30px;
+          border-radius: 50%;
+          background: rgba(23, 107, 88, 0.35);
+          opacity: 0;
+        }
+        /* Campo della domanda: testo scritto a mano, lettera per lettera */
+        #s3-campo {
+          position: relative;
+          flex: 1;
+          min-width: 0;
+        }
+        #s3-campo input {
+          width: 100%;
+        }
+        #s3-segnaposto,
+        #s3-scritto {
+          position: absolute;
+          left: 17px;
+          top: 0;
+          bottom: 0;
+          display: flex;
+          align-items: center;
+          font-size: 17px;
+          white-space: pre;
+        }
+        #s3-segnaposto {
+          color: #5f6b67;
+        }
+        #s3-scritto {
+          color: #18221f;
+        }
+        #s3-scritto .s3-lettera {
+          opacity: 0;
+        }
+        #s3-risposta {
+          position: relative;
+        }
+        #s3-attesa-2 {
+          position: absolute;
+          left: 20px;
+          top: 18px;
+        }
+        #s3-fonte {
+          align-self: flex-start;
+          padding: 4px 12px;
+          border: 1px solid #b9dccd;
+          border-radius: 8px;
+          background-color: #e5f3ed;
+          color: #0f5143;
+          font-size: 15px;
+          font-weight: 700;
+        }
+        /* Didascalie a sinistra del pannello */
+        #s3-ombra {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 1072px;
+          background: linear-gradient(90deg, rgba(11, 21, 18, 0.92) 0%, rgba(11, 21, 18, 0.78) 70%, rgba(11, 21, 18, 0) 100%);
+          opacity: 0;
+        }
+        .s3-didascalia {
+          position: absolute;
+          left: 110px;
+          top: 0;
+          bottom: 0;
+          width: 700px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 18px;
+          color: #f2f7f5;
+          opacity: 0;
+        }
+        .s3-didascalia .s3-occhiello {
+          font-size: 26px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #8fd6bd;
+        }
+        .s3-didascalia .s3-titolo {
+          font-size: 74px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          line-height: 1.08;
+        }
+        /* Traduzione di «Spiegamelo»: sotto il pulsante (sopra coprirebbe il titolo del referto), punta in su */
+        #s3-traduci {
+          position: absolute;
+          left: 0;
+          top: 0;
+          padding: 8px 14px;
+          border-radius: 10px;
+          background: rgba(11, 21, 18, 0.92);
+          color: #ffffff;
+          font-size: 19px;
+          font-weight: 700;
+          white-space: nowrap;
+          opacity: 0;
+        }
+        #s3-traduci::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: -8px;
+          margin-left: -8px;
+          border: 8px solid transparent;
+          border-top: 0;
+          border-bottom-color: rgba(11, 21, 18, 0.92);
+        }
+        /* Riquadro come le didascalie della scena 5: in alto a sinistra */
+        #s3-italiano {
+          position: absolute;
+          left: 64px;
+          top: 40px;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 16px 28px 16px 16px;
+          border-radius: 20px;
+          background: rgba(11, 21, 18, 0.92);
+          color: #f2f7f5;
+          opacity: 0;
+        }
+        #s3-italiano .s3-r {
+          width: 52px;
+          height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 14px;
+          background: #176b58;
+          font-size: 30px;
+          font-weight: 800;
+        }
+        #s3-italiano strong {
+          display: block;
+          font-size: 30px;
+          font-weight: 800;
+        }
+        #s3-italiano span:not(.s3-r) {
+          display: block;
+          color: #9fdcc6;
+          font-size: 22px;
+          font-weight: 700;
+        }
+        #s3-accorciata {
+          position: absolute;
+          left: 110px;
+          bottom: 84px;
+          padding: 10px 20px;
+          border: 2px solid rgba(143, 214, 189, 0.5);
+          border-radius: 999px;
+          color: #cfe9df;
+          font-size: 24px;
+          font-weight: 700;
+          opacity: 0;
+        }
+      </style>
+
+      <div data-hf-id="hf-rbyv" id="root" data-composition-id="scena-03-demo" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-396i" id="s3-fondo"></div>
+
+        <div data-hf-id="hf-eiph" id="s3-camera">
+          <div data-hf-id="hf-7n7a" id="s3-finestra">
+            <div data-hf-id="hf-0pqs" id="s3-barra">
+              <div data-hf-id="hf-npvz" id="s3-puntini"><span data-hf-id="hf-uckh"></span><span data-hf-id="hf-l73p"></span><span data-hf-id="hf-me0s"></span></div>
+              <div data-hf-id="hf-v5hj" id="s3-indirizzo">Area paziente · Poliambulatorio Valle Serena</div>
+            </div>
+
+            <div data-hf-id="hf-r1je" id="s3-schermo" class="ui">
+              <div data-hf-id="hf-oyki" class="portale" data-layout-ignore><header data-hf-id="hf-aejk" class="testata"><a data-hf-id="hf-xcsf" href="#" class="testata-marchio"><span data-hf-id="hf-t1xh" class="marchio-studio"><svg data-hf-id="hf-r8ol" width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path data-hf-id="hf-k4rw" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"></path></svg></span><span data-hf-id="hf-8r1f" class="testata-nome"><strong data-hf-id="hf-hlhb">Poliambulatorio Valle Serena</strong><span data-hf-id="hf-z1nu">Area paziente</span></span></a><span data-hf-id="hf-353i" class="etichetta-demo">Portale dimostrativo · dati di esempio</span><div data-hf-id="hf-75am" class="testata-utente"><a data-hf-id="hf-mdsx" href="#" class="avatar">GF</a><span data-hf-id="hf-i3c8" class="testata-utente-nome">Giovanna Ferri</span><button data-hf-id="hf-b08s" type="button" class="bottone-leggero solo-computer">Esci</button></div></header>
+                <div data-hf-id="hf-vdwn" class="corpo"><nav data-hf-id="hf-030n" class="menu"><a data-hf-id="hf-iscv" href="#"><svg data-hf-id="hf-osm7" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-9bm7" d="M3 11l9-7 9 7"></path><path data-hf-id="hf-rfgg" d="M5 10v10h14V10"></path></svg>Home</a><a data-hf-id="hf-yjw4" href="#"><svg data-hf-id="hf-sqcf" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-hf-id="hf-8t75" x="3" y="5" width="18" height="16" rx="2"></rect><path data-hf-id="hf-iemf" d="M3 10h18M8 3v4M16 3v4"></path></svg>Le mie visite</a><a data-hf-id="hf-sd50" href="#" aria-current="page"><svg data-hf-id="hf-sc1e" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-faxh" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-uax5" d="M14 3v6h6"></path></svg>I miei documenti</a><a data-hf-id="hf-uxaz" href="#"><svg data-hf-id="hf-rxqd" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-oxt8" d="M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7z"></path><path data-hf-id="hf-mavp" d="M7 7l7 7"></path></svg>Le mie prescrizioni</a><a data-hf-id="hf-90oe" href="#"><svg data-hf-id="hf-upvk" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-qbpo" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-ogar" cx="12" cy="9" r="2.5"></circle></svg>Le mie strutture</a><a data-hf-id="hf-it7a" href="#"><svg data-hf-id="hf-ubkj" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-wz4m" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-avip" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-0ff4" cx="20" cy="11" r="2"></circle></svg>I miei professionisti</a><a data-hf-id="hf-k2zz" href="#"><svg data-hf-id="hf-tx9i" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-hf-id="hf-jnj3" cx="12" cy="8" r="4"></circle><path data-hf-id="hf-h8yv" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>I miei dati</a><a data-hf-id="hf-umch" href="#" class="menu-prenota"><svg data-hf-id="hf-tofn" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-1zsu" d="M12 5v14M5 12h14"></path></svg>Prenota una visita</a></nav>
+                  <main data-hf-id="hf-rdz9" class="contenuto"><div data-hf-id="hf-l7j9" class="titolo-pagina titolo-con-azione"><div data-hf-id="hf-yeow"><h1 data-hf-id="hf-7axz">I miei documenti</h1><p data-hf-id="hf-hap5" class="tenue">Referti, ricette e fatture dello studio, sempre a portata di mano.</p></div><button data-hf-id="hf-envq" type="button" class="bottone-leggero solo-computer"><svg data-hf-id="hf-homv" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-nc9i" d="M12 20V8M7 13l5-5 5 5M5 4h14"></path></svg>Carica un documento</button></div><div data-hf-id="hf-bkhs" class="filtri"><button data-hf-id="hf-spyg" type="button" aria-pressed="true">Tutti</button><button data-hf-id="hf-joue" type="button" aria-pressed="false">Referti</button><button data-hf-id="hf-66r3" type="button" aria-pressed="false">Ricette</button><button data-hf-id="hf-m0a6" type="button" aria-pressed="false">Fatture</button></div>
+                    <section data-hf-id="hf-3bqh" class="scheda scheda-elenco">
+                      <div data-hf-id="hf-y7yw"><div data-hf-id="hf-3hxy" class="riga-documento"><span data-hf-id="hf-sq3q" class="icona-documento"><svg data-hf-id="hf-2afn" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-coqx" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-i5kt" d="M14 3v6h6"></path></svg></span><div data-hf-id="hf-3lhu" class="riga-documento-testo"><span data-hf-id="hf-s5vs" class="riga-documento-titolo">Esami del sangue<span data-hf-id="hf-tit2" class="pastiglia">Nuovo</span></span><span data-hf-id="hf-lnx4" class="tenue piccolo">Referto · 4 ottobre 2026 · Laboratorio analisi</span></div><div data-hf-id="hf-pnli" class="azioni"><button data-hf-id="hf-f8bx" type="button" class="bottone-leggero">Apri</button><button data-hf-id="hf-h24e" type="button" class="bottone bottone-referto"><span data-hf-id="hf-9dcj" class="marchio-r">R</span><span data-hf-id="hf-3imu" class="testo-bottone">Spiegamelo</span></button><button data-hf-id="hf-m86t" type="button" class="bottone-leggero"><svg data-hf-id="hf-wf07" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2fac" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-q137" cx="12" cy="9" r="2.5"></circle></svg>Cerca strutture</button><button data-hf-id="hf-mkt2" type="button" class="bottone-leggero"><svg data-hf-id="hf-w0p6" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-l1ve" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-w0p1" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-vmjs" cx="20" cy="11" r="2"></circle></svg>Cerca professionisti</button></div></div></div>
+                      <div data-hf-id="hf-x11t"><div data-hf-id="hf-yzog" class="riga-documento" id="s3-riga"><span data-hf-id="hf-99yi" class="icona-documento"><svg data-hf-id="hf-1w4m" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-dvo0" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-jchw" d="M14 3v6h6"></path></svg></span><div data-hf-id="hf-zro6" class="riga-documento-testo"><span data-hf-id="hf-c3zq" class="riga-documento-titolo">Visita cardiologica con elettrocardiogramma</span><span data-hf-id="hf-8fb6" class="tenue piccolo">Referto · 13 settembre 2026 · Dott.ssa Elena Marchi</span></div><div data-hf-id="hf-pkbe" class="azioni"><button data-hf-id="hf-yt29" type="button" class="bottone-leggero">Apri</button><button data-hf-id="hf-besf" type="button" class="bottone bottone-referto" id="s3-spiegamelo"><span data-hf-id="hf-cwtv" class="marchio-r">R</span><span data-hf-id="hf-95ve" class="testo-bottone">Spiegamelo</span></button><button data-hf-id="hf-uzop" type="button" class="bottone-leggero"><svg data-hf-id="hf-vme5" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-18d9" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-pms6" cx="12" cy="9" r="2.5"></circle></svg>Cerca strutture</button><button data-hf-id="hf-izei" type="button" class="bottone-leggero"><svg data-hf-id="hf-yejc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-lg6f" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-x7m4" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-ufmp" cx="20" cy="11" r="2"></circle></svg>Cerca professionisti</button></div></div></div>
+                      <div data-hf-id="hf-xfcu"><div data-hf-id="hf-w9yy" class="riga-documento"><span data-hf-id="hf-tokh" class="icona-documento icona-altro"><svg data-hf-id="hf-1htl" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-hf-id="hf-ssl7" x="5" y="3" width="14" height="18" rx="2"></rect><path data-hf-id="hf-t6t5" d="M9 8h6M9 12h6M9 16h3"></path></svg></span><div data-hf-id="hf-05z7" class="riga-documento-testo"><span data-hf-id="hf-kq5p" class="riga-documento-titolo">Fattura n. 1482</span><span data-hf-id="hf-an4m" class="tenue piccolo">Fattura · 13 settembre 2026 · 120,00 €</span></div><div data-hf-id="hf-pymf" class="azioni"><button data-hf-id="hf-pbld" type="button" class="bottone-leggero"><svg data-hf-id="hf-y08b" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-uwp9" d="M12 4v12M7 11l5 5 5-5M5 20h14"></path></svg><span data-hf-id="hf-ivec" class="testo-bottone">Scarica</span></button></div></div></div>
+                      <div data-hf-id="hf-w8fr"><div data-hf-id="hf-wo9z" class="riga-documento"><span data-hf-id="hf-9o9j" class="icona-documento"><svg data-hf-id="hf-13ik" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-dhcz" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-iy6v" d="M14 3v6h6"></path></svg></span><div data-hf-id="hf-0ka8" class="riga-documento-testo"><span data-hf-id="hf-j3l7" class="riga-documento-titolo">Radiografia del torace</span><span data-hf-id="hf-rpcc" class="tenue piccolo">Referto · 22 luglio 2026 · Dott.ssa Chiara Bassi</span></div><div data-hf-id="hf-qcxg" class="azioni"><button data-hf-id="hf-zzzc" type="button" class="bottone-leggero">Apri</button><button data-hf-id="hf-zw82" type="button" class="bottone bottone-referto"><span data-hf-id="hf-ciiu" class="marchio-r">R</span><span data-hf-id="hf-9k6f" class="testo-bottone">Spiegamelo</span></button><button data-hf-id="hf-w6ls" type="button" class="bottone-leggero"><svg data-hf-id="hf-xlxa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-1moa" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-p8h5" cx="12" cy="9" r="2.5"></circle></svg>Cerca strutture</button><button data-hf-id="hf-jdpj" type="button" class="bottone-leggero"><svg data-hf-id="hf-x7m9" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-luhg" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-wtb3" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-utxq" cx="20" cy="11" r="2"></circle></svg>Cerca professionisti</button></div></div></div>
+                      <div data-hf-id="hf-wmqs"><div data-hf-id="hf-x2l0" class="riga-documento"><span data-hf-id="hf-jv79" class="icona-documento icona-altro"><svg data-hf-id="hf-0p7j" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-fq9w" d="M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7z"></path><path data-hf-id="hf-b8p5" d="M7 7l7 7"></path></svg></span><div data-hf-id="hf-xs51" class="riga-documento-testo"><span data-hf-id="hf-lzit" class="riga-documento-titolo">Ricetta per esami del sangue</span><span data-hf-id="hf-83ge" class="tenue piccolo">Ricetta · 22 luglio 2026 · Dott. Paolo Rinaldi</span></div><div data-hf-id="hf-qr8h" class="azioni"><button data-hf-id="hf-lm1x" type="button" class="bottone-leggero"><svg data-hf-id="hf-zzrg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-7cjl" d="M12 4v12M7 11l5 5 5-5M5 20h14"></path></svg><span data-hf-id="hf-8hos" class="testo-bottone">Scarica</span></button></div></div></div>
+                    </section>
+                  </main>
+                </div>
+                <div data-hf-id="hf-ndb5" class="aggancio"><button data-hf-id="hf-ziua" type="button" class="lanciatore"><span data-hf-id="hf-mz57" class="marchio-r marchio-r-grande">R</span>Capire un referto</button></div>
+              </div>
+
+              <div data-hf-id="hf-mwix" id="s3-alone-riga"></div>
+
+              <div data-hf-id="hf-en8j" class="referto-velo" id="s3-velo"></div>
+              <div data-hf-id="hf-m3ax" class="referto-pannello" id="s3-pannello">
+                <div data-hf-id="hf-a9v7" class="referto-testa"><span data-hf-id="hf-iktm" class="referto-marchio">R</span><div data-hf-id="hf-vs5j" class="referto-testa-testo"><strong data-hf-id="hf-y5mx">Referto</strong><span data-hf-id="hf-311j">Ti spiego il referto in parole semplici</span></div><button data-hf-id="hf-ym3m" type="button" class="referto-chiudi"><svg data-hf-id="hf-0awi" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-hoi2" d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+                <div data-hf-id="hf-fbop" class="referto-contesto"><svg data-hf-id="hf-zlgf" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-bhtu" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-k53y" d="M14 3v6h6"></path></svg><span data-hf-id="hf-dmjb">Stai leggendo: <strong data-hf-id="hf-4bin">Visita cardiologica con elettrocardiogramma · 13 settembre 2026</strong></span></div>
+                <div data-hf-id="hf-0fmd" class="referto-corpo" id="s3-corpo">
+                  <p data-hf-id="hf-4g87" class="referto-attesa" id="s3-attesa"><span data-hf-id="hf-ea18" class="rotella" id="s3-rotella"></span>Sto leggendo il referto… può servire un minuto.</p>
+                  <div data-hf-id="hf-lbmi" id="s3-flusso" data-layout-allow-occlusion>
+                    <p data-hf-id="hf-6tve" class="referto-argomento" id="s3-argomento">Visita cardiologica · Cardiologia</p>
+                    <section data-hf-id="hf-rzlw" class="referto-box" id="s3-breve">
+                      <h3 data-hf-id="hf-k5oh">In breve</h3>
+                      <p data-hf-id="hf-yvqj" class="s3-scrive">La visita è stata fatta per controllare la pressione arteriosa. Alla visita la pressione era 145/90 mmHg e la frequenza cardiaca 72 battiti al minuto. L'elettrocardiogramma mostrava ritmo sinusale con conduzione nella norma e nessuna alterazione della ripolarizzazione. La conclusione scritta è ipertensione arteriosa.</p>
+                    </section>
+                    <section data-hf-id="hf-22yg" class="referto-box" id="s3-semplice">
+                      <h3 data-hf-id="hf-yplc">In parole semplici</h3>
+                      <p data-hf-id="hf-k3tl" class="s3-scrive">La pressione misurata era 145/90 mmHg: il referto indica il valore della pressione sistolica (145) e di quella diastolica (90). La frequenza cardiaca era di 72 battiti al minuto. L'elettrocardiogramma ha registrato un ritmo sinusale, <span data-hf-id="hf-ysrj" class="s3-tradotto">cioè il ritmo normale del cuore,</span> alla frequenza di 72 bpm, con conduzione nella norma <span data-hf-id="hf-s5tn" class="s3-tradotto">(il modo in cui il segnale elettrico si trasmette nel cuore)</span> e nessuna alterazione della ripolarizzazione <span data-hf-id="hf-xuy5" class="s3-tradotto">(la fase di recupero del muscolo cardiaco dopo ogni battito).</span> Nelle conclusioni il medico scrive "ipertensione arteriosa".</p>
+                    </section>
+                    <section data-hf-id="hf-emtj" class="referto-box" id="s3-medico">
+                      <h3 data-hf-id="hf-i2i5">Cosa ha scritto il medico</h3>
+                      <p data-hf-id="hf-macs" class="referto-nota">«Terapia: ramipril 5 mg, 1 compressa al mattino. Esami del sangue e nuova visita tra un mese.»</p>
+                      <span data-hf-id="hf-2xw8" class="referto-citazione" id="s3-citazione">Dal referto</span>
+                    </section>
+                    <section data-hf-id="hf-mydm" class="referto-box referto-visita" id="s3-visita"><span data-hf-id="hf-s8mi" class="icona-tonda"><svg data-hf-id="hf-zwlh" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-hf-id="hf-bdj9" x="3" y="5" width="18" height="16" rx="2"></rect><path data-hf-id="hf-4n1j" d="M3 10h18M8 3v4M16 3v4"></path></svg></span><p data-hf-id="hf-lreu">Hai già una <strong data-hf-id="hf-ffxe">visita cardiologica di controllo</strong> sabato 24 ottobre: lì puoi parlarne con il medico.</p><a data-hf-id="hf-7egd" href="#">Vedi la visita</a></section>
+                    <section data-hf-id="hf-hv7o" class="referto-box referto-visita" id="s3-strutture"><span data-hf-id="hf-n71q" class="icona-tonda"><svg data-hf-id="hf-ziag" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-3m7f" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-ks70" cx="12" cy="9" r="2.5"></circle></svg></span><p data-hf-id="hf-oqvl">Cerca strutture e medici di <strong data-hf-id="hf-7n64">cardiologia</strong> vicino a casa tua e prenota una visita.</p><a data-hf-id="hf-mu92" href="#">Cerca strutture</a><a data-hf-id="hf-bd2f" href="#">Cerca professionisti</a></section>
+                    <section data-hf-id="hf-ohme" class="referto-box referto-dettagli" id="s3-dettagli">
+                      <h3 data-hf-id="hf-7hq5">Come è fatta questa spiegazione</h3>
+                      <p data-hf-id="hf-c3ny">La spiegazione la scrive l'assistente di Referto usando solo il testo del referto. I valori e le note del medico sono copiati dal referto così come sono. Collegato al prontuario AIFA aggiornato al 13 ottobre 2026.</p>
+                    </section>
+                    <div data-hf-id="hf-fz9x" class="referto-sicurezza" id="s3-sicurezza"><svg data-hf-id="hf-z3zf" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-7qkj" d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg><span data-hf-id="hf-2x8e">Referto non fa diagnosi e non dà consigli: spiega solo ciò che è scritto. Per ogni dubbio parlane con il tuo medico. Per le urgenze chiama il <strong data-hf-id="hf-k6p2">112</strong>.</span></div>
+                    <div data-hf-id="hf-8q8d" class="referto-scambio" id="s3-scambio">
+                      <p data-hf-id="hf-qyc1" class="referto-domanda" id="s3-domanda">Cos'è il ritmo sinusale?</p>
+                      <section data-hf-id="hf-cplj" class="referto-box" id="s3-risposta">
+                        <p data-hf-id="hf-tvum" class="referto-attesa" id="s3-attesa-2"><span data-hf-id="hf-r3z5" class="rotella" id="s3-rotella-2"></span>Sto cercando la risposta nel referto…</p>
+                        <p data-hf-id="hf-7xy3" class="s3-scrive" id="s3-risposta-testo">Il ritmo sinusale è il ritmo del cuore guidato dal suo «segnapassi» naturale, il nodo del seno. Nel tuo referto l'elettrocardiogramma riporta un ritmo sinusale, alla frequenza di 72 bpm.</p>
+                        <span data-hf-id="hf-wg7k" id="s3-fonte">Fonte: Glossario di Referto</span>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+                <div data-hf-id="hf-ef59" class="referto-piede" id="s3-piede">
+                  <div data-hf-id="hf-g1yp" class="referto-suggerimenti" id="s3-suggerimenti"><button data-hf-id="hf-tv85" type="button" class="referto-chip">Me lo spieghi più semplice?</button><button data-hf-id="hf-mo1v" type="button" class="referto-chip">Devo preoccuparmi?</button></div>
+                  <form data-hf-id="hf-na6z" class="referto-chiedi">
+                    <div data-hf-id="hf-k3he" id="s3-campo">
+                      <input data-hf-id="hf-c9ro" type="text" value="" />
+                      <span data-hf-id="hf-wwh2" id="s3-segnaposto">Fai una domanda su questo referto</span>
+                      <span data-hf-id="hf-c8sz" id="s3-scritto"><span data-hf-id="hf-2y8e" id="s3-lettere"></span></span>
+                    </div>
+                    <button data-hf-id="hf-0buh" type="button" class="referto-invia" id="s3-invia"><svg data-hf-id="hf-pot5" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-u4hz" d="M4 12l16-8-6 16-2-7z"></path></svg></button>
+                  </form>
+                </div>
+              </div>
+
+              <div id="s3-traduci" data-layout-allow-overlap>«Spiegamelo» = Explain this to me</div>
+              <div data-hf-id="hf-r7qp" id="s3-clic"></div>
+              <svg data-hf-id="hf-qclm" id="s3-cursore" viewBox="0 0 30 30" aria-hidden="true">
+                <path data-hf-id="hf-ufxk" d="M4 2 L4 24 L10 18.5 L14 27 L18 25.2 L14 16.8 L22 16.8 Z" fill="#18221f" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-6s1h" id="s3-ombra"></div>
+        <div data-hf-id="hf-zm9e" class="s3-didascalia" id="s3-d1" data-layout-allow-overlap><span data-hf-id="hf-s5gl" class="s3-occhiello">«In breve» · In short</span><span data-hf-id="hf-1pa4" class="s3-titolo">The summary comes first.</span></div>
+        <div data-hf-id="hf-vo5d" class="s3-didascalia" id="s3-d2" data-layout-allow-overlap><span data-hf-id="hf-w9wc" class="s3-occhiello">«In parole semplici» · In plain words</span><span data-hf-id="hf-micj" class="s3-titolo">Every term, explained.</span></div>
+        <div data-hf-id="hf-uwhk" class="s3-didascalia" id="s3-d3" data-layout-allow-overlap><span data-hf-id="hf-9dox" class="s3-occhiello">«Cosa ha scritto il medico» · What the doctor wrote</span><span data-hf-id="hf-pkve" class="s3-titolo">Her words, quoted exactly.</span></div>
+        <div data-hf-id="hf-qydj" class="s3-didascalia" id="s3-d4" data-layout-allow-overlap><span data-hf-id="hf-pu87" class="s3-occhiello">Transparency</span><span data-hf-id="hf-fax4" class="s3-titolo">Only what the report says.</span></div>
+        <div data-hf-id="hf-n09i" class="s3-didascalia" id="s3-d5" data-layout-allow-overlap><span data-hf-id="hf-vsm2" class="s3-occhiello">A question</span><span data-hf-id="hf-bwjm" class="s3-titolo">Ask in your own words.</span></div>
+        <div data-hf-id="hf-j25h" class="s3-didascalia" id="s3-d6" data-layout-allow-overlap><span data-hf-id="hf-drlv" class="s3-occhiello">«Fonte» · Source</span><span data-hf-id="hf-tfzc" class="s3-titolo">From Referto’s medical glossary.</span></div>
+        <div id="s3-italiano"><span class="s3-r">R</span><div><strong>Built for Italian patients, in Italian</strong><span>Captions translate the key steps · other languages next</span></div></div>
+        <div data-hf-id="hf-e2l6" id="s3-accorciata">Waiting time shortened for the video</div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [1.502, 1.41], [4.64, 4.04], [8.873, 6.23], [9.791, 7.05], [10.881, 8.58], [13.381, 10.3], [15.177, 11.58], [17.717, 13.59], [19.791, 15.54], [23.541, 18.7], [26.373, 20.9], [29.764, 24.01], [30.748, 24.65], [33.302, 24.72], [35.403, 27.25], [36.932, 30.1], [37.849, 31.08], [39.37, 31.85], [40.753, 34.42], [43.12, 36.77]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: 0 = 28,5 s del video. Voce 03 a +1,4 s, voce 04 a +33,2 s.
+        const DOMANDA = "Cos'è il ritmo sinusale?";
+
+        // Divide il testo in parole (anche dentro gli evidenziati) per farlo «scrivere».
+        function inParole(nodo) {
+          for (const figlio of [...nodo.childNodes]) {
+            if (figlio.nodeType === Node.TEXT_NODE) {
+              const frammento = document.createDocumentFragment();
+              for (const pezzo of figlio.textContent.split(/(\s+)/)) {
+                if (!pezzo) continue;
+                if (/^\s+$/.test(pezzo)) {
+                  frammento.appendChild(document.createTextNode(pezzo));
+                } else {
+                  const parola = document.createElement("span");
+                  parola.className = "s3-parola";
+                  // Il testo scorre sotto il campo della domanda, come nel widget vero.
+                  parola.setAttribute("data-layout-allow-occlusion", "");
+                  parola.textContent = pezzo;
+                  frammento.appendChild(parola);
+                }
+              }
+              figlio.replaceWith(frammento);
+            } else {
+              inParole(figlio);
+            }
+          }
+        }
+
+        // Posizione di un elemento rispetto a un antenato, senza trasformazioni.
+        function posizione(el, antenato) {
+          let x = 0;
+          let y = 0;
+          let nodo = el;
+          while (nodo && nodo !== antenato) {
+            x += nodo.offsetLeft;
+            y += nodo.offsetTop;
+            nodo = nodo.offsetParent;
+          }
+          return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+        }
+
+        function costruisci() {
+          document.querySelectorAll("#root .s3-scrive").forEach(inParole);
+          const lettere = document.getElementById("s3-lettere");
+          for (const carattere of DOMANDA) {
+            const lettera = document.createElement("span");
+            lettera.className = "s3-lettera";
+            lettera.textContent = carattere;
+            lettere.appendChild(lettera);
+          }
+
+          // Riga del referto cardiologico e suo «Spiegamelo», misurati nell'app vera a
+          // 1440×900 (stesso tema, stesso layout): la scena non è visibile quando si
+          // costruisce la timeline, quindi qui non si può misurare.
+          const riga = { x: 409, y: 409, w: 890, h: 145 };
+          const centroBottone = { x: 488 + 175 / 2, y: 490 + 48 / 2 };
+          // L'altezza dei riquadri dipende dal testo: si misura qui, una volta, con
+          // offsetTop (che non risente delle trasformazioni). Se la scena è ancora
+          // nascosta (display: none) le misure varrebbero zero e il pannello non
+          // scorrerebbe: per misurare si mostrano per un attimo gli antenati nascosti.
+          const flusso = document.getElementById("s3-flusso");
+          const nascosti = [];
+          for (let nodo = flusso; nodo && nodo !== document.documentElement; nodo = nodo.parentElement) {
+            if (getComputedStyle(nodo).display === "none") {
+              nascosti.push([nodo, nodo.style.display]);
+              nodo.style.display = "block";
+            }
+          }
+          // Finestra visibile della chat (il corpo meno i suoi 20 px di margine sopra e sotto),
+          // riquadri e parole: tutto misurato qui, una volta.
+          const corpo = document.getElementById("s3-corpo");
+          const finestra = corpo.clientHeight - 40;
+          const misura = (el) => ({ y: posizione(el, flusso).y, h: el.offsetHeight });
+          const riquadri = {};
+          for (const id of ["s3-breve", "s3-semplice", "s3-medico", "s3-sicurezza", "s3-domanda", "s3-attesa-2", "s3-fonte"]) {
+            riquadri[id] = misura(document.getElementById(id));
+          }
+          const paroleDi = {};
+          for (const id of ["s3-breve", "s3-semplice", "s3-risposta-testo"]) {
+            paroleDi[id] = [...document.getElementById(id).querySelectorAll(".s3-parola")].map((parola) => {
+              const m = misura(parola);
+              return m.y + m.h;
+            });
+          }
+          for (const [nodo, display] of nascosti) nodo.style.display = display;
+          // Punto dello schermo (1440×900) → coordinate della camera.
+          const inCamera = (x, y) => ({ x: 240 + x, y: 112 + y });
+          const inquadra = (punto, verso, scala) => ({ x: verso.x - punto.x * scala, y: verso.y - punto.y * scala, scale: scala });
+
+          const sullaRiga = inquadra(inCamera(riga.x + riga.w * 0.42, riga.y + riga.h / 2), { x: 960, y: 560 }, 1.45);
+          // Pannello 480×900 a destra: alto quanto il video, centrato a x = 1360.
+          const sulPannello = { x: 1360 - 1440 * 1.2, y: -112 * 1.2, scale: 1.2 };
+
+          Object.assign(document.getElementById("s3-alone-riga").style, {
+            left: `${riga.x - 6}px`,
+            top: `${riga.y - 6}px`,
+            width: `${riga.w + 12}px`,
+            height: `${riga.h + 12}px`,
+          });
+
+          const tl = gsap.timeline({ paused: true });
+
+          // Scorrimento della chat come nell'app: scende solo quando il testo arriva in
+          // fondo e non torna mai su. Ogni tween è un fromTo che parte esattamente da
+          // dove è finito il precedente: con un .to() l'anteprima, dopo un salto,
+          // ripartiva dall'inizio e la chat sembrava salire e scendere.
+          let scorso = 0;
+          const margine = 14;
+          const serve = (fondo) => Math.max(0, fondo + margine - finestra);
+          const scendi = (fondo, t, durata, ease = "power2.inOut") => {
+            const a = serve(fondo);
+            if (a <= scorso + 1) return;
+            tl.fromTo("#s3-flusso", { y: -scorso }, { y: -a, duration: durata, ease, immediateRender: false }, t);
+            scorso = a;
+          };
+          const fondoDi = (id) => riquadri[id].y + riquadri[id].h;
+          // Mentre il testo si scrive (parole a ritmo costante), la chat lo segue a tratti brevi.
+          const segui = (id, t, durata) => {
+            const fondi = paroleDi[id];
+            const passo = Math.max(1, Math.round(fondi.length / 12));
+            for (let i = passo - 1; i < fondi.length; i += passo) {
+              const quando = t + (durata * i) / fondi.length;
+              scendi(fondi[i], quando, (durata * passo) / fondi.length, "none");
+            }
+            scendi(fondi[fondi.length - 1], t + durata, 0.2, "power1.out");
+          };
+
+          // Arrivo: il fondo chiaro copre la scena 2, poi la finestra sale.
+          tl.fromTo("#s3-fondo", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power1.out" }, 0);
+          tl.fromTo("#s3-finestra", { opacity: 0, y: 70, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" }, 0.4);
+
+          // «Giovanna ha appena fatto una visita…»: inquadratura larga che si avvicina piano.
+          tl.fromTo("#s3-camera", { x: 0, y: 0, scale: 1 }, { x: -29, y: -16, scale: 1.03, duration: 3.2, ease: "none" }, 1.4);
+          // «…il referto è già nel portale»: la camera va sulla riga del referto cardiologico.
+          tl.fromTo("#s3-camera", { x: -29, y: -16, scale: 1.03 }, { ...sullaRiga, duration: 1.8, ease: "power3.inOut", immediateRender: false }, 4.6);
+          tl.fromTo("#s3-alone-riga", { opacity: 0, scale: 1.04 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, 5.6);
+
+          // «Built for Italian patients, in Italian»: durante l'inquadratura larga.
+          tl.fromTo("#s3-italiano", { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.4);
+          tl.to("#s3-italiano", { opacity: 0, y: -12, duration: 0.35, ease: "power2.in" }, 6.4);
+
+          // Il cursore arriva su «Spiegamelo» e clicca; sotto il pulsante, la traduzione.
+          tl.fromTo(
+            "#s3-traduci",
+            { opacity: 0, x: centroBottone.x, y: centroBottone.y + 38, xPercent: -50 },
+            { opacity: 1, y: centroBottone.y + 34, duration: 0.35, ease: "power2.out" },
+            7.5,
+          );
+          tl.to("#s3-traduci", { opacity: 0, duration: 0.3, ease: "power1.in" }, 10.2);
+          tl.fromTo(
+            "#s3-cursore",
+            { opacity: 0, x: centroBottone.x + 300, y: centroBottone.y + 170 },
+            { opacity: 1, x: centroBottone.x + 260, y: centroBottone.y + 140, duration: 0.4, ease: "power1.out" },
+            7.0,
+          );
+          tl.to("#s3-cursore", { x: centroBottone.x - 4, y: centroBottone.y - 4, duration: 2.0, ease: "power2.inOut" }, 7.4);
+          tl.to("#s3-spiegamelo", { scale: 0.94, duration: 0.12, ease: "power1.in" }, 9.7);
+          tl.to("#s3-spiegamelo", { scale: 1, duration: 0.25, ease: "back.out(2)" }, 9.82);
+          tl.fromTo(
+            "#s3-clic",
+            { opacity: 0.9, scale: 0.3, x: centroBottone.x, y: centroBottone.y },
+            { opacity: 0, scale: 1.8, duration: 0.6, ease: "power2.out" },
+            9.75,
+          );
+          tl.to(["#s3-alone-riga", "#s3-cursore"], { opacity: 0, duration: 0.35, ease: "power1.in" }, 10.2);
+
+          // Si apre il widget di Referto; la camera passa sul pannello.
+          tl.to("#s3-velo", { opacity: 1, duration: 0.45, ease: "power1.out" }, 10.25);
+          tl.fromTo("#s3-pannello", { x: 500 }, { x: 0, duration: 0.7, ease: "power3.out" }, 10.3);
+          tl.fromTo("#s3-camera", { ...sullaRiga }, { ...sulPannello, duration: 1.3, ease: "power3.inOut", immediateRender: false }, 10.45);
+          tl.to("#s3-ombra", { opacity: 1, duration: 0.8, ease: "power1.out" }, 10.9);
+
+          // Attesa (accorciata), poi la risposta arriva mentre viene scritta.
+          tl.fromTo("#s3-attesa", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 11.2);
+          tl.fromTo("#s3-rotella", { rotation: 0 }, { rotation: 720, duration: 2.2, ease: "none" }, 11.2);
+          tl.fromTo("#s3-accorciata", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 11.4);
+          tl.to(["#s3-attesa", "#s3-accorciata"], { opacity: 0, duration: 0.3 }, 13.1);
+
+          const entra = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, t);
+          const scrivi = (id, t, durata) => {
+            const parole = document.getElementById(id).querySelectorAll(".s3-parola");
+            tl.fromTo(parole, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none", stagger: durata / parole.length }, t);
+          };
+          const didascalia = (sel, da, a) => {
+            tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, da);
+            tl.to(sel, { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, a);
+          };
+
+          // «Prima arriva la sintesi…»
+          entra("#s3-argomento", 13.3);
+          entra("#s3-breve", 13.45);
+          scrivi("s3-breve", 13.6, 1.5);
+          segui("s3-breve", 13.6, 1.5);
+          didascalia("#s3-d1", 13.35, 14.9);
+
+          // «…poi la spiegazione in parole semplici, mentre viene scritta.»
+          entra("#s3-semplice", 15.2);
+          scrivi("s3-semplice", 15.4, 3.8);
+          segui("s3-semplice", 15.4, 3.8);
+          tl.to(".s3-tradotto", { backgroundColor: "rgba(185, 220, 205, 1)", duration: 0.4, stagger: 0.5 }, 18.0);
+          didascalia("#s3-d2", 15.3, 19.4);
+
+          // «Le indicazioni del medico restano in un riquadro a parte, sempre attribuite al documento.»
+          entra("#s3-medico", 19.7);
+          scendi(fondoDi("s3-medico"), 19.75, 0.9);
+          tl.to("#s3-medico", { borderColor: "#176b58", boxShadow: "0 0 0 6px rgba(23, 107, 88, 0.16)", duration: 0.5 }, 20.9);
+          tl.to("#s3-citazione", { backgroundColor: "#e5f3ed", borderColor: "#176b58", color: "#0f5143", scale: 1.08, duration: 0.35, ease: "power2.out" }, 23.9);
+          tl.to("#s3-citazione", { scale: 1, duration: 0.3, ease: "power2.inOut" }, 24.3);
+          didascalia("#s3-d3", 19.8, 25.9);
+
+          // «E se il referto lascia qualcosa in sospeso, Referto lo dice chiaramente.»
+          entra("#s3-visita", 25.6);
+          entra("#s3-strutture", 25.85);
+          entra("#s3-dettagli", 26.1);
+          entra("#s3-sicurezza", 26.35);
+          tl.to("#s3-medico", { borderColor: "#dfe6e3", boxShadow: "0 0 0 0px rgba(23, 107, 88, 0)", duration: 0.4 }, 26.0);
+          scendi(fondoDi("s3-sicurezza"), 25.65, 1.4);
+          tl.to("#s3-dettagli", { borderColor: "#176b58", duration: 0.4 }, 28.2);
+          tl.to("#s3-sicurezza", { borderColor: "#176b58", backgroundColor: "#e5f3ed", color: "#0f5143", duration: 0.5 }, 29.2);
+          didascalia("#s3-d4", 26.4, 32.7);
+
+          // Fine della risposta: compaiono le domande pronte.
+          tl.fromTo("#s3-suggerimenti", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 }, 31.0);
+
+          // «…lo chiede con parole sue: cos'è il ritmo sinusale?»
+          didascalia("#s3-d5", 33.3, 39.0);
+          tl.to(["#s3-dettagli", "#s3-sicurezza"], { borderColor: "#dfe6e3", backgroundColor: "#ffffff", color: "#4d5a56", duration: 0.4 }, 33.0);
+          tl.to("#s3-segnaposto", { opacity: 0, duration: 0.15 }, 35.3);
+          tl.to(".s3-lettera", { opacity: 1, duration: 0.01, stagger: 2.2 / DOMANDA.length }, 35.5);
+          tl.to("#s3-invia", { scale: 0.9, backgroundColor: "#0f5143", duration: 0.1 }, 38.0);
+          tl.to("#s3-invia", { scale: 1, backgroundColor: "#176b58", duration: 0.25, ease: "back.out(2)" }, 38.1);
+          tl.to(["#s3-lettere", "#s3-suggerimenti"], { opacity: 0, duration: 0.2 }, 38.15);
+          tl.to("#s3-segnaposto", { opacity: 1, duration: 0.3 }, 38.4);
+
+          // La domanda entra nella conversazione; la risposta arriva dal glossario, con la fonte.
+          entra("#s3-scambio", 38.3);
+          // La domanda entra in fondo, come un messaggio; poi la risposta, seguita mentre si scrive.
+          scendi(fondoDi("s3-attesa-2"), 38.3, 0.6, "power2.out");
+          tl.fromTo("#s3-rotella-2", { rotation: 0 }, { rotation: 360, duration: 1.0, ease: "none" }, 38.4);
+          tl.to("#s3-attesa-2", { opacity: 0, duration: 0.2 }, 39.25);
+          scrivi("s3-risposta-testo", 39.5, 1.4);
+          segui("s3-risposta-testo", 39.5, 1.4);
+          tl.fromTo("#s3-fonte", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4 }, 41.0);
+          scendi(fondoDi("s3-fonte"), 40.95, 0.4, "power2.out");
+          tl.to("#s3-fonte", { borderColor: "#176b58", boxShadow: "0 0 0 6px rgba(23, 107, 88, 0.18)", scale: 1.06, duration: 0.4, ease: "power2.out" }, 42.6);
+          tl.to("#s3-fonte", { scale: 1, duration: 0.3 }, 43.0);
+          didascalia("#s3-d6", 39.4, 45.0);
+
+          // Uscita morbida verso le integrazioni.
+          tl.fromTo("#s3-camera", { ...sulPannello }, { x: sulPannello.x + 30, y: sulPannello.y + 20, scale: 1.17, duration: 2.0, ease: "power1.inOut", immediateRender: false }, 43.5);
+
+          riallinea(tl);
+          window.__timelines["scena-03-demo"] = tl;
+        }
+
+        document.fonts.ready.then(costruisci);
+      </script>
+    </template>
+  </body>
+</html>

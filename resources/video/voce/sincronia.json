@@ -1,0 +1,602 @@
+{
+  "traccia": "assets/voce/elevenlabs-finale-pause.mp3",
+  "parole_traccia": "assets/voce/elevenlabs-finale-pause.parole.json",
+  "inizio_traccia": 0.8,
+  "nota": "Ancore tra la voce di riferimento (assets/voce/audio_meta.json: Isabella in italiano per le scene 3-6, Ava in inglese per le altre) e la traccia in inglese (oggi la provvisoria di voce/traccia_provvisoria.py, poi quella di ElevenLabs): per ogni voce, coppie [parola di riferimento, parola della traccia] nell'ordine in cui compaiono. L'ultima coppia è la fine della voce. Le ancore delle voci inglesi usano le stesse parole del testo di TESTO-VOCE.md; quelle delle scene 3-6 sono state adattate al testo inglese nuovo: vanno controllate sulla trascrizione della traccia.",
+  "composizioni": [
+    {
+      "id": "scena-01-gancio",
+      "durata_vecchia": 42.0,
+      "voci": [
+        {
+          "id": "01-gancio",
+          "attacco": 0.8,
+          "ancore": [
+            [
+              "This",
+              "This"
+            ],
+            [
+              "Giovanna",
+              "Giovanna"
+            ],
+            [
+              "cardiology",
+              "cardiology"
+            ],
+            [
+              "electronic",
+              "electronic"
+            ],
+            [
+              "weeks",
+              "weeks"
+            ],
+            [
+              "She",
+              "She"
+            ],
+            [
+              "Then",
+              "Then"
+            ],
+            [
+              "And",
+              "And"
+            ],
+            [
+              "what",
+              "what"
+            ],
+            [
+              "alone",
+              "alone"
+            ],
+            [
+              "more",
+              "more"
+            ],
+            [
+              "struggle",
+              "struggle"
+            ],
+            [
+              "So",
+              "So"
+            ],
+            [
+              "chatbot",
+              "chatbot"
+            ],
+            [
+              "call",
+              "call"
+            ],
+            [
+              "overloaded",
+              "overloaded"
+            ]
+          ]
+        },
+        {
+          "id": "02-desiderio",
+          "attacco": 25.5,
+          "ancore": [
+            [
+              "But",
+              "But"
+            ],
+            [
+              "reads",
+              "reads"
+            ],
+            [
+              "What",
+              "What"
+            ],
+            [
+              "needs",
+              "needs"
+            ],
+            [
+              "source",
+              "source"
+            ],
+            [
+              "only",
+              "only"
+            ],
+            [
+              "plain",
+              "plain"
+            ],
+            [
+              "Something",
+              "Something"
+            ],
+            [
+              "next",
+              "next"
+            ],
+            [
+              "Meet",
+              "Meet"
+            ],
+            [
+              "Referto",
+              "Referto"
+            ],
+            [
+              "Your",
+              "Your"
+            ],
+            [
+              "explained",
+              "explained"
+            ],
+            [
+              "words",
+              "words"
+            ]
+          ]
+        }
+      ],
+      "copertura": 1.0
+    },
+    {
+      "id": "scena-03-demo",
+      "durata_vecchia": 45.6,
+      "voci": [
+        {
+          "id": "03-demo",
+          "attacco": 1.4,
+          "ancore": [
+            [
+              "Giovanna",
+              "Giovanna"
+            ],
+            [
+              "e",
+              "and"
+            ],
+            [
+              "Un",
+              "One"
+            ],
+            [
+              "Spiegamelo",
+              "explain"
+            ],
+            [
+              "Referto",
+              "Referto"
+            ],
+            [
+              "Prima",
+              "First"
+            ],
+            [
+              "poi",
+              "then"
+            ],
+            [
+              "mentre",
+              "written"
+            ],
+            [
+              "Le",
+              "The"
+            ],
+            [
+              "sempre",
+              "linked"
+            ],
+            [
+              "E",
+              "And"
+            ],
+            [
+              "dice",
+              "says"
+            ],
+            [
+              "chiaramente",
+              "so"
+            ]
+          ]
+        },
+        {
+          "id": "04-domanda",
+          "attacco": 33.2,
+          "ancore": [
+            [
+              "Giovanna",
+              "Still"
+            ],
+            [
+              "chiede",
+              "ask"
+            ],
+            [
+              "cos'è",
+              "what"
+            ],
+            [
+              "sinusale",
+              "rhythm"
+            ],
+            [
+              "La",
+              "The"
+            ],
+            [
+              "glossario",
+              "glossary"
+            ],
+            [
+              "fonte",
+              "source"
+            ]
+          ]
+        }
+      ],
+      "copertura": 0.8
+    },
+    {
+      "id": "scena-05-integrazioni",
+      "durata_vecchia": 24.7,
+      "voci": [
+        {
+          "id": "05-integrazioni",
+          "attacco": 1.0,
+          "ancore": [
+            [
+              "Nel",
+              "Does"
+            ],
+            [
+              "ramipril",
+              "ramipril"
+            ],
+            [
+              "Referto",
+              "Referto"
+            ],
+            [
+              "prontuario",
+              "official"
+            ],
+            [
+              "dell'AIFA",
+              "AIFA"
+            ],
+            [
+              "apre",
+              "opens"
+            ],
+            [
+              "foglietto",
+              "patient"
+            ],
+            [
+              "dove",
+              "where"
+            ],
+            [
+              "domande",
+              "questions"
+            ],
+            [
+              "Il",
+              "Does"
+            ],
+            [
+              "cardiologica",
+              "cardiology"
+            ],
+            [
+              "Ecco",
+              "displays"
+            ],
+            [
+              "cardiologia",
+              "cardiology"
+            ],
+            [
+              "mappa",
+              "map"
+            ]
+          ]
+        }
+      ],
+      "copertura": 0.7
+    },
+    {
+      "id": "scena-06-tecnologia",
+      "durata_vecchia": 23.7,
+      "voci": [
+        {
+          "id": "06-tecnologia",
+          "attacco": 1.0,
+          "ancore": [
+            [
+              "Dietro",
+              "Behind"
+            ],
+            [
+              "agente",
+              "agent"
+            ],
+            [
+              "legge",
+              "reads"
+            ],
+            [
+              "consulta",
+              "checks"
+            ],
+            [
+              "prontuario",
+              "AIFA"
+            ],
+            [
+              "glossario",
+              "glossary"
+            ],
+            [
+              "Le",
+              "Healthcare"
+            ],
+            [
+              "aperti",
+              "data"
+            ],
+            [
+              "partire",
+              "based"
+            ],
+            [
+              "E",
+              "language"
+            ],
+            [
+              "infrastruttura",
+              "AMD"
+            ],
+            [
+              "Token",
+              "Token"
+            ],
+            [
+              "Factory",
+              "Factory"
+            ]
+          ]
+        }
+      ],
+      "copertura": 0.8
+    },
+    {
+      "id": "scena-07-osservabilita",
+      "durata_vecchia": 15.1,
+      "voci": [
+        {
+          "id": "07-osservabilita",
+          "attacco": 0.8,
+          "ancore": [
+            [
+              "And",
+              "And"
+            ],
+            [
+              "trace",
+              "trace"
+            ],
+            [
+              "timings",
+              "timings"
+            ],
+            [
+              "tokens",
+              "tokens"
+            ],
+            [
+              "tools",
+              "tools"
+            ],
+            [
+              "outcome",
+              "outcome"
+            ],
+            [
+              "Never",
+              "Never"
+            ],
+            [
+              "We",
+              "We"
+            ],
+            [
+              "measure",
+              "measure"
+            ],
+            [
+              "version",
+              "version"
+            ],
+            [
+              "make",
+              "make"
+            ],
+            [
+              "better",
+              "better"
+            ]
+          ]
+        }
+      ],
+      "copertura": 1.0
+    },
+    {
+      "id": "scena-08-potenziale",
+      "durata_vecchia": 38.1,
+      "voci": [
+        {
+          "id": "08-potenziale",
+          "attacco": 0.8,
+          "ancore": [
+            [
+              "The",
+              "The"
+            ],
+            [
+              "right",
+              "right"
+            ],
+            [
+              "Since",
+              "Since"
+            ],
+            [
+              "every",
+              "every"
+            ],
+            [
+              "within",
+              "within"
+            ],
+            [
+              "country",
+              "country"
+            ],
+            [
+              "yet",
+              "yet"
+            ],
+            [
+              "Italians",
+              "Italians"
+            ],
+            [
+              "market",
+              "market"
+            ],
+            [
+              "digital",
+              "digital"
+            ],
+            [
+              "worth",
+              "worth"
+            ],
+            [
+              "plugs",
+              "plugs"
+            ],
+            [
+              "practices",
+              "practices"
+            ],
+            [
+              "labs",
+              "labs"
+            ],
+            [
+              "region's",
+              "region's"
+            ],
+            [
+              "European",
+              "European"
+            ],
+            [
+              "reaches",
+              "reaches"
+            ],
+            [
+              "Europeans",
+              "Europeans"
+            ]
+          ]
+        }
+      ],
+      "copertura": 0.8
+    },
+    {
+      "id": "scena-09-finale",
+      "durata_vecchia": 17.2,
+      "voci": [
+        {
+          "id": "09-finale",
+          "attacco": 0.8,
+          "ancore": [
+            [
+              "A",
+              "A"
+            ],
+            [
+              "understood",
+              "understood"
+            ],
+            [
+              "question",
+              "question"
+            ],
+            [
+              "doctor",
+              "doctor"
+            ],
+            [
+              "last",
+              "last"
+            ],
+            [
+              "belongs",
+              "belongs"
+            ],
+            [
+              "doctor",
+              "doctor"
+            ],
+            [
+              "Referto",
+              "Referto"
+            ],
+            [
+              "medical",
+              "medical"
+            ],
+            [
+              "finally",
+              "finally"
+            ],
+            [
+              "clear",
+              "clear"
+            ]
+          ]
+        }
+      ],
+      "coda": [
+        [
+          11.2,
+          0.4
+        ],
+        [
+          11.9,
+          1.0
+        ],
+        [
+          16.0,
+          5.1
+        ],
+        [
+          17.2,
+          6.3
+        ]
+      ],
+      "copertura": 0.7
+    }
+  ],
+  "nota_copertura": "copertura: secondi (sulla voce di riferimento) dopo cui il fondo della scena copre del tutto la precedente; la scena precedente finisce lì"
+}

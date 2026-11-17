@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scena 5 del copione (integrazioni). Tempi locali: 0 = 74,1 s del video;
+      voce 05 a +1,0 s.
+      Dati veri: scheda del prontuario AIFA come la restituisce il backend
+      (POST /api/farmaci/cerca, «ramipril», aggiornato al 13/10/2026); pagina 1
+      del foglietto ufficiale del Triatec (AIC 027161) dal backend; elenco delle
+      strutture di cardiologia come lo mostra il portale; pannello della mappa
+      come FinestraMappa, con la mappa MapLibre in stile Positron di OpenFreeMap
+      resa una volta sola in assets/mappa/positron-bazzini.png (© OpenStreetMap
+      contributors, © OpenMapTiles).
+    -->
+    <template>
+      <link rel="stylesheet" href="assets/ui/referto-ui.css" />
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+          color: #18221f;
+        }
+        #s5-fondo {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1400px 900px at 50% 40%, #f7faf9 0%, #e3ece8 100%);
+        }
+        /* Battute 1-2: la nota del medico e la scheda del prontuario */
+        .s5-carta-box {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .s5-carta {
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          padding: 40px 48px;
+          border: 2px solid #dfe6e3;
+          border-radius: 28px;
+          background: #ffffff;
+          box-shadow: 0 30px 80px rgba(16, 40, 34, 0.16);
+          opacity: 0;
+        }
+        #s5-medico {
+          width: 860px;
+        }
+        #s5-medico h3 {
+          margin: 0;
+          font-size: 34px;
+          font-weight: 800;
+        }
+        #s5-medico .s5-nota {
+          margin: 0;
+          padding-left: 22px;
+          border-left: 5px solid #b9dccd;
+          font-size: 38px;
+          line-height: 1.45;
+        }
+        #s5-farmaco {
+          border-radius: 8px;
+          padding: 0 6px;
+          background-color: rgba(185, 220, 205, 0);
+        }
+        .s5-etichetta {
+          align-self: flex-start;
+          padding: 6px 14px;
+          border: 2px solid #dfe6e3;
+          border-radius: 10px;
+          background: #f5f7f6;
+          color: #4d5a56;
+          font-size: 22px;
+          font-weight: 700;
+        }
+        #s5-aifa {
+          width: 820px;
+        }
+        #s5-aifa-testa {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+        }
+        #s5-aifa-testa span:first-child {
+          color: #176b58;
+          font-size: 24px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        #s5-trovato {
+          padding: 6px 16px;
+          border-radius: 999px;
+          background: #176b58;
+          color: #ffffff;
+          font-size: 22px;
+          font-weight: 800;
+        }
+        #s5-aifa h3 {
+          align-self: flex-start;
+          margin: 0 0 0 -10px;
+          padding: 0 10px;
+          border-radius: 12px;
+          background-color: rgba(185, 220, 205, 0);
+          font-size: 64px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+        }
+        #s5-aifa dl {
+          display: grid;
+          grid-template-columns: 250px 1fr;
+          gap: 14px 24px;
+          margin: 0;
+          font-size: 26px;
+          line-height: 1.35;
+        }
+        #s5-aifa dt {
+          color: #4d5a56;
+          font-weight: 700;
+        }
+        #s5-aifa dd {
+          margin: 0;
+        }
+        #s5-aifa-fonte {
+          padding-top: 18px;
+          border-top: 2px solid #e3e9e6;
+          color: #4d5a56;
+          font-size: 21px;
+        }
+        #s5-gettone {
+          position: absolute;
+          left: 0;
+          top: 0;
+          padding: 8px 18px;
+          border-radius: 999px;
+          background: #176b58;
+          color: #ffffff;
+          font-size: 30px;
+          font-weight: 800;
+          opacity: 0;
+        }
+        /* Battute 3-6: la finestra del browser con l'app vera */
+        #s5-camera {
+          position: absolute;
+          inset: 0;
+          transform-origin: 0 0;
+        }
+        #s5-finestra {
+          position: absolute;
+          left: 240px;
+          top: 68px;
+          width: 1440px;
+          height: 944px;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #ffffff;
+          box-shadow: 0 40px 120px rgba(16, 40, 34, 0.28), 0 0 0 1px rgba(16, 40, 34, 0.08);
+          opacity: 0;
+        }
+        #s5-barra {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #eef1f0;
+          border-bottom: 1px solid #dde3e0;
+        }
+        #s5-puntini {
+          position: absolute;
+          left: 18px;
+          top: 15px;
+          display: flex;
+          gap: 8px;
+        }
+        #s5-puntini span {
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          background: #cfd7d3;
+        }
+        #s5-indirizzo {
+          padding: 5px 22px;
+          border-radius: 8px;
+          background: #ffffff;
+          color: #5b6763;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        #s5-schermo {
+          position: absolute;
+          left: 0;
+          top: 44px;
+          width: 1440px;
+          height: 900px;
+          overflow: hidden;
+          background: #f4f6f9;
+        }
+        #s5-schermo .lettore,
+        #s5-schermo .velo,
+        #s5-schermo .velo-laterale,
+        #s5-schermo .pannello-mappa {
+          position: absolute;
+        }
+        #s5-schermo .velo,
+        #s5-schermo .velo-laterale {
+          opacity: 0;
+        }
+        #s5-pdf {
+          flex: none;
+          width: 732px;
+          height: 1035px;
+          background: #ffffff;
+          box-shadow: 0 6px 24px rgba(27, 36, 51, 0.14);
+        }
+        #s5-scambio {
+          opacity: 0;
+        }
+        #s5-documenti .corpo {
+          padding-top: 28px;
+        }
+        #s5-risultato {
+          margin-top: 6px;
+        }
+        /* Mappa resa da MapLibre (478×558 a doppia risoluzione): il luogo è al centro. */
+        #s5-mappa-img {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 478px;
+          height: 558px;
+        }
+        /* Pulsanti + e − e attribuzione come quelli di MapLibre nel portale */
+        #s5-zoom {
+          position: absolute;
+          left: 10px;
+          top: 10px;
+          display: flex;
+          flex-direction: column;
+          border-radius: 4px;
+          background: #ffffff;
+          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        #s5-zoom span {
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #333333;
+        }
+        #s5-zoom span + span {
+          border-top: 1px solid #dddddd;
+        }
+        #s5-segnaposto {
+          position: absolute;
+          left: 221px;
+          top: 233px;
+          width: 36px;
+          height: 48px;
+          color: #1f4e8c;
+          filter: drop-shadow(0 2px 2px rgba(27, 36, 51, 0.35));
+        }
+        #s5-anello-pin {
+          position: absolute;
+          left: 209px;
+          top: 249px;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          border: 4px solid #1f4e8c;
+          opacity: 0;
+        }
+        #s5-mappa-descrizione {
+          align-self: flex-start;
+          margin: 0 -6px;
+          padding: 0 6px;
+          border-radius: 6px;
+        }
+        #s5-lettore .lettore-vista {
+          position: relative;
+        }
+        #s5-citata {
+          position: absolute;
+          top: 12px;
+          left: 50%;
+          margin-left: -230px;
+          width: 460px;
+          z-index: 2;
+          opacity: 0;
+        }
+        #s5-attribuzione {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          padding: 0 5px;
+          background: rgba(255, 255, 255, 0.5);
+          color: rgba(0, 0, 0, 0.75);
+          font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+          font-size: 13px;
+          line-height: 20px;
+        }
+        /* Didascalia in alto a sinistra: in basso coprirebbe la fonte del foglietto */
+        .s5-sottopancia {
+          position: absolute;
+          left: 64px;
+          top: 40px;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 16px 28px 16px 16px;
+          border-radius: 20px;
+          background: rgba(11, 21, 18, 0.92);
+          color: #f2f7f5;
+          opacity: 0;
+        }
+        /* Strutture: in alto a destra, dove la pagina è vuota (in basso coprirebbe l'elenco) */
+        .s5-a-destra {
+          left: auto;
+          right: 64px;
+        }
+        .s5-sottopancia .s5-r {
+          width: 52px;
+          height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 14px;
+          background: #176b58;
+          font-size: 30px;
+          font-weight: 800;
+        }
+        .s5-sottopancia strong {
+          display: block;
+          font-size: 30px;
+          font-weight: 800;
+        }
+        .s5-sottopancia span {
+          display: block;
+          color: #9fdcc6;
+          font-size: 22px;
+          font-weight: 700;
+        }
+      </style>
+
+      <div data-hf-id="hf-0f0d" id="root" data-composition-id="scena-05-integrazioni" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-5o6k" id="s5-fondo"></div>
+
+        <div data-hf-id="hf-eqv8" class="s5-carta-box">
+          <section data-hf-id="hf-n0g6" class="s5-carta" id="s5-medico">
+            <h3 data-hf-id="hf-i2i5">Cosa ha scritto il medico</h3>
+            <p data-hf-id="hf-uxk0" class="s5-nota">«Terapia: <span data-hf-id="hf-s4pz" id="s5-farmaco">ramipril 5 mg</span>, 1 compressa al mattino. Esami del sangue e nuova visita tra un mese.»</p>
+            <span data-hf-id="hf-zha5" class="s5-etichetta">Dal referto</span>
+          </section>
+        </div>
+        <div data-hf-id="hf-huws" class="s5-carta-box">
+          <section data-hf-id="hf-0jwq" class="s5-carta" id="s5-aifa">
+            <div data-hf-id="hf-84z5" id="s5-aifa-testa"><span data-hf-id="hf-en95">Prontuario AIFA</span><span data-hf-id="hf-52mv" id="s5-trovato">Trovato</span></div>
+            <h3 data-hf-id="hf-2328" id="s5-aifa-nome">ramipril</h3>
+            <dl data-hf-id="hf-mp71">
+              <dt data-hf-id="hf-67f1">Principio attivo</dt>
+              <dd data-hf-id="hf-7ovx">ramipril</dd>
+              <dt data-hf-id="hf-29fs">Classificazione ATC</dt>
+              <dd data-hf-id="hf-o6lh">C09AA05 · sistema cardiovascolare</dd>
+              <dt data-hf-id="hf-sh0g">Categoria</dt>
+              <dd data-hf-id="hf-y6x1">inibitori dell'enzima di conversione dell'angiotensina (ACE), non associati</dd>
+            </dl>
+            <div data-hf-id="hf-t8x5" id="s5-aifa-fonte">Fonte: AIFA, elenco confezioni (CC BY 4.0) · aggiornato al 13 ottobre 2026</div>
+          </section>
+        </div>
+        <div data-hf-id="hf-q34i" id="s5-gettone" data-layout-allow-overlap>ramipril</div>
+
+        <div data-hf-id="hf-nisr" id="s5-camera">
+          <div data-hf-id="hf-5sh0" id="s5-finestra">
+            <div data-hf-id="hf-6w96" id="s5-barra">
+              <div data-hf-id="hf-72c1" id="s5-puntini"><span data-hf-id="hf-uckh"></span><span data-hf-id="hf-l73p"></span><span data-hf-id="hf-me0s"></span></div>
+              <div data-hf-id="hf-8uex" id="s5-indirizzo">Area paziente · Poliambulatorio Valle Serena</div>
+            </div>
+            <div data-hf-id="hf-sck4" id="s5-schermo" class="ui">
+              <!-- Portale: «I miei documenti» con le strutture di cardiologia aperte -->
+              <div data-hf-id="hf-247z" class="portale" id="s5-documenti" data-layout-ignore>
+                <header data-hf-id="hf-aejk" class="testata"><a data-hf-id="hf-xcsf" href="#" class="testata-marchio"><span data-hf-id="hf-t1xh" class="marchio-studio"><svg data-hf-id="hf-r8ol" width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path data-hf-id="hf-k4rw" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"></path></svg></span><span data-hf-id="hf-8r1f" class="testata-nome"><strong data-hf-id="hf-hlhb">Poliambulatorio Valle Serena</strong><span data-hf-id="hf-z1nu">Area paziente</span></span></a><span data-hf-id="hf-353i" class="etichetta-demo">Portale dimostrativo · dati di esempio</span><div data-hf-id="hf-75am" class="testata-utente"><a data-hf-id="hf-mdsx" href="#" class="avatar">GF</a><span data-hf-id="hf-i3c8" class="testata-utente-nome">Giovanna Ferri</span><button data-hf-id="hf-b08s" type="button" class="bottone-leggero solo-computer">Esci</button></div></header>
+                <div data-hf-id="hf-vdwn" class="corpo"><nav data-hf-id="hf-030n" class="menu"><a data-hf-id="hf-iscv" href="#"><svg data-hf-id="hf-osm7" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-9bm7" d="M3 11l9-7 9 7"></path><path data-hf-id="hf-rfgg" d="M5 10v10h14V10"></path></svg>Home</a><a data-hf-id="hf-yjw4" href="#"><svg data-hf-id="hf-sqcf" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-hf-id="hf-8t75" x="3" y="5" width="18" height="16" rx="2"></rect><path data-hf-id="hf-iemf" d="M3 10h18M8 3v4M16 3v4"></path></svg>Le mie visite</a><a data-hf-id="hf-sd50" href="#" aria-current="page"><svg data-hf-id="hf-sc1e" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-faxh" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-uax5" d="M14 3v6h6"></path></svg>I miei documenti</a><a data-hf-id="hf-uxaz" href="#"><svg data-hf-id="hf-rxqd" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-oxt8" d="M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7z"></path><path data-hf-id="hf-mavp" d="M7 7l7 7"></path></svg>Le mie prescrizioni</a><a data-hf-id="hf-90oe" href="#"><svg data-hf-id="hf-upvk" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-qbpo" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-ogar" cx="12" cy="9" r="2.5"></circle></svg>Le mie strutture</a><a data-hf-id="hf-it7a" href="#"><svg data-hf-id="hf-ubkj" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-wz4m" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-avip" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-0ff4" cx="20" cy="11" r="2"></circle></svg>I miei professionisti</a><a data-hf-id="hf-k2zz" href="#"><svg data-hf-id="hf-tx9i" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-hf-id="hf-jnj3" cx="12" cy="8" r="4"></circle><path data-hf-id="hf-h8yv" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>I miei dati</a></nav>
+                  <main data-hf-id="hf-rdz9" class="contenuto">
+                    <div data-hf-id="hf-1wjg" class="titolo-pagina"><h1 data-hf-id="hf-7axz">I miei documenti</h1><p data-hf-id="hf-hap5" class="tenue">Referti, ricette e fatture dello studio, sempre a portata di mano.</p></div>
+                    <section data-hf-id="hf-3bqh" class="scheda scheda-elenco">
+                      <div data-hf-id="hf-yeow">
+                        <div data-hf-id="hf-3hxy" class="riga-documento"><span data-hf-id="hf-sq3q" class="icona-documento"><svg data-hf-id="hf-tofn" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-coqx" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path data-hf-id="hf-i5kt" d="M14 3v6h6"></path></svg></span><div data-hf-id="hf-3lhu" class="riga-documento-testo"><span data-hf-id="hf-c3zq" class="riga-documento-titolo">Visita cardiologica con elettrocardiogramma</span><span data-hf-id="hf-8fb6" class="tenue piccolo">Referto · 13 settembre 2026 · Dott.ssa Elena Marchi</span></div><div data-hf-id="hf-pnli" class="azioni"><button data-hf-id="hf-f8bx" type="button" class="bottone-leggero">Apri</button><button data-hf-id="hf-h24e" type="button" class="bottone bottone-referto"><span data-hf-id="hf-9dcj" class="marchio-r">R</span><span data-hf-id="hf-3imu" class="testo-bottone">Spiegamelo</span></button><button data-hf-id="hf-4u4w" type="button" class="bottone-leggero" id="s5-cerca"><svg data-hf-id="hf-homv" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2fac" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-q137" cx="12" cy="9" r="2.5"></circle></svg>Cerca strutture</button><button data-hf-id="hf-mkt2" type="button" class="bottone-leggero"><svg data-hf-id="hf-wf07" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-l1ve" d="M6 3v6a4 4 0 0 0 8 0V3"></path><path data-hf-id="hf-w0p1" d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle data-hf-id="hf-vmjs" cx="20" cy="11" r="2"></circle></svg>Cerca professionisti</button></div></div>
+                        <div data-hf-id="hf-8jji" class="strutture-risultato" id="s5-risultato"><p data-hf-id="hf-1rns" class="strutture-area">Visita cardiologica con elettrocardiogramma: <strong data-hf-id="hf-s3os">Cardiologia</strong></p><section data-hf-id="hf-nquu" class="strutture-gruppo"><h3 data-hf-id="hf-8qb3">Si occupano di cardiologia</h3><ul data-hf-id="hf-iww5" class="strutture-elenco">
+                          <li data-hf-id="hf-6afd" class="struttura" id="s5-struttura-1"><span data-hf-id="hf-99yi" class="icona-documento"><svg data-hf-id="hf-2afn" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-18d9" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-pms6" cx="12" cy="9" r="2.5"></circle></svg></span><div data-hf-id="hf-qe7o" class="struttura-testo"><strong data-hf-id="hf-y1t2">Trust medical Polispecialistico Bazzini</strong><span data-hf-id="hf-o9t8" class="tenue">Ambulatorio, a 2,3 km da casa</span><span data-hf-id="hf-y020">Via Antonio Bazzini 24</span><span data-hf-id="hf-pr09" class="tenue piccolo">Orari: lun-ven 08:00-19:30; sab 08:00-12:30; dom chiuso</span></div><div data-hf-id="hf-pkbe" class="azioni"><button data-hf-id="hf-5has" type="button" class="bottone">Prenota una visita</button><button data-hf-id="hf-1bhq" type="button" class="bottone-leggero bottone-icona" disabled=""><svg data-hf-id="hf-1w4m" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-u2k0" d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></button><button data-hf-id="hf-73x2" type="button" class="bottone-leggero bottone-icona" id="s5-apri-mappa"><svg data-hf-id="hf-1htl" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-9fny" d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path data-hf-id="hf-yrhq" d="M9 3v15M15 6v15"></path></svg></button></div></li>
+                          <li data-hf-id="hf-a8je" class="struttura" id="s5-struttura-2"><span data-hf-id="hf-9o9j" class="icona-documento"><svg data-hf-id="hf-13ik" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-1moa" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-p8h5" cx="12" cy="9" r="2.5"></circle></svg></span><div data-hf-id="hf-4p70" class="struttura-testo"><strong data-hf-id="hf-vxbv">Smart Clinic Cinque Giornate</strong><span data-hf-id="hf-zai2" class="tenue">Ambulatorio, a 4,7 km da casa</span><span data-hf-id="hf-8oc2">Via Pietro Calvi 36</span></div><div data-hf-id="hf-pymf" class="azioni"><button data-hf-id="hf-cjcc" type="button" class="bottone">Prenota una visita</button><a data-hf-id="hf-f9ly" class="bottone-leggero bottone-icona" href="#"><svg data-hf-id="hf-0p7j" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-qc7c" d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></a><button data-hf-id="hf-gjcp" type="button" class="bottone-leggero bottone-icona"><svg data-hf-id="hf-0awi" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-0dqq" d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path data-hf-id="hf-tuia" d="M9 3v15M15 6v15"></path></svg></button></div></li>
+                          <li data-hf-id="hf-e6nf" class="struttura" id="s5-struttura-3"><span data-hf-id="hf-a2kk" class="icona-documento"><svg data-hf-id="hf-zwlh" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-3m7f" d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle data-hf-id="hf-ks70" cx="12" cy="9" r="2.5"></circle></svg></span><div data-hf-id="hf-3i9x" class="struttura-testo"><strong data-hf-id="hf-czkv">Poliambulatorio - Via Sassi</strong><span data-hf-id="hf-ba9z" class="tenue">Ambulatorio, a 5,7 km da casa</span><span data-hf-id="hf-vksq">Via Giuseppe Antonio Sassi 4</span></div><div data-hf-id="hf-qcxg" class="azioni"><button data-hf-id="hf-bcf9" type="button" class="bottone">Prenota una visita</button><button data-hf-id="hf-teuq" type="button" class="bottone-leggero bottone-icona" disabled=""><svg data-hf-id="hf-ziag" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-p5a9" d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></button><button data-hf-id="hf-r6x9" type="button" class="bottone-leggero bottone-icona"><svg data-hf-id="hf-z3zf" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-0s1r" d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path data-hf-id="hf-u8tb" d="M9 3v15M15 6v15"></path></svg></button></div></li>
+                        </ul></section></div>
+                      </div>
+                    </section>
+                  </main>
+                </div>
+              </div>
+
+              <!-- Lettore del foglietto AIFA (sopra il portale, poi sparisce) -->
+              <div data-hf-id="hf-g6vd" class="lettore vista-leggi" id="s5-lettore">
+                <div data-hf-id="hf-7ath" class="lettore-testa"><button data-hf-id="hf-v1dw" type="button" class="lettore-indietro"><svg data-hf-id="hf-pot5" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-u3ke" d="M15 6l-6 6 6 6"></path></svg><span data-hf-id="hf-cdop" class="solo-computer">Torna alle prescrizioni</span></button><span data-hf-id="hf-f87z" class="referto-marchio piccolo-marchio">R</span><div data-hf-id="hf-np91" class="lettore-titolo"><strong data-hf-id="hf-e7gu">Foglietto illustrativo · Triatec</strong><span data-hf-id="hf-oh65">ramipril · Sanofi s.r.l.</span></div><button data-hf-id="hf-o1b2" type="button" class="lettore-attiva-domande solo-computer"><svg data-hf-id="hf-q346" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-n5uc" d="M4 5h16v11H8l-4 4z"></path></svg>Chiudi le domande</button></div>
+                <div data-hf-id="hf-15f3" class="lettore-strumenti"><div data-hf-id="hf-y9t3" class="lettore-gruppo"><button data-hf-id="hf-m52g" type="button" class="quadrato" disabled=""><svg data-hf-id="hf-qhf7" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-c3v6" d="M15 6l-6 6 6 6"></path></svg></button><span data-hf-id="hf-np1n" class="lettore-pagina"><span data-hf-id="hf-410o" class="solo-computer">Pagina </span>1 di 13</span><button data-hf-id="hf-3ggb" type="button" class="quadrato"><svg data-hf-id="hf-qvq8" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-lmqx" d="M9 6l6 6-6 6"></path></svg></button></div><div data-hf-id="hf-pl1j" class="lettore-gruppo"><span data-hf-id="hf-rgyo" class="tenue piccolo solo-computer">Grandezza del testo</span><button data-hf-id="hf-iih0" type="button" class="quadrato">A−</button><span data-hf-id="hf-rccj" class="lettore-zoom solo-computer">100%</span><button data-hf-id="hf-yw27" type="button" class="quadrato">A+</button></div><div data-hf-id="hf-kj8a" class="lettore-gruppo solo-computer"><a data-hf-id="hf-fmzo" class="bottone-leggero" href="#"><svg data-hf-id="hf-w0p6" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-nbvw" d="M6 9V3h12v6"></path><rect data-hf-id="hf-25yt" x="4" y="9" width="16" height="8" rx="2"></rect><path data-hf-id="hf-wap0" d="M7 14h10v7H7z"></path></svg>Stampa</a><a data-hf-id="hf-jsfp" class="bottone-leggero" href="#"><svg data-hf-id="hf-vme5" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-uwp9" d="M12 4v12M7 11l5 5 5-5M5 20h14"></path></svg>Scarica il PDF</a></div></div>
+                <div data-hf-id="hf-nk7r" class="lettore-corpo">
+                  <nav data-hf-id="hf-s6nj" class="lettore-sezioni"><span data-hf-id="hf-2pht" class="lettore-sezioni-titolo">Sezioni</span><span data-hf-id="hf-nzq9" class="lettore-foglio tenue piccolo">TRIATEC 5 mg compresse</span><button data-hf-id="hf-28e1" type="button" aria-current="true" id="s5-sezione-1"><span data-hf-id="hf-1g36" class="lettore-sezione-numero">1</span><span data-hf-id="hf-o596">Cos’è TRIATEC e a cosa serve</span></button><button data-hf-id="hf-ahtb" type="button"><span data-hf-id="hf-1ue7" class="lettore-sezione-numero">2</span><span data-hf-id="hf-zhc6">Cosa deve sapere prima di prendere TRIATEC</span></button><button data-hf-id="hf-w79r" type="button"><span data-hf-id="hf-28p8" class="lettore-sezione-numero">3</span><span data-hf-id="hf-m3kw">Come prendere TRIATEC</span></button><button data-hf-id="hf-vsyq" type="button"><span data-hf-id="hf-2n09" class="lettore-sezione-numero">4</span><span data-hf-id="hf-ge9r">Possibili effetti indesiderati</span></button><button data-hf-id="hf-venp" type="button"><span data-hf-id="hf-31ba" class="lettore-sezione-numero">5</span><span data-hf-id="hf-riph">Come conservare TRIATEC</span></button><button data-hf-id="hf-y6sw" type="button"><span data-hf-id="hf-3fmb" class="lettore-sezione-numero">6</span><span data-hf-id="hf-94ae">Contenuto della confezione e altre informazioni</span></button></nav>
+                  <div data-hf-id="hf-2x0v" class="lettore-vista"><p class="lettore-citata" id="s5-citata"><span class="pastiglia pastiglia-referto">Citata nella risposta</span>Sezione 1 · Cos’è TRIATEC e a cosa serve</p><div data-hf-id="hf-0inn" class="pagina-pdf"><img data-hf-id="hf-zn7v" id="s5-pdf" src="assets/ui/foglietto-triatec-p1.png" alt="Pagina 1 del foglietto illustrativo del Triatec (AIFA)" /></div></div>
+                  <aside data-hf-id="hf-qrvs" class="lettore-domande" id="s5-domande">
+                    <div data-hf-id="hf-ke7u" class="lettore-domande-testa"><span data-hf-id="hf-l4v3" class="referto-marchio piccolo-marchio">R</span><div data-hf-id="hf-y7yw"><strong data-hf-id="hf-rs92">Domande su questo foglietto</strong><span data-hf-id="hf-if6c">Rispondo solo con ciò che c'è scritto</span></div></div>
+                    <div data-hf-id="hf-ijgc" class="lettore-domande-corpo" id="s5-corpo-domande">
+                      <div data-hf-id="hf-8665" class="referto-box" id="s5-intro"><p data-hf-id="hf-zu9i">Fammi una domanda su Triatec. Ti dico cosa dice il foglietto e in quale sezione trovarlo. Non do consigli: per quelli c'è il medico o il farmacista.</p></div>
+                      <div data-hf-id="hf-7qpf" class="referto-scambio" id="s5-scambio"><p data-hf-id="hf-6me0" class="referto-domanda">A cosa serve?</p><section data-hf-id="hf-1wzt" class="referto-box"><p data-hf-id="hf-hz75" class="referto-attesa" id="s5-attesa"><span data-hf-id="hf-gx8m" class="rotella" id="s5-rotella"></span>Cerco la risposta nel foglietto… può servire mezzo minuto.</p><p class="s5-scrive" id="s5-risposta">Il foglietto dice che Triatec contiene ramipril, un ACE inibitore. Può essere usato per trattare la pressione alta del sangue (ipertensione), per ridurre il rischio di un attacco cardiaco o di un ictus, per ridurre il rischio o ritardare il peggioramento di problemi renali e per l'insufficienza cardiaca.</p><button type="button" class="referto-fonte" id="s5-fonte"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg>Sezione 1 · Cos’è TRIATEC e a cosa serve</button></section></div>
+                    </div>
+                    <div data-hf-id="hf-rx9t" class="referto-piede"><div data-hf-id="hf-qyfv" class="referto-suggerimenti" id="s5-suggerimenti"><button data-hf-id="hf-2f0e" type="button" class="referto-chip" id="s5-chip">A cosa serve?</button><button data-hf-id="hf-cziu" type="button" class="referto-chip">Come lo prendo?</button><button data-hf-id="hf-an4i" type="button" class="referto-chip">Se dimentico una dose?</button><button data-hf-id="hf-xp0d" type="button" class="referto-chip">Posso prenderlo con altri medicinali?</button></div><form data-hf-id="hf-na6z" class="referto-chiedi"><input data-hf-id="hf-arij" placeholder="Scrivi la tua domanda" type="text" value="" /><button data-hf-id="hf-c83p" type="button" class="referto-invia"><svg data-hf-id="hf-o3l1" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-u4hz" d="M4 12l16-8-6 16-2-7z"></path></svg></button></form><span data-hf-id="hf-wtkw" class="tenue piccolo">Non è un consiglio di Referto. Per le urgenze chiama il <strong data-hf-id="hf-k6p2">112</strong>.</span></div>
+                  </aside>
+                </div>
+                <div data-hf-id="hf-ik4v" class="lettore-piede"><span data-hf-id="hf-ok11">Fonte: Banca Dati Farmaci AIFA, documento ufficiale · <a data-hf-id="hf-hj00" href="#">Apri sul sito AIFA</a></span><span data-hf-id="hf-h3dl">Per dubbi sulla terapia parlane con il medico o con il farmacista.</span></div>
+              </div>
+
+              <!-- Pannello della mappa della prima struttura (FinestraMappa): entra da destra -->
+              <div data-hf-id="hf-luir" class="velo-laterale" id="s5-velo">
+                <div data-hf-id="hf-n5b0" class="pannello-mappa" id="s5-finestra-mappa">
+                  <div data-hf-id="hf-zkus" class="pannello-mappa-testa"><div data-hf-id="hf-p2im" class="pannello-mappa-titolo"><h2 data-hf-id="hf-8759">Trust medical Polispecialistico Bazzini</h2><p class="tenue" id="s5-mappa-descrizione">Ambulatorio, a 2,3 km da casa</p></div><button data-hf-id="hf-pcqj" type="button" class="bottone-leggero"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>Chiudi</button></div>
+                  <div data-hf-id="hf-owt7" class="mappa">
+                    <img id="s5-mappa-img" src="assets/mappa/positron-bazzini.png" alt="" data-layout-ignore />
+                    <div id="s5-zoom"><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12M6 12h12"></path></svg></span><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"></path></svg></span></div>
+                    <svg data-hf-id="hf-lf9d" id="s5-segnaposto" viewBox="0 0 36 48" aria-hidden="true"><path data-hf-id="hf-v64x" d="M18 46C18 46 33 29 33 17A15 15 0 0 0 3 17c0 12 15 29 15 29z" fill="currentColor" stroke="#fff" stroke-width="2"></path><circle data-hf-id="hf-v626" cx="18" cy="17" r="6" fill="#fff"></circle></svg>
+                    <div id="s5-anello-pin"></div>
+                    <span data-hf-id="hf-9zu2" id="s5-attribuzione">OpenFreeMap © OpenMapTiles Data from OpenStreetMap</span>
+                  </div>
+                  <p data-hf-id="hf-bmk7" class="tenue piccolo pannello-mappa-aiuto">Trascina la mappa per spostarti, usa + e − per ingrandire.</p>
+                  <dl class="pannello-mappa-dati" id="s5-mappa-dati">
+                    <div><dt><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></dt><dd>Via Antonio Bazzini 24</dd></div>
+                    <div><dt><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></dt><dd>lun-ven 08:00-19:30; sab 08:00-12:30; dom chiuso</dd></div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-ctz3" class="s5-sottopancia" id="s5-sp1"><span data-hf-id="hf-9766" class="s5-r">R</span><div data-hf-id="hf-x11t"><strong data-hf-id="hf-n3gs">AIFA drug database</strong><span data-hf-id="hf-chox">The drug in the report, from the official source</span></div></div>
+        <div data-hf-id="hf-gqd1" class="s5-sottopancia s5-a-destra" id="s5-sp3"><span data-hf-id="hf-78nm" class="s5-r">R</span><div data-hf-id="hf-xfcu"><strong data-hf-id="hf-pitz">Cardiology clinics</strong><span data-hf-id="hf-in2g">The nearest to home, from the report’s specialty</span></div></div>
+        <div data-hf-id="hf-npgq" class="s5-sottopancia" id="s5-sp4"><span data-hf-id="hf-7myn" class="s5-r">R</span><div data-hf-id="hf-w8fr"><strong data-hf-id="hf-b6u0">On the map</strong><span data-hf-id="hf-tkkz">Data © OpenStreetMap contributors · map by OpenFreeMap</span></div></div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [1.103, 0.9], [3.297, 3.43], [4.87, 4.42], [6.08, 5.93], [7.21, 6.61], [8.699, 10.03], [9.045, 10.72], [10.694, 12.93], [12.29, 14.79], [13.753, 21.86], [15.761, 23.61], [17.596, 26.14], [18.819, 26.85], [21.306, 32.03]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: 0 = 74,1 s del video. Voce 05 a +1,0 s.
+        const radice = document.getElementById("s5-fondo").parentElement;
+
+        // La risposta del foglietto si scrive parola per parola.
+        const risposta = document.getElementById("s5-risposta");
+        risposta.innerHTML = risposta.textContent
+          .split(" ")
+          .map((parola) => `<span class="s5-parola" data-layout-allow-occlusion>${parola}</span>`)
+          .join(" ");
+
+        // Il gettone «ramipril» parte dalla parola del referto e arriva sul nome della
+        // scheda AIFA. Le posizioni si misurano qui, senza trasformazioni (offsetTop),
+        // mostrando per un attimo gli antenati nascosti: con la scena nascosta
+        // (display: none) varrebbero zero.
+        const posizione = (el) => {
+          let x = 0;
+          let y = 0;
+          for (let nodo = el; nodo && nodo !== radice; nodo = nodo.offsetParent) {
+            x += nodo.offsetLeft;
+            y += nodo.offsetTop;
+          }
+          return { x: x + el.offsetWidth / 2, y: y + el.offsetHeight / 2 };
+        };
+        const nascosti = [];
+        for (let nodo = radice; nodo && nodo !== document.documentElement; nodo = nodo.parentElement) {
+          if (getComputedStyle(nodo).display === "none") {
+            nascosti.push([nodo, nodo.style.display]);
+            nodo.style.display = "block";
+          }
+        }
+        // Chat del foglietto: dopo la domanda i suggerimenti si chiudono (come nell'app
+        // dopo l'invio) e il pannello scorre fino in fondo alla risposta. Si misura con
+        // i suggerimenti già chiusi e la risposta già scritta.
+        const corpoDomande = document.getElementById("s5-corpo-domande");
+        const suggerimenti = document.getElementById("s5-suggerimenti");
+        const attesa = document.getElementById("s5-attesa");
+        const displayAttesa = attesa.style.display;
+        suggerimenti.style.display = "none";
+        attesa.style.display = "none";
+        const altoCorpo = posizione(corpoDomande).y - corpoDomande.offsetHeight / 2;
+        const finestraDomande = corpoDomande.clientHeight - 32;
+        const fondoDi = (el) => posizione(el).y + el.offsetHeight / 2 - altoCorpo - 16;
+        const paroleRisposta = [...document.querySelectorAll("#s5-risposta .s5-parola")].map(fondoDi);
+        const fondoFonte = fondoDi(document.getElementById("s5-fonte"));
+        suggerimenti.style.display = "";
+        attesa.style.display = displayAttesa;
+        const parolaReferto = posizione(document.getElementById("s5-farmaco"));
+        const nomeScheda = posizione(document.getElementById("s5-aifa-nome"));
+        for (const [nodo, display] of nascosti) nodo.style.display = display;
+        // La scheda AIFA finisce spostata di 420 px a destra (vedi sotto).
+        const arrivo = { x: nomeScheda.x + 420, y: nomeScheda.y };
+
+        const tl = gsap.timeline({ paused: true });
+
+        // Punto dello schermo (1440×900) → camera; inquadratura con scala data.
+        const inquadra = (x, y, versoX, versoY, scala) => ({
+          x: versoX - (240 + x) * scala,
+          y: versoY - (112 + y) * scala,
+          scale: scala,
+        });
+        const sottopancia = (sel, da, a) => {
+          tl.fromTo(sel, { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, da);
+          tl.to(sel, { opacity: 0, y: -12, duration: 0.35, ease: "power2.in" }, a);
+        };
+
+        tl.fromTo("#s5-fondo", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power1.out" }, 0);
+
+        // «Nel referto c'è un farmaco: il ramipril.»
+        tl.fromTo("#s5-medico", { opacity: 0, y: 50, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" }, 0.5);
+        tl.to("#s5-farmaco", { backgroundColor: "rgba(185, 220, 205, 1)", duration: 0.4 }, 3.25);
+        sottopancia("#s5-sp1", 1.2, 8.2);
+
+        // «Referto lo trova nel prontuario ufficiale dell'AIFA»: il nome esce dal referto,
+        // vola con un arco fino alla scheda e si posa sul suo titolo.
+        tl.fromTo(
+          "#s5-gettone",
+          { opacity: 0, x: parolaReferto.x, y: parolaReferto.y, xPercent: -50, yPercent: -50, scale: 0.6 },
+          { opacity: 1, scale: 1.12, duration: 0.3, ease: "back.out(2)" },
+          4.6,
+        );
+        // fromTo con valori di partenza espliciti: con un salto (anteprima o render a pezzi)
+        // un .to() leggerebbe valori sbagliati e la nota sparirebbe per un attimo.
+        tl.fromTo("#s5-medico", { x: 0, scale: 1, opacity: 1 }, { x: -480, scale: 0.78, opacity: 0.55, duration: 0.9, ease: "power3.inOut", immediateRender: false }, 4.8);
+        tl.fromTo("#s5-aifa", { opacity: 0, x: 900 }, { opacity: 1, x: 420, duration: 0.9, ease: "power3.out" }, 5.0);
+        tl.to("#s5-gettone", { x: arrivo.x, duration: 1.0, ease: "power2.inOut" }, 4.95);
+        tl.to("#s5-gettone", {
+          keyframes: { y: [parolaReferto.y, Math.min(parolaReferto.y, arrivo.y) - 140, arrivo.y], easeEach: "sine.inOut" },
+          duration: 1.0,
+        }, 4.95);
+        tl.to("#s5-gettone", { scale: 1, duration: 0.3, ease: "power2.out" }, 5.65);
+        tl.to("#s5-gettone", { opacity: 0, duration: 0.25, ease: "power1.in" }, 6.0);
+        tl.to("#s5-aifa-nome", { backgroundColor: "rgba(185, 220, 205, 1)", duration: 0.2 }, 5.95);
+        tl.to("#s5-aifa-nome", { backgroundColor: "rgba(185, 220, 205, 0)", duration: 0.8, ease: "power1.inOut" }, 6.6);
+        tl.fromTo("#s5-trovato", { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2)" }, 7.0);
+
+        // «…e apre il foglietto illustrativo»: entra la finestra con il lettore vero.
+        tl.fromTo("#s5-medico", { opacity: 0.55, y: 0 }, { opacity: 0, y: -40, duration: 0.5, ease: "power2.in", immediateRender: false }, 8.1);
+        tl.fromTo("#s5-aifa", { opacity: 1, y: 0 }, { opacity: 0, y: -40, duration: 0.5, ease: "power2.in", immediateRender: false }, 8.1);
+        tl.fromTo("#s5-finestra", { opacity: 0, y: 80, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" }, 8.35);
+        tl.fromTo("#s5-pdf", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 8.9);
+
+        // «…dove Giovanna può fare le sue domande»: la camera va sulle domande.
+        tl.fromTo("#s5-camera", { x: 0, y: 0, scale: 1 }, { ...inquadra(1240, 450, 1300, 540, 1.15), duration: 1.3, ease: "power3.inOut" }, 10.5);
+        // «…like what it is for.»: la domanda, poi la risposta dal foglietto con la sua sezione.
+        tl.to("#s5-chip", { scale: 0.92, backgroundColor: "#d4ebe1", duration: 0.06 }, 12.33);
+        tl.to("#s5-chip", { scale: 1, duration: 0.1, ease: "back.out(2)" }, 12.39);
+        tl.fromTo("#s5-scambio", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 12.42);
+        tl.fromTo("#s5-rotella", { rotation: 0 }, { rotation: 360, duration: 0.3, ease: "none" }, 12.44);
+        // «The answer comes straight from the leaflet, with the section where to find it.»
+        tl.to("#s5-attesa", { opacity: 0, duration: 0.05 }, 12.72);
+        tl.set("#s5-attesa", { display: "none" }, 12.77);
+        tl.set("#s5-suggerimenti", { display: "none" }, 12.42);
+        tl.fromTo("#s5-risposta .s5-parola", { opacity: 0 }, { opacity: 1, duration: 0.03, ease: "none", stagger: 0.32 / 46 }, 12.77);
+        // Il pannello segue la risposta mentre si scrive, poi mostra la sezione citata.
+        let scorsoDomande = 0;
+        const scendiDomande = (fondo, t, durata, ease) => {
+          const a = Math.max(0, fondo + 12 - finestraDomande);
+          if (a <= scorsoDomande + 1) return;
+          tl.fromTo(["#s5-intro", "#s5-scambio"], { y: -scorsoDomande }, { y: -a, duration: durata, ease, immediateRender: false }, t);
+          scorsoDomande = a;
+        };
+        const nParole = paroleRisposta.length;
+        for (let i = 3; i < nParole; i += 4) {
+          scendiDomande(paroleRisposta[i], 12.77 + (0.32 * i) / nParole, (0.32 * 4) / nParole, "none");
+        }
+        scendiDomande(fondoFonte, 13.13, 0.06, "power2.out");
+        tl.fromTo("#s5-fonte", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.08 }, 13.15);
+        tl.to("#s5-fonte", { boxShadow: "0 0 0 6px rgba(23, 107, 88, 0.18)", scale: 1.05, duration: 0.08, ease: "power2.out" }, 13.24);
+        tl.to("#s5-fonte", { scale: 1, duration: 0.06 }, 13.32);
+        tl.fromTo("#s5-sezione-1", { boxShadow: "0 0 0 0 rgba(23, 107, 88, 0.45)" }, { boxShadow: "0 0 0 6px rgba(23, 107, 88, 0)", duration: 0.12, ease: "power1.out" }, 13.24);
+        tl.fromTo("#s5-citata", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.08 }, 13.28);
+
+        // «Il medico chiede una nuova visita cardiologica?»: torna il portale, con le strutture.
+        tl.to("#s5-lettore", { opacity: 0, duration: 0.2, ease: "power1.inOut" }, 13.66);
+        tl.to("#s5-camera", { ...inquadra(850, 520, 960, 560, 1.22), duration: 1.4, ease: "power3.inOut" }, 13.7);
+        tl.fromTo("#s5-risultato", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.4);
+        tl.fromTo(
+          ["#s5-struttura-1", "#s5-struttura-2", "#s5-struttura-3"],
+          { opacity: 0, x: 30 },
+          { opacity: 1, x: 0, duration: 0.45, ease: "power2.out", stagger: 0.2 },
+          15.0,
+        );
+        // «Ecco le strutture di cardiologia più vicine»: la più vicina in evidenza.
+        tl.to("#s5-struttura-1", { borderColor: "#176b58", boxShadow: "0 0 0 5px rgba(23, 107, 88, 0.16)", duration: 0.4 }, 17.6);
+        sottopancia("#s5-sp3", 14.0, 19.55);
+
+        // «…sulla mappa»: il pannello della mappa della struttura più vicina entra
+        // da destra, come nel portale; la camera lo segue e lo ingrandisce.
+        tl.to("#s5-apri-mappa", { scale: 0.88, duration: 0.12 }, 19.6);
+        tl.to("#s5-apri-mappa", { scale: 1, duration: 0.22, ease: "back.out(2)" }, 19.72);
+        // Si scurisce solo il velo: il pannello entra già pieno, scorrendo.
+        tl.set("#s5-velo", { opacity: 1 }, 19.9);
+        tl.fromTo("#s5-velo", { backgroundColor: "rgba(27, 36, 51, 0)" }, { backgroundColor: "rgba(27, 36, 51, 0.32)", duration: 0.35, ease: "power1.out" }, 19.9);
+        tl.fromTo("#s5-finestra-mappa", { x: 520 }, { x: 0, duration: 0.6, ease: "expo.out" }, 19.9);
+        tl.to("#s5-camera", { ...inquadra(1180, 420, 1535, 515, 1.25), duration: 1.0, ease: "power3.inOut" }, 19.9);
+        tl.fromTo("#s5-segnaposto", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.6, ease: "bounce.out" }, 20.85);
+        sottopancia("#s5-sp4", 20.6, 22.4);
+        // «…on a map.» e la pausa che segue: la mappa resta e si avvicina alla
+        // struttura, il segnaposto pulsa, poi si accendono distanza, indirizzo e orari.
+        tl.fromTo("#s5-mappa-img", { scale: 1 }, { scale: 1.15, transformOrigin: "239px 279px", duration: 1.5, ease: "sine.inOut" }, 20.05);
+        // L'anello parte da opacità 0: un fromTo che parte visibile lo lascerebbe acceso prima del suo tempo.
+        tl.fromTo("#s5-anello-pin", { opacity: 0, scale: 0.4 }, { opacity: 0.85, duration: 0.01 }, 20.94);
+        tl.to("#s5-anello-pin", { opacity: 0, scale: 2.2, duration: 0.6, ease: "power2.out", repeat: 1 }, 20.95);
+        tl.fromTo("#s5-mappa-descrizione", { backgroundColor: "rgba(185, 220, 205, 0)" }, { backgroundColor: "rgba(185, 220, 205, 1)", duration: 0.3 }, 21.0);
+        tl.fromTo("#s5-mappa-dati", { borderColor: "#dde3ea", boxShadow: "0 0 0 0 rgba(23, 107, 88, 0)" }, { borderColor: "#176b58", boxShadow: "0 0 0 5px rgba(23, 107, 88, 0.16)", duration: 0.4 }, 21.2);
+
+        riallinea(tl);
+        window.__timelines["scena-05-integrazioni"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

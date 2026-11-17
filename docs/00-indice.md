@@ -22,8 +22,9 @@ come vault in Obsidian, la cartella `docs/` diventa un grafo navigabile (vedi
 | `resources/` | App Python di riferimento (Flask), dataset, script, prove |
 | `docs/` | Questa documentazione |
 
-Le slide del prodotto sono in `resources/slide/` ([[19-slide-prodotto]]), la cover
-della submission in `resources/cover/` ([[20-cover]]).
+Il video di presentazione è in `resources/video/` ([[17-video-presentazione]]),
+le slide del prodotto in `resources/slide/` ([[19-slide-prodotto]]) e la cover
+in `resources/cover/` ([[20-cover]]).
 
 Le note dalla 02 alla 12 descrivono l'app Python: i loro percorsi
 (`glossario/`, `static/`, `traces/` …) sono relativi a `resources/`.
@@ -46,8 +47,10 @@ L'app Python verrà portata un pezzo alla volta in backend e frontend.
 10. Specifiche delle prossime funzionalità:
     [[specifica-terminologia]], [[specifica-visite-specialisti]],
     [[specifica-storico-sessione]], [[specifica-multilingua]].
-11. [[19-slide-prodotto]]: le slide che presentano il prodotto (HyperFrames, modalità presentazione).
-12. [[20-cover]]: l'immagine di copertina della submission.
+11. [[17-video-presentazione]]: il video per l'hackathon (HyperFrames, voce generata).
+12. [[18-valore-di-business]]: ricerca di mercato e benefici per studi medici e SSN.
+13. [[19-slide-prodotto]]: le slide che presentano il prodotto (HyperFrames, modalità presentazione).
+14. [[20-cover]]: l'immagine di copertina della submission.
 
 ## Mappa
 
@@ -86,7 +89,12 @@ graph LR
   specStorico --> farmaci
   specStorico --> backend
   specStorico --> frontend
+  panoramica --> video[17-video-presentazione]
+  video --> frontend
+  panoramica --> business[18-valore-di-business]
+  business --> problemi
   panoramica --> slide[19-slide-prodotto]
+  slide --> video
   slide --> frontend
   slide --> cover[20-cover]
 ```
@@ -113,5 +121,6 @@ I file Python sono in `resources/`.
 | `cluster_agent_task.py`, `datasets/` | Esecuzione batch e dataset | [[10-dataset-e-valutazione]] |
 | `test_app.py` | Test automatici | [[12-test-e-sviluppo]] |
 | `check-usage-app/` | Dashboard dell'usage dell'API AMD | [[11-modelli-e-ollama]] |
+| `video/` | Video di presentazione (HyperFrames) | [[17-video-presentazione]] |
 | `slide/` | Slide del prodotto (HyperFrames) | [[19-slide-prodotto]] |
 | `cover/` | Cover della submission (HyperFrames) | [[20-cover]] |

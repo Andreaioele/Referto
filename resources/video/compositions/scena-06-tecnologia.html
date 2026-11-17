@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scena 6 del copione (come funziona). Tempi locali: 0 = 97,8 s del video;
+      voce 06 a +1,0 s. Il diagramma segue docs/15-backend.md: portale e widget
+      → backend NestJS (Vercel) → agente (Mother agent su Evolus o motore diretto
+      del backend) con prontuario e glossario → modello DeepSeek-V4.1-Flash su
+      AMD Token Factory. Le strutture le dà il backend, dall'area del referto.
+    -->
+    <template>
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+          color: #eef4f1;
+        }
+        #s6-fondo {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1400px 900px at 60% 45%, #143a31 0%, #0b1512 72%);
+        }
+        #s6-camera {
+          position: absolute;
+          inset: 0;
+          transform-origin: 0 0;
+        }
+        #s6-linee {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 1920px;
+          height: 1080px;
+        }
+        #s6-linee path {
+          fill: none;
+          stroke: #3f8f78;
+          stroke-width: 4;
+          stroke-linecap: round;
+        }
+        .s6-nodo {
+          position: absolute;
+          z-index: 2;
+          width: 380px;
+          height: 132px;
+          margin: -66px 0 0 -190px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 6px;
+          padding: 0 30px;
+          border: 2px solid #2d5c4f;
+          border-radius: 24px;
+          background: #11231e;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+          opacity: 0;
+        }
+        .s6-nodo strong {
+          font-size: 33px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+        .s6-nodo span {
+          color: #9fdcc6;
+          font-size: 22px;
+          font-weight: 700;
+        }
+        #s6-agente {
+          border-color: #3f9a80;
+          background: #15342b;
+        }
+        .s6-strumento {
+          width: 340px;
+          height: 112px;
+          margin: -56px 0 0 -170px;
+          border-style: dashed;
+        }
+        .s6-strumento strong {
+          font-size: 29px;
+        }
+        .s6-strumento span {
+          font-size: 20px;
+        }
+        /* AMD: la cornice si accende attorno al modello */
+        #s6-amd {
+          position: absolute;
+          left: 1440px;
+          top: 230px;
+          width: 440px;
+          height: 480px;
+          border: 3px solid #e8e8e8;
+          border-radius: 32px;
+          background: rgba(255, 255, 255, 0.04);
+          opacity: 0;
+        }
+        #s6-amd-nome {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 34px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+        #s6-amd-nome strong {
+          font-size: 86px;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+          line-height: 1;
+          color: #ffffff;
+        }
+        #s6-amd-nome span {
+          font-size: 30px;
+          font-weight: 800;
+          color: #f0f0f0;
+        }
+        .s6-impulso {
+          position: absolute;
+          z-index: 1;
+          left: 0;
+          top: 0;
+          width: 18px;
+          height: 18px;
+          margin: -9px 0 0 -9px;
+          border-radius: 50%;
+          background: #8fd6bd;
+          box-shadow: 0 0 18px 6px rgba(143, 214, 189, 0.55);
+          opacity: 0;
+        }
+        #s6-titolo {
+          position: absolute;
+          left: 110px;
+          top: 92px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          opacity: 0;
+        }
+        #s6-titolo span {
+          color: #8fd6bd;
+          font-size: 26px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+        #s6-titolo strong {
+          font-size: 62px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+        }
+      </style>
+
+      <div data-hf-id="hf-jkvg" id="root" data-composition-id="scena-06-tecnologia" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-13cr" id="s6-fondo"></div>
+        <div data-hf-id="hf-27da" id="s6-camera">
+          <svg data-hf-id="hf-ye8y" id="s6-linee" viewBox="0 0 1920 1080" aria-hidden="true">
+            <path data-hf-id="hf-631r" id="s6-l-ab" d="M 340 440 L 560 440" />
+            <path data-hf-id="hf-esrx" id="s6-l-bc" d="M 940 440 L 1040 440" />
+            <path data-hf-id="hf-nqds" id="s6-l-cd" d="M 1420 440 L 1470 440" />
+            <path data-hf-id="hf-k6fg" id="s6-l-c1" d="M 1180 506 L 1180 600 L 1000 600 L 1000 724" />
+            <path data-hf-id="hf-fspn" id="s6-l-c2" d="M 1290 506 L 1290 600 L 1390 600 L 1390 724" />
+            <path data-hf-id="hf-d0qx" id="s6-l-b3" d="M 750 506 L 750 600 L 560 600 L 560 724" />
+          </svg>
+
+          <div data-hf-id="hf-n2se" class="s6-nodo" id="s6-portale" style="left: 190px; top: 440px; width: 300px; margin-left: -150px"><strong data-hf-id="hf-0yrj">Portal</strong><span data-hf-id="hf-b4gs">Referto widget · React</span></div>
+          <div data-hf-id="hf-5el3" class="s6-nodo" id="s6-backend" style="left: 750px; top: 440px"><strong data-hf-id="hf-16bd">Referto backend</strong><span data-hf-id="hf-foyc">NestJS · Vercel</span></div>
+          <div data-hf-id="hf-x335" class="s6-nodo" id="s6-agente" style="left: 1230px; top: 440px"><strong data-hf-id="hf-0k3y">Agent</strong><span data-hf-id="hf-sgyd">Evolus or direct engine</span></div>
+          <div data-hf-id="hf-05la" class="s6-nodo" id="s6-modello" style="left: 1660px; top: 440px; width: 380px"><strong data-hf-id="hf-bzve">Model</strong><span data-hf-id="hf-u7cy">DeepSeek-V4.1-Flash</span></div>
+
+          <div data-hf-id="hf-ghi0" class="s6-nodo s6-strumento" id="s6-prontuario" style="left: 1000px; top: 790px"><strong data-hf-id="hf-n3gs">AIFA drug database</strong><span data-hf-id="hf-yuyu">AIFA open data</span></div>
+          <div data-hf-id="hf-mwfw" class="s6-nodo s6-strumento" id="s6-glossario" style="left: 1390px; top: 790px"><strong data-hf-id="hf-kzi6">Medical glossary</strong><span data-hf-id="hf-dfj4">curated · HPO · Wikidata</span></div>
+          <div data-hf-id="hf-khy1" class="s6-nodo s6-strumento" id="s6-strutture" style="left: 560px; top: 790px"><strong data-hf-id="hf-xvf8">Healthcare facilities</strong><span data-hf-id="hf-vhgf">open data · OpenStreetMap</span></div>
+
+          <div data-hf-id="hf-ehtf" id="s6-amd"><div data-hf-id="hf-rwwv" id="s6-amd-nome"><strong data-hf-id="hf-6v1s">AMD</strong><span data-hf-id="hf-frqs">Token Factory</span></div></div>
+
+          <div data-hf-id="hf-dkzd" class="s6-impulso" id="s6-imp-1"></div>
+          <div data-hf-id="hf-hj3e" class="s6-impulso" id="s6-imp-2"></div>
+          <div class="s6-impulso" id="s6-imp-3"></div>
+        </div>
+
+        <div data-hf-id="hf-ivba" id="s6-titolo"><span data-hf-id="hf-jjh3">How it works</span><strong data-hf-id="hf-30u0">Behind the scenes</strong></div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [1.103, 1.103], [2.646, 2.533], [3.098, 2.963], [4.614, 4.483], [5.345, 4.973], [7.247, 7.503], [9.258, 7.973], [11.718, 10.323], [12.582, 10.823], [15.269, 13.753], [17.183, 15.123], [19.763, 17.573], [20.734, 18.803]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: 0 = 97,8 s del video. Voce 06 a +1,0 s.
+        const tl = gsap.timeline({ paused: true });
+
+        // Le linee si «disegnano»: lunghezze calcolate dai percorsi (non dal layout).
+        const traccia = (id, t, durata = 0.6) => {
+          const linea = document.getElementById(id);
+          const lunghezza = linea.getTotalLength();
+          tl.fromTo(
+            linea,
+            { strokeDasharray: lunghezza, strokeDashoffset: lunghezza },
+            { strokeDashoffset: 0, duration: durata, ease: "power2.inOut" },
+            t,
+          );
+        };
+        // Il pallino segue una spezzata a velocità costante e passa sotto i riquadri.
+        const viaggio = (sel, punti, t, durata) => {
+          const tratti = punti.slice(1).map((p, i) => Math.hypot(p[0] - punti[i][0], p[1] - punti[i][1]));
+          const totale = tratti.reduce((a, b) => a + b, 0);
+          const punto = (f) => {
+            let resto = f * totale;
+            for (let i = 0; i < tratti.length; i++) {
+              if (resto <= tratti[i] || i === tratti.length - 1) {
+                const k = tratti[i] ? Math.min(1, resto / tratti[i]) : 0;
+                return [punti[i][0] + (punti[i + 1][0] - punti[i][0]) * k, punti[i][1] + (punti[i + 1][1] - punti[i][1]) * k];
+              }
+              resto -= tratti[i];
+            }
+            return punti[punti.length - 1];
+          };
+          const el = document.querySelector(sel);
+          const stato = { f: 0 };
+          tl.set(sel, { x: punti[0][0], y: punti[0][1] }, t);
+          tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.15 }, t);
+          tl.to(stato, {
+            f: 1,
+            duration: durata,
+            ease: "power1.inOut",
+            onUpdate: () => {
+              const [x, y] = punto(stato.f);
+              gsap.set(el, { x, y });
+            },
+          }, t);
+          tl.to(sel, { opacity: 0, duration: 0.2 }, t + durata - 0.1);
+        };
+        const nodo = (sel, t) =>
+          tl.fromTo(sel, { opacity: 0, y: 26, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.5)" }, t);
+
+        tl.fromTo("#s6-fondo", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power1.out" }, 0);
+        tl.fromTo("#s6-titolo", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.9);
+
+        // «Dietro le quinte, un agente legge il referto…»
+        nodo("#s6-portale", 1.1);
+        nodo("#s6-backend", 1.6);
+        traccia("s6-l-ab", 1.8);
+        nodo("#s6-agente", 2.6);
+        traccia("s6-l-bc", 2.8, 0.4);
+        tl.to("#s6-agente", { borderColor: "#8fd6bd", boxShadow: "0 0 0 8px rgba(143, 214, 189, 0.16)", duration: 0.4 }, 3.3);
+        // Il referto attraversa il sistema fino all'agente.
+        viaggio("#s6-imp-1", [[340, 440], [1040, 440]], 3.4, 1.1);
+
+        // «…e consulta il prontuario dell'AIFA e il glossario medico.»
+        traccia("s6-l-c1", 5.1, 0.5);
+        nodo("#s6-prontuario", 5.35);
+        traccia("s6-l-c2", 7.0, 0.4);
+        nodo("#s6-glossario", 7.2);
+
+        // «Le strutture sanitarie arrivano dai dati aperti, a partire dall'area del referto.»
+        traccia("s6-l-b3", 9.2, 0.5);
+        nodo("#s6-strutture", 9.45);
+        tl.to("#s6-strutture", { borderColor: "#8fd6bd", duration: 0.4 }, 11.4);
+        // L'area scritta dall'agente torna al backend, che cerca le strutture.
+        viaggio("#s6-imp-2", [[1040, 440], [750, 440], [750, 600], [560, 600], [560, 724]], 12.5, 1.6);
+
+        // «E il modello linguistico gira su infrastruttura AMD, con AMD Token Factory.»
+        nodo("#s6-modello", 15.4);
+        traccia("s6-l-cd", 15.6, 0.3);
+        viaggio("#s6-imp-3", [[1420, 440], [1560, 440]], 15.8, 0.6);
+        tl.fromTo("#s6-amd", { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, 17.0);
+        tl.to("#s6-modello", { borderColor: "#e8e8e8", duration: 0.4 }, 17.2);
+        tl.fromTo("#s6-amd-nome", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 17.95);
+
+        // La camera si avvicina ad AMD: il diagramma resta tutto visibile. Lo zoom
+        // finisce durante la pausa dopo «Token Factory», prima che entri la scena 7.
+        tl.to("#s6-camera", { x: 960 - 1660 * 1.32, y: 540 - 440 * 1.32, scale: 1.32, duration: 2.2, ease: "power2.inOut" }, 18.6);
+
+        riallinea(tl);
+        window.__timelines["scena-06-tecnologia"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

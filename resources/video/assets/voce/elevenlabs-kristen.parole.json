@@ -1,0 +1,1736 @@
+[
+  {
+    "text": "Sinus",
+    "start": 0.18,
+    "end": 0.66,
+    "id": "w0"
+  },
+  {
+    "text": "rhythm,",
+    "start": 0.66,
+    "end": 1.67,
+    "id": "w1"
+  },
+  {
+    "text": "repolarization,",
+    "start": 1.67,
+    "end": 3.24,
+    "id": "w2"
+  },
+  {
+    "text": "arterial",
+    "start": 3.26,
+    "end": 3.87,
+    "id": "w3"
+  },
+  {
+    "text": "hypertension.",
+    "start": 3.92,
+    "end": 5.64,
+    "id": "w4"
+  },
+  {
+    "text": "Your",
+    "start": 5.82,
+    "end": 6.02,
+    "id": "w5"
+  },
+  {
+    "text": "medical",
+    "start": 6.02,
+    "end": 6.63,
+    "id": "w6"
+  },
+  {
+    "text": "report",
+    "start": 7.14,
+    "end": 7.26,
+    "id": "w7"
+  },
+  {
+    "text": "is",
+    "start": 7.26,
+    "end": 7.36,
+    "id": "w8"
+  },
+  {
+    "text": "all",
+    "start": 7.5,
+    "end": 7.73,
+    "id": "w9"
+  },
+  {
+    "text": "about",
+    "start": 7.73,
+    "end": 8.2,
+    "id": "w10"
+  },
+  {
+    "text": "you,",
+    "start": 8.2,
+    "end": 8.52,
+    "id": "w11"
+  },
+  {
+    "text": "yet",
+    "start": 8.7,
+    "end": 8.77,
+    "id": "w12"
+  },
+  {
+    "text": "often,",
+    "start": 8.77,
+    "end": 9.37,
+    "id": "w13"
+  },
+  {
+    "text": "it",
+    "start": 9.37,
+    "end": 9.53,
+    "id": "w14"
+  },
+  {
+    "text": "doesn't",
+    "start": 9.97,
+    "end": 10.14,
+    "id": "w15"
+  },
+  {
+    "text": "speak",
+    "start": 10.14,
+    "end": 10.57,
+    "id": "w16"
+  },
+  {
+    "text": "your",
+    "start": 10.57,
+    "end": 10.91,
+    "id": "w17"
+  },
+  {
+    "text": "language.",
+    "start": 10.91,
+    "end": 11.88,
+    "id": "w18"
+  },
+  {
+    "text": "Introducing",
+    "start": 12.06,
+    "end": 12.89,
+    "id": "w19"
+  },
+  {
+    "text": "Riferto.",
+    "start": 13.01,
+    "end": 14.08,
+    "id": "w20"
+  },
+  {
+    "text": "It",
+    "start": 14.08,
+    "end": 14.26,
+    "id": "w21"
+  },
+  {
+    "text": "takes",
+    "start": 14.26,
+    "end": 14.53,
+    "id": "w22"
+  },
+  {
+    "text": "your",
+    "start": 14.53,
+    "end": 14.79,
+    "id": "w23"
+  },
+  {
+    "text": "medical",
+    "start": 14.79,
+    "end": 15.09,
+    "id": "w24"
+  },
+  {
+    "text": "report",
+    "start": 15.58,
+    "end": 15.68,
+    "id": "w25"
+  },
+  {
+    "text": "and",
+    "start": 15.68,
+    "end": 15.81,
+    "id": "w26"
+  },
+  {
+    "text": "explains",
+    "start": 15.94,
+    "end": 16.44,
+    "id": "w27"
+  },
+  {
+    "text": "it",
+    "start": 16.44,
+    "end": 16.56,
+    "id": "w28"
+  },
+  {
+    "text": "in",
+    "start": 16.56,
+    "end": 16.74,
+    "id": "w29"
+  },
+  {
+    "text": "plain,",
+    "start": 16.74,
+    "end": 17.39,
+    "id": "w30"
+  },
+  {
+    "text": "everyday",
+    "start": 17.39,
+    "end": 18.14,
+    "id": "w31"
+  },
+  {
+    "text": "language",
+    "start": 18.14,
+    "end": 18.92,
+    "id": "w32"
+  },
+  {
+    "text": "without",
+    "start": 18.92,
+    "end": 19.28,
+    "id": "w33"
+  },
+  {
+    "text": "adding",
+    "start": 19.28,
+    "end": 19.32,
+    "id": "w34"
+  },
+  {
+    "text": "anything",
+    "start": 19.82,
+    "end": 20.16,
+    "id": "w35"
+  },
+  {
+    "text": "that",
+    "start": 20.34,
+    "end": 20.45,
+    "id": "w36"
+  },
+  {
+    "text": "wasn't",
+    "start": 20.45,
+    "end": 20.87,
+    "id": "w37"
+  },
+  {
+    "text": "already",
+    "start": 20.87,
+    "end": 21.17,
+    "id": "w38"
+  },
+  {
+    "text": "written",
+    "start": 21.66,
+    "end": 21.88,
+    "id": "w39"
+  },
+  {
+    "text": "by",
+    "start": 21.88,
+    "end": 22.02,
+    "id": "w40"
+  },
+  {
+    "text": "your",
+    "start": 22.02,
+    "end": 22.31,
+    "id": "w41"
+  },
+  {
+    "text": "doctor.",
+    "start": 22.31,
+    "end": 22.92,
+    "id": "w42"
+  },
+  {
+    "text": "Giovanna",
+    "start": 23.18,
+    "end": 23.66,
+    "id": "w43"
+  },
+  {
+    "text": "has",
+    "start": 23.66,
+    "end": 23.91,
+    "id": "w44"
+  },
+  {
+    "text": "just",
+    "start": 23.91,
+    "end": 24.01,
+    "id": "w45"
+  },
+  {
+    "text": "had",
+    "start": 24.01,
+    "end": 24.51,
+    "id": "w46"
+  },
+  {
+    "text": "a",
+    "start": 24.51,
+    "end": 24.57,
+    "id": "w47"
+  },
+  {
+    "text": "cardiology",
+    "start": 24.57,
+    "end": 25.4,
+    "id": "w48"
+  },
+  {
+    "text": "checkup,",
+    "start": 25.4,
+    "end": 26.04,
+    "id": "w49"
+  },
+  {
+    "text": "and",
+    "start": 26.22,
+    "end": 26.25,
+    "id": "w50"
+  },
+  {
+    "text": "her",
+    "start": 26.25,
+    "end": 26.46,
+    "id": "w51"
+  },
+  {
+    "text": "report",
+    "start": 26.46,
+    "end": 26.87,
+    "id": "w52"
+  },
+  {
+    "text": "is",
+    "start": 26.87,
+    "end": 27.02,
+    "id": "w53"
+  },
+  {
+    "text": "already",
+    "start": 27.02,
+    "end": 27.05,
+    "id": "w54"
+  },
+  {
+    "text": "available",
+    "start": 27.55,
+    "end": 28.16,
+    "id": "w55"
+  },
+  {
+    "text": "on",
+    "start": 28.16,
+    "end": 28.34,
+    "id": "w56"
+  },
+  {
+    "text": "her",
+    "start": 28.34,
+    "end": 28.53,
+    "id": "w57"
+  },
+  {
+    "text": "clinic's",
+    "start": 28.53,
+    "end": 29.13,
+    "id": "w58"
+  },
+  {
+    "text": "online",
+    "start": 29.13,
+    "end": 29.17,
+    "id": "w59"
+  },
+  {
+    "text": "portal.",
+    "start": 29.67,
+    "end": 30.28,
+    "id": "w60"
+  },
+  {
+    "text": "With",
+    "start": 30.46,
+    "end": 30.6,
+    "id": "w61"
+  },
+  {
+    "text": "a",
+    "start": 30.6,
+    "end": 30.68,
+    "id": "w62"
+  },
+  {
+    "text": "single",
+    "start": 30.68,
+    "end": 31.15,
+    "id": "w63"
+  },
+  {
+    "text": "click",
+    "start": 31.15,
+    "end": 31.29,
+    "id": "w64"
+  },
+  {
+    "text": "on",
+    "start": 31.29,
+    "end": 31.79,
+    "id": "w65"
+  },
+  {
+    "text": "explain",
+    "start": 31.79,
+    "end": 32.38,
+    "id": "w66"
+  },
+  {
+    "text": "this",
+    "start": 32.38,
+    "end": 32.73,
+    "id": "w67"
+  },
+  {
+    "text": "to",
+    "start": 32.73,
+    "end": 32.9,
+    "id": "w68"
+  },
+  {
+    "text": "me,",
+    "start": 32.9,
+    "end": 33.28,
+    "id": "w69"
+  },
+  {
+    "text": "Riferto",
+    "start": 33.38,
+    "end": 33.96,
+    "id": "w70"
+  },
+  {
+    "text": "gets",
+    "start": 33.96,
+    "end": 34.29,
+    "id": "w71"
+  },
+  {
+    "text": "to",
+    "start": 34.29,
+    "end": 34.79,
+    "id": "w72"
+  },
+  {
+    "text": "work.",
+    "start": 34.79,
+    "end": 35.28,
+    "id": "w73"
+  },
+  {
+    "text": "First,",
+    "start": 35.46,
+    "end": 35.8,
+    "id": "w74"
+  },
+  {
+    "text": "it",
+    "start": 35.87,
+    "end": 36,
+    "id": "w75"
+  },
+  {
+    "text": "provides",
+    "start": 36.04,
+    "end": 36.29,
+    "id": "w76"
+  },
+  {
+    "text": "a",
+    "start": 36.79,
+    "end": 36.82,
+    "id": "w77"
+  },
+  {
+    "text": "summary,",
+    "start": 36.82,
+    "end": 37.5,
+    "id": "w78"
+  },
+  {
+    "text": "followed",
+    "start": 37.51,
+    "end": 37.88,
+    "id": "w79"
+  },
+  {
+    "text": "by",
+    "start": 38.06,
+    "end": 38.07,
+    "id": "w80"
+  },
+  {
+    "text": "a",
+    "start": 38.07,
+    "end": 38.16,
+    "id": "w81"
+  },
+  {
+    "text": "clear,",
+    "start": 38.16,
+    "end": 38.82,
+    "id": "w82"
+  },
+  {
+    "text": "simple",
+    "start": 38.82,
+    "end": 39.39,
+    "id": "w83"
+  },
+  {
+    "text": "explanation",
+    "start": 39.39,
+    "end": 40.4,
+    "id": "w84"
+  },
+  {
+    "text": "generated",
+    "start": 40.43,
+    "end": 41.26,
+    "id": "w85"
+  },
+  {
+    "text": "in",
+    "start": 41.32,
+    "end": 41.47,
+    "id": "w86"
+  },
+  {
+    "text": "real",
+    "start": 41.47,
+    "end": 41.75,
+    "id": "w87"
+  },
+  {
+    "text": "time.",
+    "start": 41.84,
+    "end": 42.56,
+    "id": "w88"
+  },
+  {
+    "text": "The",
+    "start": 42.74,
+    "end": 42.75,
+    "id": "w89"
+  },
+  {
+    "text": "doctor's",
+    "start": 42.75,
+    "end": 43.24,
+    "id": "w90"
+  },
+  {
+    "text": "specific",
+    "start": 43.24,
+    "end": 43.57,
+    "id": "w91"
+  },
+  {
+    "text": "instructions",
+    "start": 44.07,
+    "end": 44.52,
+    "id": "w92"
+  },
+  {
+    "text": "are",
+    "start": 44.7,
+    "end": 44.74,
+    "id": "w93"
+  },
+  {
+    "text": "kept",
+    "start": 44.74,
+    "end": 45.03,
+    "id": "w94"
+  },
+  {
+    "text": "in",
+    "start": 45.03,
+    "end": 45.19,
+    "id": "w95"
+  },
+  {
+    "text": "a",
+    "start": 45.19,
+    "end": 45.24,
+    "id": "w96"
+  },
+  {
+    "text": "separate",
+    "start": 45.28,
+    "end": 45.53,
+    "id": "w97"
+  },
+  {
+    "text": "box,",
+    "start": 46.03,
+    "end": 46.25,
+    "id": "w98"
+  },
+  {
+    "text": "clearly",
+    "start": 46.38,
+    "end": 46.84,
+    "id": "w99"
+  },
+  {
+    "text": "linked",
+    "start": 46.84,
+    "end": 47.16,
+    "id": "w100"
+  },
+  {
+    "text": "to",
+    "start": 47.16,
+    "end": 47.34,
+    "id": "w101"
+  },
+  {
+    "text": "the",
+    "start": 47.34,
+    "end": 47.51,
+    "id": "w102"
+  },
+  {
+    "text": "original",
+    "start": 47.51,
+    "end": 48.06,
+    "id": "w103"
+  },
+  {
+    "text": "document.",
+    "start": 48.06,
+    "end": 48.84,
+    "id": "w104"
+  },
+  {
+    "text": "And",
+    "start": 49.02,
+    "end": 49.03,
+    "id": "w105"
+  },
+  {
+    "text": "if",
+    "start": 49.03,
+    "end": 49.16,
+    "id": "w106"
+  },
+  {
+    "text": "the",
+    "start": 49.16,
+    "end": 49.35,
+    "id": "w107"
+  },
+  {
+    "text": "report",
+    "start": 49.35,
+    "end": 49.74,
+    "id": "w108"
+  },
+  {
+    "text": "leaves",
+    "start": 49.74,
+    "end": 49.85,
+    "id": "w109"
+  },
+  {
+    "text": "any",
+    "start": 49.85,
+    "end": 50.35,
+    "id": "w110"
+  },
+  {
+    "text": "questions",
+    "start": 50.35,
+    "end": 50.91,
+    "id": "w111"
+  },
+  {
+    "text": "unanswered,",
+    "start": 50.91,
+    "end": 51.6,
+    "id": "w112"
+  },
+  {
+    "text": "Riferto",
+    "start": 51.81,
+    "end": 52.28,
+    "id": "w113"
+  },
+  {
+    "text": "points",
+    "start": 52.31,
+    "end": 52.76,
+    "id": "w114"
+  },
+  {
+    "text": "that",
+    "start": 52.76,
+    "end": 53.27,
+    "id": "w115"
+  },
+  {
+    "text": "out,",
+    "start": 53.27,
+    "end": 53.49,
+    "id": "w116"
+  },
+  {
+    "text": "too.",
+    "start": 53.62,
+    "end": 54.04,
+    "id": "w117"
+  },
+  {
+    "text": "Still",
+    "start": 54.22,
+    "end": 54.38,
+    "id": "w118"
+  },
+  {
+    "text": "have",
+    "start": 54.38,
+    "end": 54.56,
+    "id": "w119"
+  },
+  {
+    "text": "a",
+    "start": 54.63,
+    "end": 54.71,
+    "id": "w120"
+  },
+  {
+    "text": "question?",
+    "start": 54.71,
+    "end": 55.48,
+    "id": "w121"
+  },
+  {
+    "text": "Giovanna",
+    "start": 55.66,
+    "end": 56.17,
+    "id": "w122"
+  },
+  {
+    "text": "can",
+    "start": 56.2,
+    "end": 56.47,
+    "id": "w123"
+  },
+  {
+    "text": "ask",
+    "start": 56.47,
+    "end": 56.5,
+    "id": "w124"
+  },
+  {
+    "text": "in",
+    "start": 56.5,
+    "end": 56.99,
+    "id": "w125"
+  },
+  {
+    "text": "her",
+    "start": 56.99,
+    "end": 57.19,
+    "id": "w126"
+  },
+  {
+    "text": "own",
+    "start": 57.19,
+    "end": 57.46,
+    "id": "w127"
+  },
+  {
+    "text": "words.",
+    "start": 57.46,
+    "end": 58.2,
+    "id": "w128"
+  },
+  {
+    "text": "For",
+    "start": 58.38,
+    "end": 58.47,
+    "id": "w129"
+  },
+  {
+    "text": "instance,",
+    "start": 58.47,
+    "end": 59.21,
+    "id": "w130"
+  },
+  {
+    "text": "what",
+    "start": 59.7,
+    "end": 59.73,
+    "id": "w131"
+  },
+  {
+    "text": "is",
+    "start": 59.73,
+    "end": 59.91,
+    "id": "w132"
+  },
+  {
+    "text": "a",
+    "start": 59.91,
+    "end": 59.92,
+    "id": "w133"
+  },
+  {
+    "text": "sinus",
+    "start": 60.06,
+    "end": 60.42,
+    "id": "w134"
+  },
+  {
+    "text": "rhythm?",
+    "start": 60.42,
+    "end": 61.28,
+    "id": "w135"
+  },
+  {
+    "text": "The",
+    "start": 61.46,
+    "end": 61.5,
+    "id": "w136"
+  },
+  {
+    "text": "answer",
+    "start": 61.5,
+    "end": 61.95,
+    "id": "w137"
+  },
+  {
+    "text": "is",
+    "start": 61.95,
+    "end": 62.1,
+    "id": "w138"
+  },
+  {
+    "text": "provided",
+    "start": 62.1,
+    "end": 62.29,
+    "id": "w139"
+  },
+  {
+    "text": "via",
+    "start": 62.79,
+    "end": 62.92,
+    "id": "w140"
+  },
+  {
+    "text": "a",
+    "start": 62.92,
+    "end": 62.99,
+    "id": "w141"
+  },
+  {
+    "text": "medical",
+    "start": 62.99,
+    "end": 63.5,
+    "id": "w142"
+  },
+  {
+    "text": "glossary,",
+    "start": 63.51,
+    "end": 64.16,
+    "id": "w143"
+  },
+  {
+    "text": "complete",
+    "start": 64.34,
+    "end": 64.79,
+    "id": "w144"
+  },
+  {
+    "text": "with",
+    "start": 64.79,
+    "end": 65.11,
+    "id": "w145"
+  },
+  {
+    "text": "its",
+    "start": 65.11,
+    "end": 65.17,
+    "id": "w146"
+  },
+  {
+    "text": "source.",
+    "start": 65.66,
+    "end": 66.08,
+    "id": "w147"
+  },
+  {
+    "text": "Does",
+    "start": 66.26,
+    "end": 66.33,
+    "id": "w148"
+  },
+  {
+    "text": "the",
+    "start": 66.33,
+    "end": 66.52,
+    "id": "w149"
+  },
+  {
+    "text": "report",
+    "start": 66.52,
+    "end": 66.9,
+    "id": "w150"
+  },
+  {
+    "text": "mention",
+    "start": 66.9,
+    "end": 67.09,
+    "id": "w151"
+  },
+  {
+    "text": "a",
+    "start": 67.34,
+    "end": 67.41,
+    "id": "w152"
+  },
+  {
+    "text": "medication,",
+    "start": 67.59,
+    "end": 68.23,
+    "id": "w153"
+  },
+  {
+    "text": "such",
+    "start": 68.23,
+    "end": 68.53,
+    "id": "w154"
+  },
+  {
+    "text": "as",
+    "start": 68.53,
+    "end": 68.68,
+    "id": "w155"
+  },
+  {
+    "text": "Ramapril?",
+    "start": 68.68,
+    "end": 69.46,
+    "id": "w156"
+  },
+  {
+    "text": "Riferto",
+    "start": 69.56,
+    "end": 70.03,
+    "id": "w157"
+  },
+  {
+    "text": "locates",
+    "start": 70.03,
+    "end": 70.52,
+    "id": "w158"
+  },
+  {
+    "text": "it",
+    "start": 70.52,
+    "end": 70.71,
+    "id": "w159"
+  },
+  {
+    "text": "in",
+    "start": 70.71,
+    "end": 70.86,
+    "id": "w160"
+  },
+  {
+    "text": "the",
+    "start": 71.03,
+    "end": 71.08,
+    "id": "w161"
+  },
+  {
+    "text": "official",
+    "start": 71.08,
+    "end": 71.72,
+    "id": "w162"
+  },
+  {
+    "text": "AIFA,",
+    "start": 71.72,
+    "end": 72.84,
+    "id": "w163"
+  },
+  {
+    "text": "Italian",
+    "start": 73.02,
+    "end": 73.36,
+    "id": "w164"
+  },
+  {
+    "text": "Medicines",
+    "start": 73.43,
+    "end": 73.87,
+    "id": "w165"
+  },
+  {
+    "text": "Agency",
+    "start": 74.35,
+    "end": 74.64,
+    "id": "w166"
+  },
+  {
+    "text": "database,",
+    "start": 74.7,
+    "end": 75.36,
+    "id": "w167"
+  },
+  {
+    "text": "and",
+    "start": 75.54,
+    "end": 75.55,
+    "id": "w168"
+  },
+  {
+    "text": "opens",
+    "start": 75.55,
+    "end": 75.87,
+    "id": "w169"
+  },
+  {
+    "text": "the",
+    "start": 75.87,
+    "end": 76.06,
+    "id": "w170"
+  },
+  {
+    "text": "patient",
+    "start": 76.06,
+    "end": 76.37,
+    "id": "w171"
+  },
+  {
+    "text": "information",
+    "start": 76.87,
+    "end": 77.28,
+    "id": "w172"
+  },
+  {
+    "text": "leaflet,",
+    "start": 77.46,
+    "end": 77.91,
+    "id": "w173"
+  },
+  {
+    "text": "where",
+    "start": 77.91,
+    "end": 78.26,
+    "id": "w174"
+  },
+  {
+    "text": "Giovanna",
+    "start": 78.26,
+    "end": 78.82,
+    "id": "w175"
+  },
+  {
+    "text": "can",
+    "start": 78.82,
+    "end": 79.01,
+    "id": "w176"
+  },
+  {
+    "text": "ask",
+    "start": 79.14,
+    "end": 79.24,
+    "id": "w177"
+  },
+  {
+    "text": "further",
+    "start": 79.24,
+    "end": 79.73,
+    "id": "w178"
+  },
+  {
+    "text": "questions.",
+    "start": 79.73,
+    "end": 80.6,
+    "id": "w179"
+  },
+  {
+    "text": "Does",
+    "start": 80.78,
+    "end": 80.83,
+    "id": "w180"
+  },
+  {
+    "text": "the",
+    "start": 80.83,
+    "end": 81,
+    "id": "w181"
+  },
+  {
+    "text": "doctor",
+    "start": 81,
+    "end": 81.3,
+    "id": "w182"
+  },
+  {
+    "text": "recommend",
+    "start": 81.36,
+    "end": 81.61,
+    "id": "w183"
+  },
+  {
+    "text": "a",
+    "start": 81.86,
+    "end": 81.93,
+    "id": "w184"
+  },
+  {
+    "text": "follow-up",
+    "start": 82.11,
+    "end": 82.44,
+    "id": "w185"
+  },
+  {
+    "text": "cardiology",
+    "start": 82.46,
+    "end": 83.16,
+    "id": "w186"
+  },
+  {
+    "text": "appointment?",
+    "start": 83.34,
+    "end": 84.04,
+    "id": "w187"
+  },
+  {
+    "text": "Riferto",
+    "start": 84.08,
+    "end": 84.52,
+    "id": "w188"
+  },
+  {
+    "text": "displays",
+    "start": 84.52,
+    "end": 85.04,
+    "id": "w189"
+  },
+  {
+    "text": "the",
+    "start": 85.04,
+    "end": 85.54,
+    "id": "w190"
+  },
+  {
+    "text": "nearest",
+    "start": 85.54,
+    "end": 85.78,
+    "id": "w191"
+  },
+  {
+    "text": "cardiology",
+    "start": 85.9,
+    "end": 86.56,
+    "id": "w192"
+  },
+  {
+    "text": "clinics",
+    "start": 86.56,
+    "end": 86.8,
+    "id": "w193"
+  },
+  {
+    "text": "on",
+    "start": 86.8,
+    "end": 87.3,
+    "id": "w194"
+  },
+  {
+    "text": "a",
+    "start": 87.3,
+    "end": 87.4,
+    "id": "w195"
+  },
+  {
+    "text": "map.",
+    "start": 87.4,
+    "end": 88.12,
+    "id": "w196"
+  },
+  {
+    "text": "Behind",
+    "start": 88.3,
+    "end": 88.63,
+    "id": "w197"
+  },
+  {
+    "text": "the",
+    "start": 88.63,
+    "end": 88.9,
+    "id": "w198"
+  },
+  {
+    "text": "scenes,",
+    "start": 88.9,
+    "end": 89.59,
+    "id": "w199"
+  },
+  {
+    "text": "an",
+    "start": 89.63,
+    "end": 89.76,
+    "id": "w200"
+  },
+  {
+    "text": "AI",
+    "start": 89.76,
+    "end": 89.84,
+    "id": "w201"
+  },
+  {
+    "text": "agent",
+    "start": 89.98,
+    "end": 90.36,
+    "id": "w202"
+  },
+  {
+    "text": "analyzes",
+    "start": 90.36,
+    "end": 90.88,
+    "id": "w203"
+  },
+  {
+    "text": "the",
+    "start": 91.38,
+    "end": 91.4,
+    "id": "w204"
+  },
+  {
+    "text": "report,",
+    "start": 91.4,
+    "end": 91.96,
+    "id": "w205"
+  },
+  {
+    "text": "cross-referencing",
+    "start": 92.14,
+    "end": 92.97,
+    "id": "w206"
+  },
+  {
+    "text": "it",
+    "start": 92.97,
+    "end": 93.47,
+    "id": "w207"
+  },
+  {
+    "text": "with",
+    "start": 93.47,
+    "end": 93.68,
+    "id": "w208"
+  },
+  {
+    "text": "the",
+    "start": 93.68,
+    "end": 93.9,
+    "id": "w209"
+  },
+  {
+    "text": "AIFA",
+    "start": 93.9,
+    "end": 94.24,
+    "id": "w210"
+  },
+  {
+    "text": "database",
+    "start": 94.24,
+    "end": 94.72,
+    "id": "w211"
+  },
+  {
+    "text": "and",
+    "start": 95.14,
+    "end": 95.21,
+    "id": "w212"
+  },
+  {
+    "text": "a",
+    "start": 95.21,
+    "end": 95.29,
+    "id": "w213"
+  },
+  {
+    "text": "medical",
+    "start": 95.29,
+    "end": 95.86,
+    "id": "w214"
+  },
+  {
+    "text": "glossary.",
+    "start": 95.86,
+    "end": 96.69,
+    "id": "w215"
+  },
+  {
+    "text": "Information",
+    "start": 96.98,
+    "end": 97.47,
+    "id": "w216"
+  },
+  {
+    "text": "about",
+    "start": 97.47,
+    "end": 97.77,
+    "id": "w217"
+  },
+  {
+    "text": "health",
+    "start": 97.77,
+    "end": 97.82,
+    "id": "w218"
+  },
+  {
+    "text": "care",
+    "start": 98.31,
+    "end": 98.37,
+    "id": "w219"
+  },
+  {
+    "text": "facilities",
+    "start": 98.37,
+    "end": 99,
+    "id": "w220"
+  },
+  {
+    "text": "is",
+    "start": 99,
+    "end": 99.18,
+    "id": "w221"
+  },
+  {
+    "text": "pulled",
+    "start": 99.18,
+    "end": 99.52,
+    "id": "w222"
+  },
+  {
+    "text": "from",
+    "start": 99.59,
+    "end": 99.87,
+    "id": "w223"
+  },
+  {
+    "text": "open",
+    "start": 99.87,
+    "end": 100.01,
+    "id": "w224"
+  },
+  {
+    "text": "data",
+    "start": 100.01,
+    "end": 100.51,
+    "id": "w225"
+  },
+  {
+    "text": "sources,",
+    "start": 100.51,
+    "end": 101.16,
+    "id": "w226"
+  },
+  {
+    "text": "tailored",
+    "start": 101.34,
+    "end": 101.67,
+    "id": "w227"
+  },
+  {
+    "text": "to",
+    "start": 101.67,
+    "end": 101.81,
+    "id": "w228"
+  },
+  {
+    "text": "the",
+    "start": 101.81,
+    "end": 102,
+    "id": "w229"
+  },
+  {
+    "text": "location",
+    "start": 102,
+    "end": 102.17,
+    "id": "w230"
+  },
+  {
+    "text": "mentioned",
+    "start": 102.67,
+    "end": 103.1,
+    "id": "w231"
+  },
+  {
+    "text": "in",
+    "start": 103.1,
+    "end": 103.23,
+    "id": "w232"
+  },
+  {
+    "text": "the",
+    "start": 103.23,
+    "end": 103.38,
+    "id": "w233"
+  },
+  {
+    "text": "report.",
+    "start": 103.43,
+    "end": 103.92,
+    "id": "w234"
+  },
+  {
+    "text": "The",
+    "start": 104.22,
+    "end": 104.24,
+    "id": "w235"
+  },
+  {
+    "text": "underlying",
+    "start": 104.24,
+    "end": 104.9,
+    "id": "w236"
+  },
+  {
+    "text": "language",
+    "start": 104.9,
+    "end": 105.05,
+    "id": "w237"
+  },
+  {
+    "text": "model",
+    "start": 105.55,
+    "end": 105.78,
+    "id": "w238"
+  },
+  {
+    "text": "runs",
+    "start": 105.9,
+    "end": 106.08,
+    "id": "w239"
+  },
+  {
+    "text": "on",
+    "start": 106.08,
+    "end": 106.26,
+    "id": "w240"
+  },
+  {
+    "text": "AMD",
+    "start": 106.26,
+    "end": 106.56,
+    "id": "w241"
+  },
+  {
+    "text": "infrastructure,",
+    "start": 106.56,
+    "end": 107.92,
+    "id": "w242"
+  },
+  {
+    "text": "utilizing",
+    "start": 108.14,
+    "end": 108.83,
+    "id": "w243"
+  },
+  {
+    "text": "the",
+    "start": 108.83,
+    "end": 108.97,
+    "id": "w244"
+  },
+  {
+    "text": "AMD",
+    "start": 108.97,
+    "end": 109.47,
+    "id": "w245"
+  },
+  {
+    "text": "Token",
+    "start": 109.47,
+    "end": 109.91,
+    "id": "w246"
+  },
+  {
+    "text": "Factory.",
+    "start": 109.91,
+    "end": 110.72,
+    "id": "w247"
+  },
+  {
+    "text": "Riferto",
+    "start": 110.97,
+    "end": 111.44,
+    "id": "w248"
+  },
+  {
+    "text": "does",
+    "start": 111.48,
+    "end": 111.81,
+    "id": "w249"
+  },
+  {
+    "text": "not",
+    "start": 111.81,
+    "end": 111.93,
+    "id": "w250"
+  },
+  {
+    "text": "provide",
+    "start": 112.42,
+    "end": 112.62,
+    "id": "w251"
+  },
+  {
+    "text": "diagnoses",
+    "start": 112.62,
+    "end": 113.35,
+    "id": "w252"
+  },
+  {
+    "text": "or",
+    "start": 113.35,
+    "end": 113.52,
+    "id": "w253"
+  },
+  {
+    "text": "medical",
+    "start": 113.52,
+    "end": 113.68,
+    "id": "w254"
+  },
+  {
+    "text": "advice.",
+    "start": 114.18,
+    "end": 114.79,
+    "id": "w255"
+  },
+  {
+    "text": "It",
+    "start": 114.79,
+    "end": 115.06,
+    "id": "w256"
+  },
+  {
+    "text": "simply",
+    "start": 115.06,
+    "end": 115.4,
+    "id": "w257"
+  },
+  {
+    "text": "explains",
+    "start": 115.43,
+    "end": 115.88,
+    "id": "w258"
+  },
+  {
+    "text": "what",
+    "start": 115.88,
+    "end": 116.39,
+    "id": "w259"
+  },
+  {
+    "text": "is",
+    "start": 116.39,
+    "end": 116.42,
+    "id": "w260"
+  },
+  {
+    "text": "already",
+    "start": 116.42,
+    "end": 116.91,
+    "id": "w261"
+  },
+  {
+    "text": "written.",
+    "start": 116.91,
+    "end": 117.64,
+    "id": "w262"
+  },
+  {
+    "text": "Every",
+    "start": 117.82,
+    "end": 117.96,
+    "id": "w263"
+  },
+  {
+    "text": "piece",
+    "start": 117.96,
+    "end": 118.28,
+    "id": "w264"
+  },
+  {
+    "text": "of",
+    "start": 118.28,
+    "end": 118.36,
+    "id": "w265"
+  },
+  {
+    "text": "information",
+    "start": 118.41,
+    "end": 118.65,
+    "id": "w266"
+  },
+  {
+    "text": "is",
+    "start": 119.15,
+    "end": 119.27,
+    "id": "w267"
+  },
+  {
+    "text": "backed",
+    "start": 119.27,
+    "end": 119.72,
+    "id": "w268"
+  },
+  {
+    "text": "by",
+    "start": 119.72,
+    "end": 119.88,
+    "id": "w269"
+  },
+  {
+    "text": "a",
+    "start": 119.91,
+    "end": 120,
+    "id": "w270"
+  },
+  {
+    "text": "verifiable",
+    "start": 120,
+    "end": 120.95,
+    "id": "w271"
+  },
+  {
+    "text": "source.",
+    "start": 120.95,
+    "end": 121.84,
+    "id": "w272"
+  },
+  {
+    "text": "Ultimately,",
+    "start": 122.02,
+    "end": 122.82,
+    "id": "w273"
+  },
+  {
+    "text": "the",
+    "start": 122.82,
+    "end": 122.85,
+    "id": "w274"
+  },
+  {
+    "text": "final",
+    "start": 123.34,
+    "end": 123.47,
+    "id": "w275"
+  },
+  {
+    "text": "word",
+    "start": 123.47,
+    "end": 123.8,
+    "id": "w276"
+  },
+  {
+    "text": "always",
+    "start": 123.8,
+    "end": 124.32,
+    "id": "w277"
+  },
+  {
+    "text": "rests",
+    "start": 124.32,
+    "end": 124.6,
+    "id": "w278"
+  },
+  {
+    "text": "with",
+    "start": 124.6,
+    "end": 125.1,
+    "id": "w279"
+  },
+  {
+    "text": "your",
+    "start": 125.1,
+    "end": 125.39,
+    "id": "w280"
+  },
+  {
+    "text": "doctor.",
+    "start": 125.4,
+    "end": 126.1,
+    "id": "w281"
+  },
+  {
+    "text": "Riferto,",
+    "start": 126.19,
+    "end": 126.97,
+    "id": "w282"
+  },
+  {
+    "text": "your",
+    "start": 126.97,
+    "end": 127.13,
+    "id": "w283"
+  },
+  {
+    "text": "medical",
+    "start": 127.63,
+    "end": 128.03,
+    "id": "w284"
+  },
+  {
+    "text": "report,",
+    "start": 128.03,
+    "end": 128.84,
+    "id": "w285"
+  },
+  {
+    "text": "finally",
+    "start": 128.84,
+    "end": 129.79,
+    "id": "w286"
+  },
+  {
+    "text": "made",
+    "start": 129.79,
+    "end": 130.33,
+    "id": "w287"
+  },
+  {
+    "text": "clear.",
+    "start": 130.33,
+    "end": 131.44,
+    "id": "w288"
+  }
+]

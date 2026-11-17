@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scena 7 del copione (le trace). Tempi locali: voce 07 a +0,8 s
+      (assets/voce/07-osservabilita.mp3, voce inglese di riferimento).
+      La trace mostra i campi veri del backend (docs/15-backend.md: motore,
+      modello, tempi, tempo al primo testo, token, chiamate agli strumenti,
+      esito; mai il testo del referto). I numeri sono d'esempio, e lo dice
+      l'etichetta «Example trace».
+    -->
+    <template>
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        @font-face {
+          font-family: "IBM Plex Mono";
+          src: url("assets/fonts/ibm-plex-mono-latin-500.woff2") format("woff2");
+          font-weight: 500;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+          color: #eef4f1;
+        }
+        #s7-fondo {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1400px 900px at 40% 45%, #143a31 0%, #0b1512 72%);
+        }
+        #s7-scena {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        #s7-occhiello {
+          position: absolute;
+          top: 90px;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          opacity: 0;
+        }
+        #s7-occhiello span {
+          padding: 10px 26px;
+          border-radius: 999px;
+          background: #8fd6bd;
+          color: #0b1512;
+          font-size: 28px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        /* La trace */
+        #s7-trace {
+          width: 1080px;
+          display: flex;
+          flex-direction: column;
+          gap: 26px;
+          padding: 40px 44px;
+          border: 2px solid rgba(143, 214, 189, 0.28);
+          border-radius: 30px;
+          background: #12241f;
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
+          opacity: 0;
+        }
+        #s7-testa {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        #s7-testa strong {
+          font-size: 40px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+        .s7-badge {
+          padding: 6px 16px;
+          border: 2px solid rgba(143, 214, 189, 0.35);
+          border-radius: 999px;
+          color: #8fd6bd;
+          font-size: 22px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+        .s7-riga {
+          display: grid;
+          grid-template-columns: 380px 1fr;
+          align-items: center;
+          gap: 24px;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 24px;
+          color: #b8cbc4;
+        }
+        .s7-binario {
+          position: relative;
+          height: 30px;
+          border-radius: 8px;
+          background: rgba(143, 214, 189, 0.08);
+        }
+        .s7-barra {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          border-radius: 8px;
+          background: #2f9b7f;
+          transform-origin: left center;
+        }
+        .s7-strumento .s7-barra {
+          background: #e0b64f;
+        }
+        .s7-riga.s7-strumento {
+          color: #f2dca2;
+        }
+        #s7-cifre {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+          padding-top: 8px;
+          border-top: 2px solid rgba(143, 214, 189, 0.16);
+        }
+        .s7-cifra {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          padding: 12px 20px;
+          border-radius: 16px;
+          background: #0b1512;
+          color: #9fb3ab;
+          font-size: 24px;
+          font-weight: 700;
+          opacity: 0;
+        }
+        .s7-cifra strong {
+          color: #eef4f1;
+          font-size: 32px;
+          font-weight: 900;
+        }
+        #s7-esito strong {
+          color: #8fd6bd;
+        }
+        #s7-privacy {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 18px 26px;
+          border: 2px dashed rgba(240, 165, 143, 0.6);
+          border-radius: 18px;
+          color: #f6d0c4;
+          font-size: 30px;
+          font-weight: 800;
+          opacity: 0;
+        }
+        /* Il ciclo: trace → misura → migliora */
+        #s7-ciclo {
+          position: absolute;
+          left: 1290px;
+          top: 280px;
+          width: 520px;
+          height: 520px;
+          flex: none;
+          opacity: 0;
+        }
+        #s7-anello {
+          position: absolute;
+          inset: 0;
+        }
+        .s7-passo {
+          position: absolute;
+          width: 220px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          text-align: center;
+          font-size: 34px;
+          font-weight: 900;
+          opacity: 0.35;
+        }
+        .s7-passo-icona {
+          width: 104px;
+          height: 104px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #12241f;
+          border: 3px solid #2f9b7f;
+          color: #8fd6bd;
+        }
+        #s7-versione {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 200px;
+          margin-left: -100px;
+          margin-top: -44px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          color: #9fb3ab;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #s7-versione-numero {
+          color: #8fd6bd;
+          font-size: 56px;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+          line-height: 1;
+        }
+      </style>
+
+      <div id="root" data-composition-id="scena-07-osservabilita" data-width="1920" data-height="1080">
+        <div id="s7-fondo"></div>
+        <div id="s7-occhiello"><span>Observability</span></div>
+
+        <div id="s7-scena">
+          <div id="s7-trace">
+            <div id="s7-testa"><strong>Trace · one explanation</strong><span class="s7-badge">Example trace</span></div>
+            <div class="s7-riga"><span>chat request</span><div class="s7-binario"><div class="s7-barra" id="s7-b1" style="left: 0%; width: 100%"></div></div></div>
+            <div class="s7-riga"><span>agent · DeepSeek-V4.1</span><div class="s7-binario"><div class="s7-barra" id="s7-b2" style="left: 3%; width: 95%"></div></div></div>
+            <div class="s7-riga s7-strumento" id="s7-t1"><span>tool · cercaFarmaci</span><div class="s7-binario"><div class="s7-barra" id="s7-b3" style="left: 9%; width: 7%"></div></div></div>
+            <div class="s7-riga s7-strumento" id="s7-t2"><span>tool · cercaTermine</span><div class="s7-binario"><div class="s7-barra" id="s7-b4" style="left: 17%; width: 6%"></div></div></div>
+            <div class="s7-riga"><span>streaming answer</span><div class="s7-binario"><div class="s7-barra" id="s7-b5" style="left: 25%; width: 73%"></div></div></div>
+            <div id="s7-cifre">
+              <div class="s7-cifra" id="s7-c1">duration <strong>21.4 s</strong></div>
+              <div class="s7-cifra" id="s7-c2">first text <strong>3.2 s</strong></div>
+              <div class="s7-cifra" id="s7-c3">tokens <strong>1,840 → 620</strong></div>
+              <div class="s7-cifra" id="s7-c4">tools <strong>2</strong></div>
+              <div class="s7-cifra" id="s7-esito">outcome <strong>ok</strong></div>
+            </div>
+            <div id="s7-privacy">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+              <span>Report text: never stored in traces</span>
+            </div>
+          </div>
+
+          <div id="s7-ciclo">
+            <svg id="s7-anello" viewBox="0 0 520 520" fill="none">
+              <circle id="s7-cerchio" cx="260" cy="260" r="190" stroke="#2f9b7f" stroke-width="6" stroke-linecap="round" stroke-dasharray="1194" stroke-dashoffset="1194" transform="rotate(-90 260 260)"></circle>
+            </svg>
+            <div class="s7-passo" id="s7-p1" style="left: 150px; top: -10px">
+              <div class="s7-passo-icona"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h6"></path></svg></div>Trace
+            </div>
+            <div class="s7-passo" id="s7-p2" style="left: 330px; top: 300px">
+              <div class="s7-passo-icona"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></div>Measure
+            </div>
+            <div class="s7-passo" id="s7-p3" style="left: -30px; top: 300px">
+              <div class="s7-passo-icona"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg></div>Improve
+            </div>
+            <div id="s7-versione"><span>version</span><div id="s7-versione-numero">next</div></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [0.9, 0.9], [2.162, 2.33], [2.971, 3.03], [3.793, 3.81], [4.674, 4.76], [6.317, 7.18], [7.16, 8.18], [8.957, 10.13], [10.064, 11.57], [10.969, 12.35], [12.469, 14.23], [13.552, 16.06]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: voce 07 a +0,8 s.
+        const tl = gsap.timeline({ paused: true });
+        const cifra = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.8)" }, t);
+
+        // Dissolvenza di 1 s sopra lo zoom su AMD ormai fermo: più breve sembrava un taglio.
+        tl.fromTo("#s7-fondo", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "power1.inOut" }, 0);
+        tl.fromTo("#s7-occhiello", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.6);
+
+        // «And every run leaves a trace:» la trace si apre e le barre si disegnano.
+        // Entra mentre il diagramma della scena 6 si dissolve sotto: nessun vuoto tra le due.
+        tl.fromTo("#s7-trace", { opacity: 0, y: 80, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" }, 0.6);
+        ["#s7-b1", "#s7-b2", "#s7-b3", "#s7-b4", "#s7-b5"].forEach((barra, i) => {
+          tl.fromTo(barra, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, 2.0 + i * 0.18);
+        });
+        // «timings, tokens,»
+        cifra("#s7-c1", 2.9);
+        cifra("#s7-c2", 3.15);
+        cifra("#s7-c3", 3.75);
+        // «the tools the agent called,»
+        tl.to(["#s7-t1", "#s7-t2"], { color: "#ffffff", duration: 0.3 }, 4.55);
+        tl.fromTo(["#s7-b3", "#s7-b4"], { boxShadow: "0 0 0 0 rgba(224, 182, 79, 0.6)" }, { boxShadow: "0 0 0 10px rgba(224, 182, 79, 0)", duration: 0.7, ease: "power1.out" }, 4.6);
+        cifra("#s7-c4", 4.9);
+        // «and the outcome.»
+        cifra("#s7-esito", 6.0);
+        // «Never the text of the report.»
+        tl.fromTo("#s7-privacy", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 7.1);
+
+        // «We use these traces to measure every version of Referto, and to make the next one better.»
+        tl.to("#s7-trace", { x: -360, scale: 0.92, duration: 0.7, ease: "power3.inOut" }, 8.8);
+        tl.fromTo("#s7-ciclo", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 9.0);
+        tl.to("#s7-p1", { opacity: 1, duration: 0.3 }, 9.3);
+        tl.to("#s7-cerchio", { strokeDashoffset: 0, duration: 3.6, ease: "none" }, 9.4);
+        tl.to("#s7-p2", { opacity: 1, duration: 0.3 }, 9.95);
+        tl.to("#s7-p3", { opacity: 1, duration: 0.3 }, 12.1);
+        tl.fromTo("#s7-versione-numero", { scale: 0.7, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 12.9);
+
+        riallinea(tl);
+        window.__timelines["scena-07-osservabilita"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

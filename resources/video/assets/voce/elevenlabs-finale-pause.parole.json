@@ -1,0 +1,2362 @@
+[
+ {
+  "text": "This",
+  "start": 0.04,
+  "end": 0.44
+ },
+ {
+  "text": "is",
+  "start": 0.45,
+  "end": 0.67
+ },
+ {
+  "text": "Giovanna.",
+  "start": 0.67,
+  "end": 1.7
+ },
+ {
+  "text": "Her",
+  "start": 1.76,
+  "end": 1.91
+ },
+ {
+  "text": "cardiology",
+  "start": 1.91,
+  "end": 2.61
+ },
+ {
+  "text": "report",
+  "start": 2.61,
+  "end": 3.04
+ },
+ {
+  "text": "has",
+  "start": 3.04,
+  "end": 3.31
+ },
+ {
+  "text": "just",
+  "start": 3.42,
+  "end": 3.62
+ },
+ {
+  "text": "landed",
+  "start": 3.74,
+  "end": 4.16
+ },
+ {
+  "text": "in",
+  "start": 4.16,
+  "end": 4.24
+ },
+ {
+  "text": "her",
+  "start": 4.24,
+  "end": 4.4
+ },
+ {
+  "text": "electronic",
+  "start": 4.4,
+  "end": 5.02
+ },
+ {
+  "text": "health",
+  "start": 5.05,
+  "end": 5.26
+ },
+ {
+  "text": "record,",
+  "start": 5.4,
+  "end": 6.16
+ },
+ {
+  "text": "weeks",
+  "start": 6.2,
+  "end": 6.55
+ },
+ {
+  "text": "before",
+  "start": 6.57,
+  "end": 7.02
+ },
+ {
+  "text": "she",
+  "start": 7.02,
+  "end": 7.26
+ },
+ {
+  "text": "can",
+  "start": 7.26,
+  "end": 7.33
+ },
+ {
+  "text": "talk",
+  "start": 7.33,
+  "end": 7.9
+ },
+ {
+  "text": "to",
+  "start": 7.9,
+  "end": 7.98
+ },
+ {
+  "text": "her",
+  "start": 7.98,
+  "end": 8.22
+ },
+ {
+  "text": "doctor.",
+  "start": 8.22,
+  "end": 8.92
+ },
+ {
+  "text": "She",
+  "start": 9.07,
+  "end": 9.29
+ },
+ {
+  "text": "reads",
+  "start": 9.29,
+  "end": 9.78
+ },
+ {
+  "text": "it",
+  "start": 9.9,
+  "end": 10.05
+ },
+ {
+  "text": "once,",
+  "start": 10.05,
+  "end": 10.72
+ },
+ {
+  "text": "then",
+  "start": 10.72,
+  "end": 10.9
+ },
+ {
+  "text": "again.",
+  "start": 10.9,
+  "end": 11.22
+ },
+ {
+  "text": "And",
+  "start": 11.28,
+  "end": 11.93
+ },
+ {
+  "text": "one",
+  "start": 12.36,
+  "end": 12.72
+ },
+ {
+  "text": "question",
+  "start": 12.72,
+  "end": 13.12
+ },
+ {
+  "text": "remains,",
+  "start": 13.12,
+  "end": 13.68
+ },
+ {
+  "text": "what",
+  "start": 13.68,
+  "end": 14.44
+ },
+ {
+  "text": "does",
+  "start": 14.44,
+  "end": 14.52
+ },
+ {
+  "text": "it",
+  "start": 14.52,
+  "end": 14.73
+ },
+ {
+  "text": "mean?",
+  "start": 14.73,
+  "end": 15.46
+ },
+ {
+  "text": "She",
+  "start": 15.46,
+  "end": 15.57
+ },
+ {
+  "text": "is",
+  "start": 15.77,
+  "end": 15.99
+ },
+ {
+  "text": "not",
+  "start": 16.14,
+  "end": 16.31
+ },
+ {
+  "text": "alone.",
+  "start": 16.31,
+  "end": 17.16
+ },
+ {
+  "text": "More",
+  "start": 18.56,
+  "end": 18.66
+ },
+ {
+  "text": "than",
+  "start": 17.55,
+  "end": 18.58
+ },
+ {
+  "text": "half",
+  "start": 18.58,
+  "end": 18.93
+ },
+ {
+  "text": "of",
+  "start": 18.93,
+  "end": 19.1
+ },
+ {
+  "text": "Italians",
+  "start": 19.1,
+  "end": 19.71
+ },
+ {
+  "text": "struggle",
+  "start": 19.81,
+  "end": 20.52
+ },
+ {
+  "text": "to",
+  "start": 20.52,
+  "end": 20.66
+ },
+ {
+  "text": "make",
+  "start": 20.68,
+  "end": 20.85
+ },
+ {
+  "text": "sense",
+  "start": 20.85,
+  "end": 21.28
+ },
+ {
+  "text": "of",
+  "start": 21.28,
+  "end": 21.32
+ },
+ {
+  "text": "health",
+  "start": 21.32,
+  "end": 21.63
+ },
+ {
+  "text": "information.",
+  "start": 21.68,
+  "end": 22.81
+ },
+ {
+  "text": "So,",
+  "start": 23.08,
+  "end": 23.26
+ },
+ {
+  "text": "they",
+  "start": 23.4,
+  "end": 23.61
+ },
+ {
+  "text": "search",
+  "start": 23.63,
+  "end": 24.14
+ },
+ {
+  "text": "online,",
+  "start": 24.15,
+  "end": 24.88
+ },
+ {
+  "text": "ask",
+  "start": 24.88,
+  "end": 25.15
+ },
+ {
+  "text": "a",
+  "start": 25.15,
+  "end": 25.23
+ },
+ {
+  "text": "chatbot,",
+  "start": 25.38,
+  "end": 26.05
+ },
+ {
+  "text": "or",
+  "start": 26.05,
+  "end": 26.23
+ },
+ {
+  "text": "call",
+  "start": 26.23,
+  "end": 26.59
+ },
+ {
+  "text": "a",
+  "start": 26.59,
+  "end": 26.65
+ },
+ {
+  "text": "family",
+  "start": 26.69,
+  "end": 27.15
+ },
+ {
+  "text": "doctor",
+  "start": 27.21,
+  "end": 27.41
+ },
+ {
+  "text": "who",
+  "start": 27.84,
+  "end": 28.03
+ },
+ {
+  "text": "is",
+  "start": 28.03,
+  "end": 28.28
+ },
+ {
+  "text": "already",
+  "start": 28.28,
+  "end": 28.84
+ },
+ {
+  "text": "overloaded.",
+  "start": 28.86,
+  "end": 29.56
+ },
+ {
+  "text": "But",
+  "start": 30.24,
+  "end": 30.4
+ },
+ {
+  "text": "none",
+  "start": 30.52,
+  "end": 30.67
+ },
+ {
+  "text": "of",
+  "start": 30.74,
+  "end": 30.87
+ },
+ {
+  "text": "them",
+  "start": 30.87,
+  "end": 31.17
+ },
+ {
+  "text": "reads",
+  "start": 31.17,
+  "end": 31.37
+ },
+ {
+  "text": "the",
+  "start": 31.52,
+  "end": 31.76
+ },
+ {
+  "text": "report",
+  "start": 31.94,
+  "end": 32.21
+ },
+ {
+  "text": "with",
+  "start": 32.21,
+  "end": 32.51
+ },
+ {
+  "text": "her.",
+  "start": 32.51,
+  "end": 32.96
+ },
+ {
+  "text": "What",
+  "start": 33.11,
+  "end": 33.34
+ },
+ {
+  "text": "Giovanna",
+  "start": 33.34,
+  "end": 34.02
+ },
+ {
+  "text": "needs",
+  "start": 34.02,
+  "end": 34.44
+ },
+ {
+  "text": "is",
+  "start": 34.44,
+  "end": 34.61
+ },
+ {
+  "text": "simple.",
+  "start": 34.61,
+  "end": 35.4
+ },
+ {
+  "text": "A",
+  "start": 35.4,
+  "end": 35.64
+ },
+ {
+  "text": "source",
+  "start": 35.64,
+  "end": 35.97
+ },
+ {
+  "text": "for",
+  "start": 35.97,
+  "end": 36.4
+ },
+ {
+  "text": "every",
+  "start": 36.4,
+  "end": 36.84
+ },
+ {
+  "text": "answer.",
+  "start": 36.88,
+  "end": 37.57
+ },
+ {
+  "text": "Only",
+  "start": 37.57,
+  "end": 37.89
+ },
+ {
+  "text": "what",
+  "start": 37.89,
+  "end": 38.01
+ },
+ {
+  "text": "her",
+  "start": 38.2,
+  "end": 38.45
+ },
+ {
+  "text": "doctor",
+  "start": 38.6,
+  "end": 38.93
+ },
+ {
+  "text": "wrote.",
+  "start": 38.96,
+  "end": 39.59
+ },
+ {
+  "text": "And",
+  "start": 39.59,
+  "end": 39.83
+ },
+ {
+  "text": "plain",
+  "start": 39.83,
+  "end": 40.15
+ },
+ {
+  "text": "words,",
+  "start": 40.26,
+  "end": 40.81
+ },
+ {
+  "text": "right",
+  "start": 40.81,
+  "end": 41.22
+ },
+ {
+  "text": "away.",
+  "start": 41.22,
+  "end": 41.78
+ },
+ {
+  "text": "Something",
+  "start": 41.78,
+  "end": 42.51
+ },
+ {
+  "text": "that",
+  "start": 42.51,
+  "end": 42.63
+ },
+ {
+  "text": "sits",
+  "start": 43.04,
+  "end": 43.39
+ },
+ {
+  "text": "right",
+  "start": 43.39,
+  "end": 43.64
+ },
+ {
+  "text": "next",
+  "start": 43.68,
+  "end": 43.99
+ },
+ {
+  "text": "to",
+  "start": 43.99,
+  "end": 44.11
+ },
+ {
+  "text": "her",
+  "start": 44.18,
+  "end": 44.42
+ },
+ {
+  "text": "report.",
+  "start": 44.42,
+  "end": 45.19
+ },
+ {
+  "text": "Meet",
+  "start": 45.38,
+  "end": 45.55
+ },
+ {
+  "text": "Referto.",
+  "start": 45.55,
+  "end": 46.4
+ },
+ {
+  "text": "Your",
+  "start": 47.07,
+  "end": 47.17
+ },
+ {
+  "text": "medical",
+  "start": 46.76,
+  "end": 47.23
+ },
+ {
+  "text": "report",
+  "start": 47.38,
+  "end": 47.89
+ },
+ {
+  "text": "explained",
+  "start": 47.89,
+  "end": 48.66
+ },
+ {
+  "text": "in",
+  "start": 48.69,
+  "end": 48.84
+ },
+ {
+  "text": "plain",
+  "start": 48.84,
+  "end": 49.27
+ },
+ {
+  "text": "words.",
+  "start": 49.27,
+  "end": 50.04
+ },
+ {
+  "text": "Giovanna",
+  "start": 51.45,
+  "end": 52.02
+ },
+ {
+  "text": "opens",
+  "start": 52.02,
+  "end": 52.34
+ },
+ {
+  "text": "her",
+  "start": 52.38,
+  "end": 52.54
+ },
+ {
+  "text": "clinic's",
+  "start": 52.66,
+  "end": 53.23
+ },
+ {
+  "text": "portal,",
+  "start": 53.23,
+  "end": 53.89
+ },
+ {
+  "text": "and",
+  "start": 54.08,
+  "end": 54.14
+ },
+ {
+  "text": "her",
+  "start": 54.14,
+  "end": 54.39
+ },
+ {
+  "text": "report",
+  "start": 54.39,
+  "end": 54.87
+ },
+ {
+  "text": "is",
+  "start": 54.87,
+  "end": 55.04
+ },
+ {
+  "text": "already",
+  "start": 55.04,
+  "end": 55.62
+ },
+ {
+  "text": "there.",
+  "start": 55.62,
+  "end": 56.27
+ },
+ {
+  "text": "One",
+  "start": 56.27,
+  "end": 56.52
+ },
+ {
+  "text": "click",
+  "start": 56.52,
+  "end": 56.93
+ },
+ {
+  "text": "on",
+  "start": 56.93,
+  "end": 57.09
+ },
+ {
+  "text": "Explain",
+  "start": 57.09,
+  "end": 57.6
+ },
+ {
+  "text": "this",
+  "start": 57.74,
+  "end": 58.0
+ },
+ {
+  "text": "to",
+  "start": 58.0,
+  "end": 58.13
+ },
+ {
+  "text": "me,",
+  "start": 58.42,
+  "end": 58.48
+ },
+ {
+  "text": "and",
+  "start": 58.54,
+  "end": 58.58
+ },
+ {
+  "text": "Referto",
+  "start": 58.62,
+  "end": 59.18
+ },
+ {
+  "text": "gets",
+  "start": 59.18,
+  "end": 59.53
+ },
+ {
+  "text": "to",
+  "start": 59.53,
+  "end": 59.7
+ },
+ {
+  "text": "work.",
+  "start": 59.7,
+  "end": 60.31
+ },
+ {
+  "text": "First",
+  "start": 60.34,
+  "end": 60.75
+ },
+ {
+  "text": "a",
+  "start": 60.75,
+  "end": 60.83
+ },
+ {
+  "text": "summary,",
+  "start": 60.83,
+  "end": 61.62
+ },
+ {
+  "text": "then",
+  "start": 61.62,
+  "end": 61.89
+ },
+ {
+  "text": "a",
+  "start": 62.0,
+  "end": 62.05
+ },
+ {
+  "text": "plain",
+  "start": 62.05,
+  "end": 62.49
+ },
+ {
+  "text": "explanation,",
+  "start": 62.49,
+  "end": 63.63
+ },
+ {
+  "text": "written",
+  "start": 63.63,
+  "end": 64.26
+ },
+ {
+  "text": "in",
+  "start": 64.26,
+  "end": 64.37
+ },
+ {
+  "text": "real",
+  "start": 64.37,
+  "end": 64.78
+ },
+ {
+  "text": "time.",
+  "start": 64.78,
+  "end": 65.54
+ },
+ {
+  "text": "The",
+  "start": 65.58,
+  "end": 65.74
+ },
+ {
+  "text": "doctor's",
+  "start": 65.86,
+  "end": 66.34
+ },
+ {
+  "text": "instructions",
+  "start": 66.34,
+  "end": 66.71
+ },
+ {
+  "text": "stay",
+  "start": 67.3,
+  "end": 67.51
+ },
+ {
+  "text": "in",
+  "start": 67.53,
+  "end": 67.62
+ },
+ {
+  "text": "a",
+  "start": 67.66,
+  "end": 67.73
+ },
+ {
+  "text": "separate",
+  "start": 67.73,
+  "end": 68.29
+ },
+ {
+  "text": "box,",
+  "start": 68.37,
+  "end": 68.74
+ },
+ {
+  "text": "linked",
+  "start": 68.74,
+  "end": 69.09
+ },
+ {
+  "text": "to",
+  "start": 69.09,
+  "end": 69.13
+ },
+ {
+  "text": "the",
+  "start": 69.28,
+  "end": 69.37
+ },
+ {
+  "text": "original",
+  "start": 69.37,
+  "end": 69.86
+ },
+ {
+  "text": "document.",
+  "start": 69.86,
+  "end": 70.8
+ },
+ {
+  "text": "And",
+  "start": 70.94,
+  "end": 71.06
+ },
+ {
+  "text": "if",
+  "start": 71.14,
+  "end": 71.29
+ },
+ {
+  "text": "the",
+  "start": 71.29,
+  "end": 71.33
+ },
+ {
+  "text": "report",
+  "start": 71.74,
+  "end": 71.86
+ },
+ {
+  "text": "leaves",
+  "start": 71.9,
+  "end": 72.33
+ },
+ {
+  "text": "questions",
+  "start": 72.33,
+  "end": 73.02
+ },
+ {
+  "text": "open,",
+  "start": 73.04,
+  "end": 73.51
+ },
+ {
+  "text": "Referto",
+  "start": 73.6,
+  "end": 74.05
+ },
+ {
+  "text": "says",
+  "start": 74.05,
+  "end": 74.36
+ },
+ {
+  "text": "so.",
+  "start": 74.37,
+  "end": 74.69
+ },
+ {
+  "text": "Still",
+  "start": 74.76,
+  "end": 75.16
+ },
+ {
+  "text": "have",
+  "start": 75.16,
+  "end": 75.45
+ },
+ {
+  "text": "a",
+  "start": 75.45,
+  "end": 75.6
+ },
+ {
+  "text": "question?",
+  "start": 75.6,
+  "end": 76.42
+ },
+ {
+  "text": "Giovanna",
+  "start": 76.42,
+  "end": 77.05
+ },
+ {
+  "text": "can",
+  "start": 77.05,
+  "end": 77.29
+ },
+ {
+  "text": "ask",
+  "start": 77.29,
+  "end": 77.53
+ },
+ {
+  "text": "in",
+  "start": 77.53,
+  "end": 77.65
+ },
+ {
+  "text": "her",
+  "start": 77.65,
+  "end": 78.06
+ },
+ {
+  "text": "own",
+  "start": 78.06,
+  "end": 78.26
+ },
+ {
+  "text": "words.",
+  "start": 78.26,
+  "end": 79.05
+ },
+ {
+  "text": "For",
+  "start": 79.1,
+  "end": 79.26
+ },
+ {
+  "text": "instance,",
+  "start": 79.38,
+  "end": 80.14
+ },
+ {
+  "text": "what",
+  "start": 80.14,
+  "end": 80.23
+ },
+ {
+  "text": "is",
+  "start": 80.46,
+  "end": 80.63
+ },
+ {
+  "text": "a",
+  "start": 80.63,
+  "end": 80.8
+ },
+ {
+  "text": "sinus",
+  "start": 80.8,
+  "end": 81.12
+ },
+ {
+  "text": "rhythm?",
+  "start": 81.12,
+  "end": 81.82
+ },
+ {
+  "text": "The",
+  "start": 81.89,
+  "end": 82.1
+ },
+ {
+  "text": "answer",
+  "start": 82.15,
+  "end": 82.62
+ },
+ {
+  "text": "is",
+  "start": 82.62,
+  "end": 82.64
+ },
+ {
+  "text": "provided",
+  "start": 82.8,
+  "end": 83.45
+ },
+ {
+  "text": "via",
+  "start": 83.45,
+  "end": 83.69
+ },
+ {
+  "text": "a",
+  "start": 83.69,
+  "end": 83.79
+ },
+ {
+  "text": "medical",
+  "start": 83.79,
+  "end": 84.32
+ },
+ {
+  "text": "glossary,",
+  "start": 84.46,
+  "end": 85.25
+ },
+ {
+  "text": "complete",
+  "start": 85.26,
+  "end": 85.7
+ },
+ {
+  "text": "with",
+  "start": 85.7,
+  "end": 85.88
+ },
+ {
+  "text": "its",
+  "start": 85.98,
+  "end": 86.14
+ },
+ {
+  "text": "source.",
+  "start": 86.26,
+  "end": 86.81
+ },
+ {
+  "text": "Does",
+  "start": 87.71,
+  "end": 87.81
+ },
+ {
+  "text": "the",
+  "start": 87.66,
+  "end": 87.68
+ },
+ {
+  "text": "report",
+  "start": 88.23,
+  "end": 88.33
+ },
+ {
+  "text": "mention",
+  "start": 88.39,
+  "end": 88.85
+ },
+ {
+  "text": "a",
+  "start": 88.85,
+  "end": 88.92
+ },
+ {
+  "text": "medication,",
+  "start": 88.92,
+  "end": 89.8
+ },
+ {
+  "text": "such",
+  "start": 89.8,
+  "end": 90.09
+ },
+ {
+  "text": "as",
+  "start": 90.09,
+  "end": 90.24
+ },
+ {
+  "text": "ramipril?",
+  "start": 90.24,
+  "end": 91.13
+ },
+ {
+  "text": "Referto",
+  "start": 91.23,
+  "end": 91.76
+ },
+ {
+  "text": "locates",
+  "start": 91.9,
+  "end": 92.27
+ },
+ {
+  "text": "it",
+  "start": 92.28,
+  "end": 92.29
+ },
+ {
+  "text": "in",
+  "start": 92.4,
+  "end": 92.53
+ },
+ {
+  "text": "the",
+  "start": 92.7,
+  "end": 92.74
+ },
+ {
+  "text": "official",
+  "start": 92.74,
+  "end": 93.32
+ },
+ {
+  "text": "AIFA,",
+  "start": 93.42,
+  "end": 93.85
+ },
+ {
+  "text": "Italian",
+  "start": 93.92,
+  "end": 94.47
+ },
+ {
+  "text": "Medicines",
+  "start": 94.47,
+  "end": 95.21
+ },
+ {
+  "text": "Agency",
+  "start": 95.27,
+  "end": 95.74
+ },
+ {
+  "text": "database,",
+  "start": 95.74,
+  "end": 96.59
+ },
+ {
+  "text": "and",
+  "start": 96.59,
+  "end": 96.84
+ },
+ {
+  "text": "opens",
+  "start": 96.84,
+  "end": 97.26
+ },
+ {
+  "text": "the",
+  "start": 97.26,
+  "end": 97.5
+ },
+ {
+  "text": "patient",
+  "start": 97.53,
+  "end": 98.01
+ },
+ {
+  "text": "information",
+  "start": 98.11,
+  "end": 99.02
+ },
+ {
+  "text": "leaflet,",
+  "start": 99.02,
+  "end": 99.7
+ },
+ {
+  "text": "where",
+  "start": 99.74,
+  "end": 100.08
+ },
+ {
+  "text": "Giovanna",
+  "start": 100.08,
+  "end": 100.68
+ },
+ {
+  "text": "can",
+  "start": 100.68,
+  "end": 100.87
+ },
+ {
+  "text": "ask",
+  "start": 100.87,
+  "end": 101.155
+ },
+ {
+  "text": "her",
+  "start": 101.155,
+  "end": 101.44
+ },
+ {
+  "text": "own",
+  "start": 101.44,
+  "end": 101.6
+ },
+ {
+  "text": "questions,",
+  "start": 101.6,
+  "end": 102.44
+ },
+ {
+  "text": "like",
+  "start": 102.44,
+  "end": 102.74
+ },
+ {
+  "text": "what",
+  "start": 102.74,
+  "end": 103.01
+ },
+ {
+  "text": "it",
+  "start": 103.12,
+  "end": 103.19
+ },
+ {
+  "text": "is",
+  "start": 103.19,
+  "end": 103.32
+ },
+ {
+  "text": "for.",
+  "start": 103.44,
+  "end": 103.86
+ },
+ {
+  "text": "The",
+  "start": 103.86,
+  "end": 104.08
+ },
+ {
+  "text": "answer",
+  "start": 104.08,
+  "end": 104.52
+ },
+ {
+  "text": "comes",
+  "start": 104.52,
+  "end": 104.9
+ },
+ {
+  "text": "straight",
+  "start": 104.9,
+  "end": 105.22
+ },
+ {
+  "text": "from",
+  "start": 105.22,
+  "end": 105.38
+ },
+ {
+  "text": "the",
+  "start": 105.42,
+  "end": 105.56
+ },
+ {
+  "text": "leaflet,",
+  "start": 105.56,
+  "end": 106.1
+ },
+ {
+  "text": "with",
+  "start": 106.1,
+  "end": 106.34
+ },
+ {
+  "text": "the",
+  "start": 106.34,
+  "end": 106.52
+ },
+ {
+  "text": "section",
+  "start": 106.52,
+  "end": 106.56
+ },
+ {
+  "text": "where",
+  "start": 107.12,
+  "end": 107.21
+ },
+ {
+  "text": "to",
+  "start": 107.27,
+  "end": 107.33
+ },
+ {
+  "text": "find",
+  "start": 107.37,
+  "end": 107.61
+ },
+ {
+  "text": "it.",
+  "start": 107.61,
+  "end": 107.88
+ },
+ {
+  "text": "Does",
+  "start": 108.67,
+  "end": 108.77
+ },
+ {
+  "text": "the",
+  "start": 108.77,
+  "end": 108.89
+ },
+ {
+  "text": "doctor",
+  "start": 108.89,
+  "end": 109.25
+ },
+ {
+  "text": "recommend",
+  "start": 109.37,
+  "end": 109.8
+ },
+ {
+  "text": "a",
+  "start": 109.8,
+  "end": 109.94
+ },
+ {
+  "text": "follow-up",
+  "start": 109.94,
+  "end": 110.42
+ },
+ {
+  "text": "cardiology",
+  "start": 110.42,
+  "end": 111.2
+ },
+ {
+  "text": "appointment?",
+  "start": 111.26,
+  "end": 112.09
+ },
+ {
+  "text": "Referto",
+  "start": 112.1,
+  "end": 112.53
+ },
+ {
+  "text": "displays",
+  "start": 112.95,
+  "end": 113.03
+ },
+ {
+  "text": "the",
+  "start": 113.03,
+  "end": 113.22
+ },
+ {
+  "text": "nearest",
+  "start": 113.22,
+  "end": 113.66
+ },
+ {
+  "text": "cardiology",
+  "start": 113.66,
+  "end": 114.26
+ },
+ {
+  "text": "clinics,",
+  "start": 114.31,
+  "end": 114.84
+ },
+ {
+  "text": "with",
+  "start": 114.96,
+  "end": 115.1
+ },
+ {
+  "text": "the",
+  "start": 115.1,
+  "end": 115.29
+ },
+ {
+  "text": "distance",
+  "start": 115.29,
+  "end": 115.85
+ },
+ {
+  "text": "from",
+  "start": 115.95,
+  "end": 116.1
+ },
+ {
+  "text": "her",
+  "start": 116.1,
+  "end": 116.24
+ },
+ {
+  "text": "home,",
+  "start": 116.27,
+  "end": 116.82
+ },
+ {
+  "text": "and",
+  "start": 116.86,
+  "end": 117.02
+ },
+ {
+  "text": "shows",
+  "start": 117.14,
+  "end": 117.5
+ },
+ {
+  "text": "each",
+  "start": 117.5,
+  "end": 117.84
+ },
+ {
+  "text": "one",
+  "start": 117.84,
+  "end": 117.99
+ },
+ {
+  "text": "on",
+  "start": 117.99,
+  "end": 118.26
+ },
+ {
+  "text": "a",
+  "start": 118.26,
+  "end": 118.34
+ },
+ {
+  "text": "map.",
+  "start": 118.55,
+  "end": 118.84
+ },
+ {
+  "text": "Behind",
+  "start": 121.27,
+  "end": 121.42
+ },
+ {
+  "text": "the",
+  "start": 121.42,
+  "end": 121.66
+ },
+ {
+  "text": "scenes,",
+  "start": 121.73,
+  "end": 122.36
+ },
+ {
+  "text": "an",
+  "start": 122.36,
+  "end": 122.52
+ },
+ {
+  "text": "AI",
+  "start": 122.64,
+  "end": 122.7
+ },
+ {
+  "text": "agent",
+  "start": 122.7,
+  "end": 123.13
+ },
+ {
+  "text": "reads",
+  "start": 123.13,
+  "end": 123.53
+ },
+ {
+  "text": "the",
+  "start": 123.63,
+  "end": 123.81
+ },
+ {
+  "text": "report",
+  "start": 123.81,
+  "end": 124.41
+ },
+ {
+  "text": "and",
+  "start": 124.41,
+  "end": 124.65
+ },
+ {
+  "text": "checks",
+  "start": 124.65,
+  "end": 124.69
+ },
+ {
+  "text": "the",
+  "start": 125.1,
+  "end": 125.14
+ },
+ {
+  "text": "AIFA",
+  "start": 125.14,
+  "end": 125.94
+ },
+ {
+  "text": "database",
+  "start": 125.98,
+  "end": 126.53
+ },
+ {
+  "text": "and",
+  "start": 126.53,
+  "end": 126.75
+ },
+ {
+  "text": "a",
+  "start": 126.75,
+  "end": 126.81
+ },
+ {
+  "text": "medical",
+  "start": 126.81,
+  "end": 127.11
+ },
+ {
+  "text": "glossary.",
+  "start": 127.67,
+  "end": 128.14
+ },
+ {
+  "text": "Healthcare",
+  "start": 128.14,
+  "end": 128.88
+ },
+ {
+  "text": "facilities",
+  "start": 128.88,
+  "end": 129.56
+ },
+ {
+  "text": "come",
+  "start": 129.68,
+  "end": 129.91
+ },
+ {
+  "text": "from",
+  "start": 129.91,
+  "end": 130.2
+ },
+ {
+  "text": "open",
+  "start": 130.2,
+  "end": 130.49
+ },
+ {
+  "text": "data,",
+  "start": 130.49,
+  "end": 130.96
+ },
+ {
+  "text": "based",
+  "start": 130.99,
+  "end": 131.2
+ },
+ {
+  "text": "on",
+  "start": 131.34,
+  "end": 131.46
+ },
+ {
+  "text": "the",
+  "start": 131.46,
+  "end": 131.58
+ },
+ {
+  "text": "medical",
+  "start": 131.58,
+  "end": 132.01
+ },
+ {
+  "text": "specialty",
+  "start": 132.08,
+  "end": 132.69
+ },
+ {
+  "text": "in",
+  "start": 132.69,
+  "end": 132.71
+ },
+ {
+  "text": "the",
+  "start": 132.83,
+  "end": 133.06
+ },
+ {
+  "text": "report.",
+  "start": 133.28,
+  "end": 133.7
+ },
+ {
+  "text": "The",
+  "start": 133.7,
+  "end": 133.92
+ },
+ {
+  "text": "language",
+  "start": 133.92,
+  "end": 134.5
+ },
+ {
+  "text": "model",
+  "start": 134.5,
+  "end": 134.85
+ },
+ {
+  "text": "runs",
+  "start": 134.96,
+  "end": 135.13
+ },
+ {
+  "text": "on",
+  "start": 135.28,
+  "end": 135.29
+ },
+ {
+  "text": "AMD",
+  "start": 135.29,
+  "end": 135.51
+ },
+ {
+  "text": "infrastructure,",
+  "start": 135.51,
+  "end": 136.74
+ },
+ {
+  "text": "with",
+  "start": 136.74,
+  "end": 137.27
+ },
+ {
+  "text": "AMD",
+  "start": 137.27,
+  "end": 137.31
+ },
+ {
+  "text": "token",
+  "start": 137.74,
+  "end": 138.09
+ },
+ {
+  "text": "factory.",
+  "start": 138.14,
+  "end": 138.97
+ },
+ {
+  "text": "And",
+  "start": 140.22,
+  "end": 140.35
+ },
+ {
+  "text": "every",
+  "start": 140.35,
+  "end": 140.4
+ },
+ {
+  "text": "run",
+  "start": 140.96,
+  "end": 141.05
+ },
+ {
+  "text": "leaves",
+  "start": 141.11,
+  "end": 141.57
+ },
+ {
+  "text": "a",
+  "start": 141.57,
+  "end": 141.65
+ },
+ {
+  "text": "trace.",
+  "start": 141.65,
+  "end": 142.35
+ },
+ {
+  "text": "Timings,",
+  "start": 142.35,
+  "end": 143.13
+ },
+ {
+  "text": "tokens,",
+  "start": 143.13,
+  "end": 143.82
+ },
+ {
+  "text": "the",
+  "start": 143.82,
+  "end": 144.08
+ },
+ {
+  "text": "tools",
+  "start": 144.08,
+  "end": 144.48
+ },
+ {
+  "text": "the",
+  "start": 144.62,
+  "end": 144.74
+ },
+ {
+  "text": "agent",
+  "start": 144.79,
+  "end": 144.99
+ },
+ {
+  "text": "called,",
+  "start": 145.42,
+  "end": 146.02
+ },
+ {
+  "text": "and",
+  "start": 146.02,
+  "end": 146.26
+ },
+ {
+  "text": "the",
+  "start": 146.26,
+  "end": 146.5
+ },
+ {
+  "text": "outcome.",
+  "start": 146.5,
+  "end": 146.9
+ },
+ {
+  "text": "Never",
+  "start": 147.5,
+  "end": 147.84
+ },
+ {
+  "text": "the",
+  "start": 147.84,
+  "end": 148.07
+ },
+ {
+  "text": "text",
+  "start": 148.07,
+  "end": 148.37
+ },
+ {
+  "text": "of",
+  "start": 148.37,
+  "end": 148.52
+ },
+ {
+  "text": "the",
+  "start": 148.52,
+  "end": 148.63
+ },
+ {
+  "text": "report.",
+  "start": 149.19,
+  "end": 149.43
+ },
+ {
+  "text": "We",
+  "start": 149.45,
+  "end": 149.59
+ },
+ {
+  "text": "use",
+  "start": 149.59,
+  "end": 149.82
+ },
+ {
+  "text": "these",
+  "start": 149.82,
+  "end": 150.19
+ },
+ {
+  "text": "traces",
+  "start": 150.19,
+  "end": 150.66
+ },
+ {
+  "text": "to",
+  "start": 150.66,
+  "end": 150.77
+ },
+ {
+  "text": "measure",
+  "start": 150.89,
+  "end": 151.38
+ },
+ {
+  "text": "every",
+  "start": 151.38,
+  "end": 151.67
+ },
+ {
+  "text": "version",
+  "start": 151.67,
+  "end": 152.09
+ },
+ {
+  "text": "of",
+  "start": 152.19,
+  "end": 152.33
+ },
+ {
+  "text": "Referto,",
+  "start": 152.33,
+  "end": 153.14
+ },
+ {
+  "text": "and",
+  "start": 153.18,
+  "end": 153.34
+ },
+ {
+  "text": "to",
+  "start": 153.46,
+  "end": 153.53
+ },
+ {
+  "text": "make",
+  "start": 153.55,
+  "end": 153.86
+ },
+ {
+  "text": "the",
+  "start": 153.86,
+  "end": 154.1
+ },
+ {
+  "text": "next",
+  "start": 154.1,
+  "end": 154.31
+ },
+ {
+  "text": "one",
+  "start": 154.31,
+  "end": 154.88
+ },
+ {
+  "text": "better.",
+  "start": 154.88,
+  "end": 155.38
+ },
+ {
+  "text": "The",
+  "start": 155.38,
+  "end": 155.64
+ },
+ {
+  "text": "timing",
+  "start": 155.64,
+  "end": 156.17
+ },
+ {
+  "text": "is",
+  "start": 156.17,
+  "end": 156.34
+ },
+ {
+  "text": "right.",
+  "start": 156.34,
+  "end": 157.06
+ },
+ {
+  "text": "Since",
+  "start": 157.06,
+  "end": 157.38
+ },
+ {
+  "text": "2026,",
+  "start": 157.38,
+  "end": 158.66
+ },
+ {
+  "text": "every",
+  "start": 158.66,
+  "end": 158.91
+ },
+ {
+  "text": "report",
+  "start": 159.34,
+  "end": 159.46
+ },
+ {
+  "text": "in",
+  "start": 159.46,
+  "end": 159.61
+ },
+ {
+  "text": "Italy",
+  "start": 159.61,
+  "end": 160.1
+ },
+ {
+  "text": "must",
+  "start": 160.1,
+  "end": 160.42
+ },
+ {
+  "text": "reach",
+  "start": 160.46,
+  "end": 160.8
+ },
+ {
+  "text": "the",
+  "start": 160.8,
+  "end": 161.02
+ },
+ {
+  "text": "electronic",
+  "start": 161.02,
+  "end": 161.58
+ },
+ {
+  "text": "health",
+  "start": 162.15,
+  "end": 162.23
+ },
+ {
+  "text": "record",
+  "start": 162.23,
+  "end": 162.68
+ },
+ {
+  "text": "within",
+  "start": 162.68,
+  "end": 163.13
+ },
+ {
+  "text": "five",
+  "start": 163.13,
+  "end": 163.43
+ },
+ {
+  "text": "days.",
+  "start": 163.43,
+  "end": 163.95
+ },
+ {
+  "text": "The",
+  "start": 163.95,
+  "end": 164.17
+ },
+ {
+  "text": "country",
+  "start": 164.17,
+  "end": 164.7
+ },
+ {
+  "text": "invested",
+  "start": 164.7,
+  "end": 165.31
+ },
+ {
+  "text": "1.38",
+  "start": 165.31,
+  "end": 166.19
+ },
+ {
+  "text": "billion",
+  "start": 166.62,
+  "end": 166.73
+ },
+ {
+  "text": "euros",
+  "start": 166.73,
+  "end": 167.22
+ },
+ {
+  "text": "in",
+  "start": 167.22,
+  "end": 167.38
+ },
+ {
+  "text": "it,",
+  "start": 167.38,
+  "end": 167.76
+ },
+ {
+  "text": "yet",
+  "start": 167.82,
+  "end": 167.98
+ },
+ {
+  "text": "only",
+  "start": 168.1,
+  "end": 168.42
+ },
+ {
+  "text": "one",
+  "start": 168.42,
+  "end": 168.69
+ },
+ {
+  "text": "in",
+  "start": 168.69,
+  "end": 168.87
+ },
+ {
+  "text": "four",
+  "start": 168.87,
+  "end": 168.95
+ },
+ {
+  "text": "Italians",
+  "start": 169.54,
+  "end": 169.98
+ },
+ {
+  "text": "uses",
+  "start": 169.98,
+  "end": 170.35
+ },
+ {
+  "text": "it.",
+  "start": 170.35,
+  "end": 170.8
+ },
+ {
+  "text": "That",
+  "start": 170.8,
+  "end": 171.09
+ },
+ {
+  "text": "is",
+  "start": 171.19,
+  "end": 171.35
+ },
+ {
+  "text": "our",
+  "start": 171.35,
+  "end": 171.62
+ },
+ {
+  "text": "market.",
+  "start": 171.62,
+  "end": 172.41
+ },
+ {
+  "text": "Italian",
+  "start": 172.51,
+  "end": 173.04
+ },
+ {
+  "text": "digital",
+  "start": 173.12,
+  "end": 173.55
+ },
+ {
+  "text": "health,",
+  "start": 173.98,
+  "end": 174.58
+ },
+ {
+  "text": "worth",
+  "start": 174.62,
+  "end": 174.97
+ },
+ {
+  "text": "2.7",
+  "start": 174.99,
+  "end": 175.71
+ },
+ {
+  "text": "billion",
+  "start": 175.71,
+  "end": 175.75
+ },
+ {
+  "text": "euros",
+  "start": 176.34,
+  "end": 176.67
+ },
+ {
+  "text": "a",
+  "start": 176.7,
+  "end": 176.77
+ },
+ {
+  "text": "year,",
+  "start": 176.77,
+  "end": 177.24
+ },
+ {
+  "text": "and",
+  "start": 177.25,
+  "end": 177.49
+ },
+ {
+  "text": "growing.",
+  "start": 177.49,
+  "end": 178.17
+ },
+ {
+  "text": "Referto",
+  "start": 178.32,
+  "end": 178.86
+ },
+ {
+  "text": "plugs",
+  "start": 178.86,
+  "end": 179.21
+ },
+ {
+  "text": "into",
+  "start": 179.31,
+  "end": 179.59
+ },
+ {
+  "text": "the",
+  "start": 179.59,
+  "end": 179.83
+ },
+ {
+  "text": "portals",
+  "start": 179.83,
+  "end": 180.35
+ },
+ {
+  "text": "that",
+  "start": 180.35,
+  "end": 180.78
+ },
+ {
+  "text": "deliver",
+  "start": 180.78,
+  "end": 181.13
+ },
+ {
+  "text": "reports.",
+  "start": 181.18,
+  "end": 181.96
+ },
+ {
+  "text": "Doctors",
+  "start": 181.96,
+  "end": 182.31
+ },
+ {
+  "text": "practices",
+  "start": 182.88,
+  "end": 183.28
+ },
+ {
+  "text": "first,",
+  "start": 183.28,
+  "end": 183.85
+ },
+ {
+  "text": "like",
+  "start": 183.85,
+  "end": 184.18
+ },
+ {
+  "text": "Giovanna's,",
+  "start": 184.18,
+  "end": 185.16
+ },
+ {
+  "text": "then",
+  "start": 185.16,
+  "end": 185.49
+ },
+ {
+  "text": "labs,",
+  "start": 185.49,
+  "end": 185.98
+ },
+ {
+  "text": "then",
+  "start": 185.98,
+  "end": 186.31
+ },
+ {
+  "text": "every",
+  "start": 186.31,
+  "end": 186.71
+ },
+ {
+  "text": "region's",
+  "start": 186.71,
+  "end": 187.46
+ },
+ {
+  "text": "health",
+  "start": 187.46,
+  "end": 187.81
+ },
+ {
+  "text": "record.",
+  "start": 187.9,
+  "end": 188.58
+ },
+ {
+  "text": "And",
+  "start": 188.62,
+  "end": 188.78
+ },
+ {
+  "text": "with",
+  "start": 188.9,
+  "end": 189.17
+ },
+ {
+  "text": "the",
+  "start": 189.17,
+  "end": 189.42
+ },
+ {
+  "text": "European",
+  "start": 189.42,
+  "end": 189.75
+ },
+ {
+  "text": "health",
+  "start": 190.32,
+  "end": 190.59
+ },
+ {
+  "text": "data",
+  "start": 190.59,
+  "end": 190.93
+ },
+ {
+  "text": "space,",
+  "start": 190.93,
+  "end": 191.51
+ },
+ {
+  "text": "the",
+  "start": 191.51,
+  "end": 191.76
+ },
+ {
+  "text": "same",
+  "start": 191.76,
+  "end": 192.1
+ },
+ {
+  "text": "need",
+  "start": 192.1,
+  "end": 192.44
+ },
+ {
+  "text": "reaches",
+  "start": 192.44,
+  "end": 193.03
+ },
+ {
+  "text": "450",
+  "start": 193.03,
+  "end": 193.79
+ },
+ {
+  "text": "million",
+  "start": 193.79,
+  "end": 194.35
+ },
+ {
+  "text": "Europeans.",
+  "start": 194.78,
+  "end": 195.4
+ },
+ {
+  "text": "A",
+  "start": 195.5,
+  "end": 195.54
+ },
+ {
+  "text": "report",
+  "start": 195.54,
+  "end": 196.04
+ },
+ {
+  "text": "understood",
+  "start": 196.04,
+  "end": 196.62
+ },
+ {
+  "text": "is",
+  "start": 196.88,
+  "end": 197.05
+ },
+ {
+  "text": "one",
+  "start": 197.2,
+  "end": 197.29
+ },
+ {
+  "text": "less",
+  "start": 197.35,
+  "end": 197.63
+ },
+ {
+  "text": "question",
+  "start": 197.63,
+  "end": 198.21
+ },
+ {
+  "text": "for",
+  "start": 198.36,
+  "end": 198.5
+ },
+ {
+  "text": "the",
+  "start": 198.55,
+  "end": 198.77
+ },
+ {
+  "text": "doctor.",
+  "start": 198.88,
+  "end": 199.62
+ },
+ {
+  "text": "And",
+  "start": 199.62,
+  "end": 199.87
+ },
+ {
+  "text": "the",
+  "start": 199.87,
+  "end": 200.09
+ },
+ {
+  "text": "last",
+  "start": 200.19,
+  "end": 200.46
+ },
+ {
+  "text": "word",
+  "start": 200.46,
+  "end": 200.72
+ },
+ {
+  "text": "always",
+  "start": 200.86,
+  "end": 201.23
+ },
+ {
+  "text": "belongs",
+  "start": 201.66,
+  "end": 201.7
+ },
+ {
+  "text": "to",
+  "start": 201.7,
+  "end": 201.94
+ },
+ {
+  "text": "your",
+  "start": 201.94,
+  "end": 202.26
+ },
+ {
+  "text": "doctor.",
+  "start": 202.3,
+  "end": 203.13
+ },
+ {
+  "text": "Referto,",
+  "start": 203.13,
+  "end": 204.0
+ },
+ {
+  "text": "your",
+  "start": 204.02,
+  "end": 204.39
+ },
+ {
+  "text": "medical",
+  "start": 204.39,
+  "end": 205.01
+ },
+ {
+  "text": "report,",
+  "start": 205.17,
+  "end": 205.85
+ },
+ {
+  "text": "finally",
+  "start": 206.0,
+  "end": 206.55
+ },
+ {
+  "text": "made",
+  "start": 206.55,
+  "end": 206.89
+ },
+ {
+  "text": "clear.",
+  "start": 206.99,
+  "end": 207.62
+ }
+]

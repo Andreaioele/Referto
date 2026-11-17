@@ -29,6 +29,7 @@ models/
 .DS_Store
 .idea/
 .vscode/
+.claude/
 
 # Parole del glossario incontrate nei referti analizzati (dato locale)
 resources/glossario/parole_salvate.json
@@ -62,7 +63,14 @@ docs/archify/**/*.delivery.json
 resources/glossario/cache_strati/
 resources/glossario/glossario_strati.json
 
-# Slide del prodotto (HyperFrames): file di lavoro locali
+# Video di presentazione (HyperFrames): esportazioni e file di lavoro locali
+resources/video/renders/
+resources/video/.hyperframes/
+resources/video/.thumbnails/
+resources/video/.waveform-cache/
+
+# Slide del prodotto (HyperFrames): esportazioni e file di lavoro locali
+resources/slide/renders/
 resources/slide/.hyperframes/
 
 # Cover della submission (HyperFrames): file di lavoro locali

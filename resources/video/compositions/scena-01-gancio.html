@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scene 1 e 2 del copione (la domanda e il desiderio), in una sola
+      composizione perché le carte delle «tre strade» si girano senza stacchi.
+      Tempi locali: voce 01 a +0,8 s, voce 02 a +25,5 s (voci inglesi di
+      riferimento in assets/voce/). Dati: 58% HLS19, 5.700 medici di famiglia
+      mancanti GIMBE (marzo 2026), vedi docs/18-valore-di-business.md. Giovanna
+      Ferri (72 anni, Milano) è la paziente finta del portale.
+    -->
+    <template>
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        @font-face {
+          font-family: "IBM Plex Mono";
+          src: url("assets/fonts/ibm-plex-mono-latin-500.woff2") format("woff2");
+          font-weight: 500;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: #0b1512;
+          font-family: "Nunito Sans", sans-serif;
+          color: #eef4f1;
+        }
+        .s1-pieno {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        #s1-alone {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1200px 700px at 50% 45%, #163a31 0%, #0b1512 70%);
+          opacity: 0;
+        }
+        /* Giovanna */
+        #s1-persona {
+          display: flex;
+          align-items: center;
+          gap: 36px;
+          opacity: 0;
+        }
+        #s1-avatar {
+          width: 150px;
+          height: 150px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #8fd6bd;
+          color: #0b1512;
+          font-size: 76px;
+          font-weight: 900;
+        }
+        #s1-persona-testo strong {
+          display: block;
+          font-size: 120px;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          line-height: 1;
+        }
+        #s1-persona-testo span {
+          color: #9fb3ab;
+          font-size: 40px;
+          font-weight: 700;
+        }
+        /* La notifica del fascicolo */
+        #s1-notifica-box {
+          gap: 34px;
+        }
+        #s1-notifica {
+          width: 980px;
+          display: flex;
+          align-items: center;
+          gap: 34px;
+          padding: 34px 40px;
+          border-radius: 36px;
+          background: rgba(251, 252, 251, 0.97);
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+          color: #18221f;
+          opacity: 0;
+        }
+        .s1-app {
+          flex: none;
+          width: 112px;
+          height: 112px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 28px;
+          background: #176b58;
+          color: #ffffff;
+        }
+        .s1-notifica-testo {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          min-width: 0;
+        }
+        .s1-notifica-app {
+          display: flex;
+          justify-content: space-between;
+          color: #6a7772;
+          font-size: 26px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+        .s1-notifica-titolo {
+          font-size: 50px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+        .s1-notifica-sotto {
+          color: #4d5a56;
+          font-size: 30px;
+          font-weight: 600;
+        }
+        #s1-visita {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px 30px;
+          border: 2px solid rgba(143, 214, 189, 0.4);
+          border-radius: 999px;
+          background: #0b1512;
+          color: #cfe6dd;
+          font-size: 34px;
+          font-weight: 700;
+          opacity: 0;
+        }
+        #s1-visita strong {
+          color: #8fd6bd;
+        }
+        /* Il referto, letto e riletto */
+        #s1-doc {
+          position: relative;
+          width: 1240px;
+          padding: 56px 72px;
+          border-radius: 18px;
+          background: #fbfcfb;
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 27px;
+          line-height: 1.75;
+          color: #2b3632;
+          overflow: hidden;
+          opacity: 0;
+        }
+        #s1-doc .s1-intestazione {
+          font-size: 22px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #6a7772;
+          padding-bottom: 18px;
+          margin-bottom: 18px;
+          border-bottom: 2px solid #e3e9e6;
+        }
+        #s1-doc p {
+          margin: 0;
+        }
+        .s1-evid {
+          border-radius: 6px;
+          padding: 0 6px;
+          background-color: rgba(229, 243, 237, 0);
+          color: #2b3632;
+        }
+        #s1-lettura {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 64px;
+          background: linear-gradient(180deg, rgba(47, 155, 127, 0) 0%, rgba(47, 155, 127, 0.22) 50%, rgba(47, 155, 127, 0) 100%);
+          opacity: 0;
+        }
+        #s1-volte {
+          position: absolute;
+          top: 34px;
+          right: 40px;
+          padding: 6px 18px;
+          border-radius: 999px;
+          background: #18221f;
+          color: #eef4f1;
+          font-family: "Nunito Sans", sans-serif;
+          font-size: 26px;
+          font-weight: 800;
+          opacity: 0;
+        }
+        /* «What does it mean?» e le stesse domande di tanti altri */
+        #s1-domanda {
+          margin: 0;
+          max-width: 1600px;
+          text-align: center;
+          font-size: 124px;
+          font-weight: 800;
+          letter-spacing: -0.035em;
+          line-height: 1.1;
+        }
+        #s1-domanda .s1-parola {
+          display: inline-block;
+          opacity: 0;
+        }
+        #s1-significa {
+          position: relative;
+          display: inline-block;
+          color: #8fd6bd;
+        }
+        #s1-sottolinea {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -4px;
+          height: 10px;
+          border-radius: 5px;
+          background: #2f9b7f;
+          transform-origin: left center;
+        }
+        .s1-eco {
+          position: absolute;
+          padding: 12px 24px;
+          border-radius: 22px 22px 22px 6px;
+          background: rgba(143, 214, 189, 0.14);
+          color: #b8cbc4;
+          font-size: 32px;
+          font-weight: 700;
+          white-space: nowrap;
+          opacity: 0;
+        }
+        /* Il dato */
+        #s1-dato {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
+        }
+        #s1-percento {
+          font-size: 300px;
+          font-weight: 900;
+          letter-spacing: -0.05em;
+          line-height: 0.95;
+          color: #8fd6bd;
+          font-variant-numeric: tabular-nums;
+          opacity: 0;
+        }
+        #s1-dato-frase {
+          margin: 0;
+          max-width: 1500px;
+          text-align: center;
+          font-size: 64px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.15;
+        }
+        #s1-dato-frase .s1-parola {
+          display: inline-block;
+          opacity: 0;
+        }
+        #s1-fonte {
+          margin-top: 22px;
+          color: #9fb3ab;
+          font-size: 28px;
+          font-weight: 600;
+          opacity: 0;
+        }
+        /* Le tre strade di oggi, che poi si girano nelle tre promesse */
+        #s1-alt-box {
+          gap: 44px;
+          padding-top: 300px;
+        }
+        #s1-bisogno {
+          font-size: 64px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          background: linear-gradient(90deg, #ffffff 0%, #8fd6bd 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          opacity: 0;
+        }
+        #s1-alt {
+          display: flex;
+          gap: 40px;
+          perspective: 1600px;
+        }
+        .s1-carta {
+          position: relative;
+          width: 480px;
+          height: 290px;
+          opacity: 0;
+        }
+        .s1-giro {
+          position: absolute;
+          inset: 0;
+          transform-style: preserve-3d;
+        }
+        .s1-faccia {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 20px;
+          padding: 36px 38px;
+          border-radius: 38px;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+        .s1-fronte {
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(160deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 30px 60px rgba(0, 0, 0, 0.35);
+        }
+        .s1-retro {
+          transform: rotateY(180deg);
+          justify-content: space-between;
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          background: linear-gradient(170deg, #ffffff 0%, #f1f6f4 100%);
+          color: #0b1512;
+          box-shadow: 0 50px 110px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(23, 107, 88, 0.06);
+        }
+        .s1-strada-testa {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          font-size: 40px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+        .s1-strada-icona {
+          flex: none;
+          width: 68px;
+          height: 68px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 20px;
+          background: rgba(143, 214, 189, 0.14);
+          color: #8fd6bd;
+        }
+        .s1-strada-mock {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 14px 20px;
+          border-radius: 18px;
+          background: rgba(0, 0, 0, 0.35);
+          color: #b8cbc4;
+          font-size: 27px;
+          font-weight: 600;
+        }
+        .s1-retro-alto {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .s1-glifo {
+          width: 72px;
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 24px;
+          background: linear-gradient(145deg, #34b893 0%, #176b58 100%);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 24px rgba(23, 107, 88, 0.35);
+          color: #ffffff;
+        }
+        .s1-numero {
+          color: #9fb3ab;
+          font-size: 26px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+        }
+        .s1-retro-titolo {
+          font-size: 40px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          line-height: 1.05;
+        }
+        .s1-retro-sotto {
+          color: #6a7772;
+          font-size: 26px;
+          font-weight: 600;
+        }
+        #s1-occupato {
+          padding: 4px 14px;
+          border-radius: 999px;
+          background: #b5452f;
+          color: #ffffff;
+          font-size: 22px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          opacity: 0;
+        }
+        #s1-medici {
+          display: flex;
+          align-items: baseline;
+          gap: 18px;
+          font-size: 40px;
+          font-weight: 700;
+          opacity: 0;
+        }
+        #s1-medici strong {
+          color: #f0a58f;
+          font-size: 64px;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+        }
+        #s1-medici span {
+          color: #9fb3ab;
+          font-size: 26px;
+          font-weight: 600;
+        }
+        /* «Something that sits right next to her report» */
+        #s1-accanto {
+          flex-direction: row;
+          gap: 48px;
+        }
+        #s1-doc-piccolo {
+          width: 900px;
+          padding: 40px 52px;
+          border-radius: 18px;
+          background: #fbfcfb;
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 22px;
+          line-height: 1.75;
+          color: #2b3632;
+          opacity: 0;
+        }
+        #s1-doc-piccolo p {
+          margin: 0;
+        }
+        #s1-doc-piccolo .s1-intestazione {
+          font-size: 18px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #6a7772;
+          padding-bottom: 14px;
+          margin-bottom: 14px;
+          border-bottom: 2px solid #e3e9e6;
+        }
+        #s1-bottone {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 26px 40px;
+          border-radius: 999px;
+          background: #176b58;
+          color: #ffffff;
+          font-size: 44px;
+          font-weight: 800;
+          box-shadow: 0 0 0 0 rgba(143, 214, 189, 0.5);
+          opacity: 0;
+        }
+        /* «Meet Referto»: dal buio alla luce */
+        #s1-cerchio {
+          width: 240px;
+          height: 240px;
+          flex: none;
+          border-radius: 50%;
+          background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f5f7f6 55%, #e9f2ee 100%);
+        }
+        #s1-marchio-box {
+          gap: 56px;
+          color: #18221f;
+        }
+        #s1-anello {
+          width: 520px;
+          height: 520px;
+          flex: none;
+          border-radius: 50%;
+          border: 3px solid rgba(23, 107, 88, 0.35);
+          opacity: 0;
+        }
+        #s1-lettere .s1-lettera {
+          display: inline-block;
+          opacity: 0;
+        }
+        #s1-riflesso {
+          position: absolute;
+          top: -40%;
+          left: 0;
+          width: 70px;
+          height: 180%;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+          opacity: 0;
+        }
+        #s1-marchio {
+          display: flex;
+          align-items: center;
+          gap: 40px;
+        }
+        #s1-r {
+          position: relative;
+          overflow: hidden;
+          width: 200px;
+          height: 200px;
+          flex: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 52px;
+          background: #176b58;
+          box-shadow: 0 24px 60px rgba(23, 107, 88, 0.32);
+          color: #ffffff;
+          font-size: 128px;
+          font-weight: 800;
+          line-height: 1;
+          opacity: 0;
+        }
+        #s1-nome-box {
+          overflow: hidden;
+          padding: 10px 0 18px;
+        }
+        #s1-nome {
+          font-size: 168px;
+          font-weight: 800;
+          letter-spacing: -0.045em;
+          line-height: 1;
+        }
+        #s1-slogan {
+          margin: 0;
+          font-size: 60px;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          color: #4d5a56;
+        }
+        #s1-slogan .s1-parola {
+          display: inline-block;
+          opacity: 0;
+        }
+        #s1-slogan .s1-verde {
+          color: #176b58;
+          font-weight: 800;
+        }
+      </style>
+
+      <div id="root" data-composition-id="scena-01-gancio" data-width="1920" data-height="1080">
+        <div id="s1-alone"></div>
+
+        <div class="s1-pieno">
+          <div id="s1-doc" data-layout-ignore>
+            <p class="s1-intestazione">Visita cardiologica · Poliambulatorio Valle Serena</p>
+            <p>Motivo della visita: controllo della pressione arteriosa.</p>
+            <p>Pressione arteriosa: 145/90 mmHg. Frequenza cardiaca: 72 bpm.</p>
+            <p>
+              Elettrocardiogramma: <span class="s1-evid">ritmo sinusale</span>, conduzione nella norma,
+              nessuna alterazione della <span class="s1-evid">ripolarizzazione</span>.
+            </p>
+            <p>Conclusioni: <span class="s1-evid">ipertensione arteriosa</span>.</p>
+            <p>Terapia: ramipril 5 mg, 1 compressa al mattino.</p>
+            <div id="s1-lettura" data-layout-allow-overlap></div>
+            <div id="s1-volte" data-layout-allow-overlap>2×</div>
+          </div>
+        </div>
+
+        <div class="s1-pieno">
+          <div id="s1-persona" data-layout-allow-overlap>
+            <div id="s1-avatar">G</div>
+            <div id="s1-persona-testo"><strong>Giovanna</strong><span>72 · Milan</span></div>
+          </div>
+        </div>
+
+        <div class="s1-pieno" id="s1-notifica-box">
+          <div id="s1-notifica" data-layout-allow-overlap>
+            <div class="s1-app"><svg width="62" height="62" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6M12 12v6M9 15h6"></path></svg></div>
+            <div class="s1-notifica-testo">
+              <div class="s1-notifica-app"><span>Electronic health record</span><span>now</span></div>
+              <div class="s1-notifica-titolo">New medical report available</div>
+              <div class="s1-notifica-sotto">Cardiology visit · Valle Serena Clinic</div>
+            </div>
+          </div>
+          <div id="s1-visita" data-layout-allow-overlap>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 11h18"></path></svg>
+            <span>Next talk with her doctor: <strong>in 3 weeks</strong></span>
+          </div>
+        </div>
+
+        <div class="s1-pieno">
+          <div class="s1-eco" style="left: 150px; top: 170px" data-layout-allow-overlap>Is 145/90 too high?</div>
+          <div class="s1-eco" style="left: 1290px; top: 140px" data-layout-allow-overlap>What is a sinus rhythm?</div>
+          <div class="s1-eco" style="left: 240px; top: 800px" data-layout-allow-overlap>Should I worry?</div>
+          <div class="s1-eco" style="left: 1240px; top: 820px" data-layout-allow-overlap>What does repolarization mean?</div>
+          <div class="s1-eco" style="left: 90px; top: 480px" data-layout-allow-overlap>Is this normal?</div>
+          <div class="s1-eco" style="left: 1500px; top: 480px" data-layout-allow-overlap>What now?</div>
+          <p id="s1-domanda" data-layout-allow-overlap>
+            <span class="s1-parola">What</span>
+            <span class="s1-parola">does</span>
+            <span class="s1-parola">it</span>
+            <span class="s1-parola" id="s1-significa">mean?<span id="s1-sottolinea" data-layout-allow-occlusion></span></span>
+          </p>
+        </div>
+
+        <div class="s1-pieno">
+          <div id="s1-dato">
+            <div id="s1-percento" data-layout-allow-overlap>58%</div>
+            <p id="s1-dato-frase" data-layout-allow-overlap>
+              <span class="s1-parola">of</span>
+              <span class="s1-parola">Italians</span>
+              <span class="s1-parola">struggle</span>
+              <span class="s1-parola">to</span>
+              <span class="s1-parola">make</span>
+              <span class="s1-parola">sense</span>
+              <span class="s1-parola">of</span>
+              <span class="s1-parola">health</span>
+              <span class="s1-parola">information</span>
+            </p>
+            <div id="s1-fonte" data-layout-allow-overlap>Source: HLS19 Health Literacy Survey, 2021 · limited health literacy</div>
+          </div>
+        </div>
+
+        <div class="s1-pieno" id="s1-alt-box">
+          <div id="s1-bisogno" data-layout-allow-overlap>What Giovanna needs</div>
+          <div id="s1-alt">
+            <div class="s1-carta" id="s1-a1">
+              <div class="s1-giro" id="s1-g1">
+                <div class="s1-faccia s1-fronte">
+                  <div class="s1-strada-testa" data-layout-allow-overlap><div class="s1-strada-icona"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg></div>Search online</div>
+                  <div class="s1-strada-mock" data-layout-allow-overlap><span data-layout-allow-overlap>ripolarizzazione cosa vuol dire</span></div>
+                </div>
+                <div class="s1-faccia s1-retro">
+                  <div class="s1-retro-alto"><div class="s1-glifo"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></div><span class="s1-numero" data-layout-allow-overlap>01</span></div>
+                  <div><div class="s1-retro-titolo" data-layout-allow-overlap>A source for every answer</div></div>
+                  <div class="s1-retro-sotto" data-layout-allow-overlap>not a random web page</div>
+                </div>
+              </div>
+            </div>
+            <div class="s1-carta" id="s1-a2">
+              <div class="s1-giro" id="s1-g2">
+                <div class="s1-faccia s1-fronte">
+                  <div class="s1-strada-testa" data-layout-allow-overlap><div class="s1-strada-icona"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"></path></svg></div>Ask a chatbot</div>
+                  <div class="s1-strada-mock" data-layout-allow-overlap><span data-layout-allow-overlap>Is my ECG normal?</span></div>
+                </div>
+                <div class="s1-faccia s1-retro">
+                  <div class="s1-retro-alto"><div class="s1-glifo"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></div><span class="s1-numero" data-layout-allow-overlap>02</span></div>
+                  <div><div class="s1-retro-titolo" data-layout-allow-overlap>Only what her doctor wrote</div></div>
+                  <div class="s1-retro-sotto" data-layout-allow-overlap>no guesses, no diagnosis</div>
+                </div>
+              </div>
+            </div>
+            <div class="s1-carta" id="s1-a3">
+              <div class="s1-giro" id="s1-g3">
+                <div class="s1-faccia s1-fronte">
+                  <div class="s1-strada-testa" data-layout-allow-overlap><div class="s1-strada-icona"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></div>Call the doctor</div>
+                  <div class="s1-strada-mock" data-layout-allow-overlap><span data-layout-allow-overlap>Family doctor…</span><span id="s1-occupato" data-layout-allow-overlap>Busy</span></div>
+                </div>
+                <div class="s1-faccia s1-retro">
+                  <div class="s1-retro-alto"><div class="s1-glifo"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"></path></svg></div><span class="s1-numero" data-layout-allow-overlap>03</span></div>
+                  <div><div class="s1-retro-titolo" data-layout-allow-overlap>Plain words, right away</div></div>
+                  <div class="s1-retro-sotto" data-layout-allow-overlap>without waiting three weeks</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="s1-medici" data-layout-allow-overlap><strong>5,700+</strong>family doctors missing in Italy<span>GIMBE, 2026</span></div>
+        </div>
+
+        <div class="s1-pieno" id="s1-accanto">
+          <div id="s1-doc-piccolo" data-layout-allow-overlap>
+            <p class="s1-intestazione">Visita cardiologica · Poliambulatorio Valle Serena</p>
+            <p>Pressione arteriosa: 145/90 mmHg. Frequenza cardiaca: 72 bpm.</p>
+            <p>Elettrocardiogramma: ritmo sinusale, conduzione nella norma, nessuna alterazione della ripolarizzazione.</p>
+            <p>Conclusioni: ipertensione arteriosa.</p>
+            <p>Terapia: ramipril 5 mg, 1 compressa al mattino.</p>
+          </div>
+          <div id="s1-bottone" data-layout-allow-overlap>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path></svg>
+            <span>Explain this to me</span>
+          </div>
+        </div>
+
+        <div class="s1-pieno"><div id="s1-cerchio"></div></div>
+        <div class="s1-pieno"><div id="s1-anello"></div></div>
+        <div class="s1-pieno" id="s1-marchio-box">
+          <div id="s1-marchio">
+            <div id="s1-r">R<span id="s1-riflesso"></span></div>
+            <div id="s1-nome-box"><div id="s1-nome"><span id="s1-lettere"><span class="s1-lettera">R</span><span class="s1-lettera">e</span><span class="s1-lettera">f</span><span class="s1-lettera">e</span><span class="s1-lettera">r</span><span class="s1-lettera">t</span><span class="s1-lettera">o</span></span></div></div>
+          </div>
+          <p id="s1-slogan" data-layout-allow-overlap>
+            <span class="s1-parola">Your</span>
+            <span class="s1-parola">medical</span>
+            <span class="s1-parola">report,</span>
+            <span class="s1-parola">explained</span>
+            <span class="s1-parola">in</span>
+            <span class="s1-parola s1-verde">plain</span>
+            <span class="s1-parola s1-verde">words.</span>
+          </p>
+        </div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [0.9, 0.84], [1.317, 1.47], [2.493, 2.71], [4.755, 5.2], [6.457, 7.0], [7.171, 7.82], [10.29, 11.52], [11.314, 12.08], [13.148, 14.48], [14.886, 17.11], [15.695, 19.36], [16.945, 20.61], [19.457, 23.88], [21.255, 26.18], [22.124, 27.03], [24.85, 30.36], [25.6, 31.04], [26.362, 31.97], [27.824, 33.91], [28.502, 34.82], [29.74, 36.44], [31.55, 38.37], [33.038, 40.63], [34.693, 42.58], [35.836, 44.48], [37.098, 46.18], [37.36, 46.35], [38.276, 47.87], [39.502, 48.69], [41.002, 50.84]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: voce 01 a +0,8 s, voce 02 a +25,5 s.
+        const tl = gsap.timeline({ paused: true });
+        const parole = (sel, attacchi, anticipo = 0.1) => {
+          document.querySelectorAll(sel).forEach((parola, i) => {
+            tl.fromTo(parola, { opacity: 0, y: 30, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power3.out" }, attacchi[i] - anticipo);
+          });
+        };
+
+        tl.fromTo("#s1-alone", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "power1.out" }, 0);
+
+        // «This is Giovanna.»
+        tl.fromTo("#s1-persona", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, 0.75);
+        tl.fromTo("#s1-persona", { opacity: 1, y: 0, scale: 1 }, { opacity: 0, y: -60, scale: 0.9, duration: 0.45, ease: "power2.in", immediateRender: false }, 2.0);
+
+        // «Her cardiology report has just landed in her electronic health record»
+        tl.fromTo("#s1-notifica", { opacity: 0, y: -140, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.4)" }, 2.25);
+        tl.fromTo("#s1-notifica", { scale: 1 }, { scale: 1.03, duration: 0.25, ease: "power1.out", yoyo: true, repeat: 1, immediateRender: false }, 4.75);
+        // «weeks before she can talk to her doctor»
+        tl.fromTo("#s1-visita", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 6.4);
+
+        // «She reads it once. Then again.»
+        tl.fromTo(["#s1-notifica", "#s1-visita"], { opacity: 1, y: 0, scale: 1 }, { opacity: 0, y: -60, scale: 0.94, duration: 0.5, ease: "power2.in", stagger: 0.05, immediateRender: false }, 8.25);
+        tl.fromTo("#s1-doc", { opacity: 0, scale: 1.06, y: 30, filter: "blur(8px)" }, { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" }, 8.45);
+        tl.fromTo("#s1-doc", { scale: 1 }, { scale: 1.03, duration: 2.0, ease: "none", immediateRender: false }, 9.15);
+        tl.set("#s1-lettura", { opacity: 1 }, 8.85);
+        tl.fromTo("#s1-lettura", { y: 0 }, { y: 400, duration: 1.15, ease: "none" }, 8.85);
+        tl.fromTo("#s1-volte", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 10.3);
+        tl.fromTo("#s1-lettura", { y: 0 }, { y: 400, duration: 0.8, ease: "none", immediateRender: false }, 10.3);
+        tl.to(".s1-evid", { backgroundColor: "rgba(185, 220, 205, 1)", color: "#0f5143", duration: 0.35, ease: "power1.out", stagger: 0.15 }, 10.45);
+        tl.fromTo("#s1-lettura", { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, 11.1);
+
+        // «And one question remains: what does it mean?»
+        tl.fromTo("#s1-doc", { opacity: 1, scale: 1.03, filter: "blur(0px)" }, { opacity: 0.12, scale: 0.96, filter: "blur(12px)", duration: 0.9, ease: "power2.inOut", immediateRender: false }, 11.3);
+        parole("#s1-domanda .s1-parola", [13.15, 13.28, 13.42, 13.52], 0.15);
+        tl.fromTo("#s1-sottolinea", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 13.65);
+
+        // «She is not alone.» (con una pausa): le stesse domande, da tante altre persone.
+        // Restano, più tenui, anche sotto il dato, finché arrivano le tre strade.
+        tl.fromTo(".s1-eco", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)", stagger: 0.18 }, 14.2);
+
+        // «More than half of Italians struggle to make sense of health information.»
+        tl.to("#s1-domanda", { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, 15.25);
+        tl.fromTo(".s1-eco", { opacity: 1 }, { opacity: 0.4, duration: 0.6, ease: "power1.inOut", immediateRender: false }, 15.5);
+        tl.fromTo("#s1-doc", { opacity: 0.12 }, { opacity: 0.06, duration: 0.5, immediateRender: false }, 15.4);
+        tl.fromTo("#s1-percento", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 15.68);
+        const percento = document.querySelector("#s1-percento");
+        const conta = { v: 0 };
+        tl.to(conta, { v: 58, duration: 1.0, ease: "power2.out", onUpdate: () => { percento.textContent = Math.round(conta.v) + "%"; } }, 15.68);
+        parole("#s1-dato-frase .s1-parola", [16.31, 16.41, 16.95, 17.39, 17.52, 17.74, 18.04, 18.12, 18.41]);
+        tl.fromTo("#s1-fonte", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18.6);
+
+        // «So they search online, ask a chatbot, or call a family doctor who is already overloaded.»
+        tl.fromTo(".s1-eco", { opacity: 0.4 }, { opacity: 0, duration: 0.5, ease: "power2.in", immediateRender: false }, 19.25);
+        tl.fromTo("#s1-fonte", { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, 19.3);
+        tl.to("#s1-dato", { y: -250, scale: 0.6, duration: 0.7, ease: "power3.inOut" }, 19.3);
+        const carta = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 50, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, t);
+        carta("#s1-a1", 19.75);
+        carta("#s1-a2", 20.85);
+        carta("#s1-a3", 22.05);
+        tl.fromTo("#s1-occupato", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 23.9);
+        tl.fromTo("#s1-medici", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 24.0);
+
+        // 2. «But none of them reads the report with her.»
+        tl.fromTo(["#s1-dato", "#s1-medici"], { opacity: 1 }, { opacity: 0, duration: 0.5, ease: "power2.in", immediateRender: false }, 25.6);
+        tl.fromTo(["#s1-a1", "#s1-a2", "#s1-a3"], { opacity: 1, scale: 1 }, { opacity: 0.45, scale: 0.97, duration: 0.6, ease: "power1.inOut", immediateRender: false }, 25.75);
+        tl.to("#s1-alt-box", { y: -150, duration: 0.8, ease: "power3.inOut" }, 26.4);
+        // «What Giovanna needs is simple:»
+        tl.fromTo("#s1-bisogno", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 27.85);
+        // Ogni strada si gira, in 3D, nella sua promessa: «a source for every answer»,
+        // «only what her doctor wrote», «and plain words, right away».
+        const gira = (n, t) => {
+          tl.fromTo(`#s1-a${n}`, { opacity: 0.45, scale: 0.97 }, { opacity: 1, scale: 1.04, duration: 0.35, ease: "power2.out", immediateRender: false }, t - 0.25);
+          tl.fromTo(`#s1-g${n}`, { rotationY: 0 }, { rotationY: 180, duration: 0.9, ease: "power3.inOut" }, t);
+          tl.fromTo(`#s1-a${n}`, { scale: 1.04 }, { scale: 1, duration: 0.5, ease: "power2.inOut", immediateRender: false }, t + 0.7);
+        };
+        gira(1, 29.55);
+        gira(2, 31.4);
+        gira(3, 32.95);
+
+        // «Something that sits right next to her report.»: le tre promesse si uniscono
+        // e diventano il pulsante accanto al referto.
+        tl.fromTo("#s1-bisogno", { opacity: 1, y: 0 }, { opacity: 0, y: -30, duration: 0.4, ease: "power2.in", immediateRender: false }, 34.4);
+        tl.fromTo("#s1-a1", { x: 0, scale: 1 }, { x: 520, scale: 0.55, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 34.45);
+        tl.fromTo("#s1-a3", { x: 0, scale: 1 }, { x: -520, scale: 0.55, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 34.45);
+        tl.fromTo("#s1-a2", { scale: 1 }, { scale: 0.55, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 34.45);
+        tl.fromTo(["#s1-a1", "#s1-a2", "#s1-a3"], { scale: 0.55, opacity: 1 }, { scale: 0.15, opacity: 0, duration: 0.35, ease: "power3.in", immediateRender: false }, 35.0);
+        tl.fromTo("#s1-doc", { opacity: 0.06 }, { opacity: 0, duration: 0.4, immediateRender: false }, 34.5);
+        tl.fromTo("#s1-doc-piccolo", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.7, ease: "power3.out" }, 35.3);
+        tl.fromTo("#s1-bottone", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 35.8);
+        tl.to("#s1-bottone", { boxShadow: "0 0 0 30px rgba(143, 214, 189, 0)", duration: 0.9, ease: "power1.out", repeat: 1 }, 36.0);
+
+        // «Meet Referto.»: un clic, la luce si allarga, il marchio arriva con il suo anello.
+        tl.fromTo("#s1-bottone", { scale: 1 }, { scale: 0.94, duration: 0.12, ease: "power1.in", immediateRender: false }, 36.8);
+        tl.fromTo("#s1-bottone", { scale: 0.94 }, { scale: 1.06, duration: 0.3, ease: "back.out(2)", immediateRender: false }, 36.92);
+        tl.fromTo("#s1-cerchio", { scale: 0 }, { scale: 10.5, duration: 0.8, ease: "power2.inOut" }, 36.75);
+        tl.fromTo("#s1-r", { opacity: 0, scale: 0.2, rotation: -18, filter: "blur(16px)" }, { opacity: 1, scale: 1, rotation: 0, filter: "blur(0px)", duration: 0.9, ease: "back.out(1.7)" }, 37.3);
+        tl.fromTo("#s1-anello", { opacity: 0, scale: 0.35 }, { opacity: 0.9, scale: 0.45, duration: 0.1 }, 37.5);
+        tl.fromTo("#s1-anello", { opacity: 0.9, scale: 0.45 }, { opacity: 0, scale: 2.4, duration: 1.3, ease: "power2.out", immediateRender: false }, 37.6);
+        tl.fromTo("#s1-lettere .s1-lettera", { opacity: 0, y: 70, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out", stagger: 0.05 }, 37.55);
+        tl.fromTo("#s1-riflesso", { x: -120, opacity: 1 }, { x: 260, opacity: 1, duration: 0.8, ease: "power2.inOut" }, 38.2);
+        tl.fromTo("#s1-riflesso", { opacity: 1 }, { opacity: 0, duration: 0.1, immediateRender: false }, 39.0);
+        // «Your medical report, explained in plain words.»
+        parole("#s1-slogan .s1-parola", [38.28, 38.49, 38.91, 39.5, 40.07, 40.22, 40.5], 0.05);
+        tl.to("#s1-marchio-box", { opacity: 0, y: -40, duration: 0.6, ease: "power2.in" }, 42.3);
+
+        riallinea(tl);
+        window.__timelines["scena-01-gancio"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

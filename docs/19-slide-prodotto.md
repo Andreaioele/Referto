@@ -37,6 +37,27 @@ con slide successiva, note modificabili e cronometro. Su Google Meet si
 condivide la **scheda** del pubblico, non la finestra. Il deck non si esporta in
 MP4: `render` prenderebbe solo la prima slide.
 
+### Esportazione in PDF
+
+Per la submission il deck si esporta in PDF con **una pagina per ogni punto di
+sosta**, come in `present`: 21 pagine 16:9. Le slide con frammenti (3, 4, 6 e
+10) danno una pagina per passo, catturata al tempo del frammento; le altre una
+sola, a metà della loro durata. `snapshot` cattura i fotogrammi, `img2pdf` li
+unisce senza ricomprimerli. Il PDF va in `renders/`, fuori da Git come le
+esportazioni del video.
+
+```bash
+cd resources/slide
+L=~/.claude/plugins/cache/hyperframes/hyperframes/0.8.164/skills/hyperframes/scripts/plugin-cli.mjs
+node $L snapshot . --at 3,9,15,17.5,20,24.5,27,29.5,32,37,42.5,45.5,51,57,63,68.5,71.5,77,83,89,95 --no-end --describe false -o renders/fotogrammi
+uv run --no-project --with img2pdf==0.6.1 python -I -c "import img2pdf,glob; l=img2pdf.get_layout_fun((img2pdf.in_to_pt(13.333),img2pdf.in_to_pt(7.5))); open('renders/referto-slide.pdf','wb').write(img2pdf.convert(sorted(glob.glob('renders/fotogrammi/frame-*.png')),layout_fun=l))"
+```
+
+Se cambiano frammenti, durate o numero delle slide vanno ricalcolati i tempi
+di `--at` dall'isola JSON e da `index.html` (frammenti così come sono; slide
+senza frammenti: inizio + metà durata). `--describe false` evita che le
+immagini vadano a Gemini quando è impostata `GEMINI_API_KEY`.
+
 ## Come è fatto
 
 - `index.html`: composizione principale (1920×1080) con l'**isola JSON**
@@ -92,6 +113,7 @@ dato (prontuario, glossario, strutture) va aggiornata la slide.
 
 ## Stato
 
+18/10/2026: esportato in PDF (`renders/referto-slide.pdf`, 21 pagine, una per passo, 4,4 MB).
 18/10/2026: deck creato e provato con `present` (14 slide, 21 punti di sosta
 nell'ordine giusto); `check` passa con due avvisi informativi previsti (nella
 slide 4 il testo scorre sotto la testata del widget). Mancano nomi del team e

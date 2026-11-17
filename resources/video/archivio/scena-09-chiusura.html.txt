@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scena 8 del copione (chiusura). Tempi locali: 0 = 137,2 s del video;
+      voce 08 a +1,0 s. Nomi del team e link non sono ancora nel video: vanno in
+      #s8-team quando ci sono.
+    -->
+    <template>
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+          color: #ffffff;
+        }
+        #s8-fondo {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1300px 900px at 50% 42%, #1d7d67 0%, #0f5143 62%, #0b2f27 100%);
+        }
+        #s8-contenuto {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 54px;
+        }
+        #s8-marchio {
+          display: flex;
+          align-items: center;
+          gap: 40px;
+        }
+        #s8-r {
+          width: 200px;
+          height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 52px;
+          background: #ffffff;
+          color: #176b58;
+          font-size: 128px;
+          font-weight: 800;
+          line-height: 1;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+          opacity: 0;
+        }
+        #s8-nome-box {
+          overflow: hidden;
+          padding: 10px 0 18px;
+        }
+        #s8-nome {
+          font-size: 168px;
+          font-weight: 800;
+          letter-spacing: -0.045em;
+          line-height: 1;
+          opacity: 0;
+        }
+        #s8-slogan {
+          margin: 0;
+          font-size: 66px;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          color: #e5f3ed;
+        }
+        #s8-slogan .s8-parola {
+          display: inline-block;
+          opacity: 0;
+        }
+        #s8-slogan .s8-forte {
+          color: #ffffff;
+          font-weight: 800;
+        }
+        #s8-team {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          opacity: 0;
+        }
+        #s8-hackathon {
+          padding: 10px 26px;
+          border: 2px solid rgba(255, 255, 255, 0.45);
+          border-radius: 999px;
+          font-size: 30px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+        }
+        #s8-crediti {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 40px;
+          display: flex;
+          justify-content: center;
+          padding: 0 220px;
+          text-align: center;
+          line-height: 1.5;
+          color: #cfe9df;
+          font-size: 22px;
+          font-weight: 600;
+          opacity: 0;
+        }
+        #s8-nero {
+          position: absolute;
+          inset: 0;
+          background: #000000;
+          opacity: 0;
+        }
+      </style>
+
+      <div id="root" data-composition-id="scena-09-chiusura" data-width="1920" data-height="1080">
+        <div id="s8-fondo"></div>
+        <div id="s8-contenuto">
+          <div id="s8-marchio">
+            <div id="s8-r">R</div>
+            <div id="s8-nome-box"><div id="s8-nome">Referto</div></div>
+          </div>
+          <p id="s8-slogan">
+            <span class="s8-parola">Il</span>
+            <span class="s8-parola">tuo</span>
+            <span class="s8-parola">referto,</span>
+            <span class="s8-parola s8-forte">finalmente</span>
+            <span class="s8-parola s8-forte">chiaro.</span>
+          </p>
+          <div id="s8-team"><span id="s8-hackathon">AMD Developer ACT III · Track Health</span></div>
+        </div>
+        <div id="s8-crediti">Dati del portale di esempio · Voce: ElevenLabs · Musica: MusicGen (Meta, CC BY-NC 4.0) · Statistiche: HLS19, Ministero della Salute, GIMBE, Politecnico di Milano · Farmaci: AIFA (CC BY 4.0) · Mappe © OpenStreetMap contributors</div>
+        <div id="s8-nero"></div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [1.102, 0.4], [3.088, 1.18], [4.125, 3.05], [5.255, 5.65], [6.6, 6.25], [7.6, 7.05], [13.4, 10.25], [14.8, 11.65]];
+      // Sposta ogni tween sulla traccia nuova e ne adatta la durata.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        for (const figlio of tl.getChildren(false, true, true)) {
+          const inizio = figlio.startTime();
+          const durata = figlio.totalDuration();
+          const nuovoInizio = T(inizio);
+          figlio.startTime(nuovoInizio);
+          const nuovaDurata = T(inizio + durata) - nuovoInizio;
+          if (durata > 0 && nuovaDurata > 0.01) figlio.timeScale((figlio.timeScale() * durata) / nuovaDurata);
+        }
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: 0 = 137,2 s del video. Voce 09 a +1,0 s.
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#s8-fondo", { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power1.out" }, 0);
+
+        // «Referto.»
+        tl.fromTo("#s8-r", { opacity: 0, scale: 0.4, rotation: -10 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.8)" }, 0.9);
+        tl.fromTo("#s8-nome", { opacity: 0, x: -120 }, { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }, 1.25);
+
+        // «Il tuo referto, finalmente chiaro.»
+        const attacchi = [2.8, 3.05, 3.25, 4.05, 4.75];
+        document.querySelectorAll("#s8-slogan .s8-parola").forEach((parola, i) => {
+          tl.fromTo(parola, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, attacchi[i]);
+        });
+
+        // Hackathon e crediti, poi dissolvenza in nero.
+        tl.fromTo("#s8-team", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 6.6);
+        tl.fromTo("#s8-crediti", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 7.6);
+        tl.fromTo("#s8-nero", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power1.in" }, 13.4);
+
+        riallinea(tl);
+        window.__timelines["scena-09-chiusura"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

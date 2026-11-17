@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!--
+      Scena 9 del copione (l'ultima parola). Tempi locali: voce 09 a +0,8 s
+      (assets/voce/09-finale.mp3, voce inglese di riferimento).
+      Chiude il filo aperto dal gancio: la domanda di Giovanna, il medico che
+      ha l'ultima parola (vincolo del prodotto, CLAUDE.md), la riga del 112 della
+      striscia di sicurezza del widget, poi il marchio. Prende il posto delle
+      vecchie scene «Fiducia» e «Chiusura».
+    -->
+    <template>
+      <style>
+        @font-face {
+          font-family: "Nunito Sans";
+          src: url("assets/fonts/nunito-sans-latin-wght.woff2") format("woff2");
+          font-weight: 200 1000;
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: "Nunito Sans", sans-serif;
+          color: #18221f;
+        }
+        .s9-pieno {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        #s9-chiaro {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(1400px 900px at 50% 45%, #f7faf9 0%, #e1ebe7 100%);
+        }
+        /* «A report understood is one less question for the doctor.» */
+        #s9-frase-1 {
+          margin: 0;
+          max-width: 1560px;
+          text-align: center;
+          font-size: 100px;
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1.1;
+        }
+        .s9-parola {
+          display: inline-block;
+          opacity: 0;
+        }
+        .s9-verde {
+          color: #176b58;
+        }
+        /* «And the last word always belongs to your doctor.» */
+        #s9-medico-box {
+          gap: 44px;
+        }
+        #s9-medico {
+          position: relative;
+          width: 190px;
+          height: 190px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 56px;
+          background: #176b58;
+          color: #ffffff;
+          box-shadow: 0 0 0 0 rgba(23, 107, 88, 0.35), 0 30px 80px rgba(16, 40, 34, 0.25);
+          opacity: 0;
+        }
+        #s9-frase-2 {
+          margin: 0;
+          max-width: 1600px;
+          text-align: center;
+          font-size: 104px;
+          font-weight: 900;
+          letter-spacing: -0.045em;
+          line-height: 1.08;
+        }
+        #s9-urgenze {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 28px;
+          border: 2px solid #dfe6e3;
+          border-radius: 18px;
+          background: #ffffff;
+          color: #4d5a56;
+          font-size: 32px;
+          font-weight: 700;
+          opacity: 0;
+        }
+        #s9-urgenze strong {
+          color: #b5452f;
+        }
+        /* Il marchio, su verde */
+        #s9-cerchio {
+          width: 240px;
+          height: 240px;
+          flex: none;
+          border-radius: 50%;
+          background: radial-gradient(circle at 50% 50%, #1d7d67 0%, #0f5143 70%, #0b2f27 100%);
+        }
+        #s9-marchio-box {
+          gap: 54px;
+          color: #ffffff;
+        }
+        #s9-marchio {
+          display: flex;
+          align-items: center;
+          gap: 40px;
+        }
+        #s9-r {
+          width: 200px;
+          height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 52px;
+          background: #ffffff;
+          color: #176b58;
+          font-size: 128px;
+          font-weight: 800;
+          line-height: 1;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+          opacity: 0;
+        }
+        #s9-nome-box {
+          overflow: hidden;
+          padding: 10px 0 18px;
+        }
+        #s9-nome {
+          font-size: 168px;
+          font-weight: 800;
+          letter-spacing: -0.045em;
+          line-height: 1;
+          opacity: 0;
+        }
+        #s9-slogan {
+          margin: 0;
+          font-size: 66px;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          color: #e5f3ed;
+        }
+        #s9-slogan .s9-forte {
+          color: #ffffff;
+          font-weight: 800;
+        }
+        #s9-hackathon {
+          padding: 10px 26px;
+          border: 2px solid rgba(255, 255, 255, 0.45);
+          border-radius: 999px;
+          font-size: 30px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          opacity: 0;
+        }
+        #s9-crediti {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 40px;
+          display: flex;
+          justify-content: center;
+          padding: 0 220px;
+          text-align: center;
+          line-height: 1.5;
+          color: #cfe9df;
+          font-size: 22px;
+          font-weight: 600;
+          opacity: 0;
+        }
+        #s9-nero {
+          position: absolute;
+          inset: 0;
+          background: #000000;
+          opacity: 0;
+        }
+      </style>
+
+      <div id="root" data-composition-id="scena-09-finale" data-width="1920" data-height="1080">
+        <div id="s9-chiaro"></div>
+
+        <div class="s9-pieno">
+          <p id="s9-frase-1" data-layout-allow-overlap>
+            <span class="s9-parola">A</span>
+            <span class="s9-parola">report</span>
+            <span class="s9-parola">understood</span>
+            <span class="s9-parola">is</span>
+            <span class="s9-parola s9-verde">one</span>
+            <span class="s9-parola s9-verde">less</span>
+            <span class="s9-parola s9-verde">question</span>
+            <span class="s9-parola">for</span>
+            <span class="s9-parola">the</span>
+            <span class="s9-parola">doctor.</span>
+          </p>
+        </div>
+
+        <div class="s9-pieno" id="s9-medico-box">
+          <div id="s9-medico"><svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a4 4 0 0 0 8 0V3"></path><path d="M10 13v3a5 5 0 0 0 10 0v-3"></path><circle cx="20" cy="11" r="2"></circle></svg></div>
+          <p id="s9-frase-2" data-layout-allow-overlap>
+            <span class="s9-parola">The</span>
+            <span class="s9-parola">last</span>
+            <span class="s9-parola">word</span>
+            <span class="s9-parola">always</span>
+            <span class="s9-parola">belongs</span>
+            <span class="s9-parola">to</span>
+            <span class="s9-parola s9-verde">your</span>
+            <span class="s9-parola s9-verde">doctor.</span>
+          </p>
+          <div id="s9-urgenze" data-layout-allow-overlap><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg><span>In an emergency, call <strong>112</strong>.</span></div>
+        </div>
+
+        <div class="s9-pieno"><div id="s9-cerchio"></div></div>
+        <div class="s9-pieno" id="s9-marchio-box">
+          <div id="s9-marchio">
+            <div id="s9-r">R</div>
+            <div id="s9-nome-box"><div id="s9-nome">Referto</div></div>
+          </div>
+          <p id="s9-slogan" data-layout-allow-overlap>
+            <span class="s9-parola">Your</span>
+            <span class="s9-parola">medical</span>
+            <span class="s9-parola">report,</span>
+            <span class="s9-parola s9-forte">finally</span>
+            <span class="s9-parola s9-forte">made</span>
+            <span class="s9-parola s9-forte">clear.</span>
+          </p>
+          <div id="s9-hackathon">AMD Developer ACT III · Track Health</div>
+        </div>
+        <div id="s9-crediti">Sample portal data · Voice: ElevenLabs · Music: MusicGen (Meta, CC BY-NC 4.0) · Statistics: HLS19, Italian Ministry of Health, GIMBE, Politecnico di Milano · Medicines: AIFA (CC BY 4.0) · Maps © OpenStreetMap contributors</div>
+        <div id="s9-nero"></div>
+      </div>
+
+      <script>
+      // SINCRONIA-INIZIO (generato da voce/sincronizza.py: non modificare a mano)
+      // Tempi della scena: [tempo sulla voce di riferimento, tempo sulla traccia].
+      const SINCRONIA = [[0.0, 0.0], [0.9, 0.4], [1.495, 0.94], [2.971, 2.53], [3.65, 3.78], [4.779, 5.09], [5.898, 6.56], [6.564, 7.2], [7.398, 8.03], [8.624, 9.29], [9.671, 10.9], [10.909, 12.52], [11.2, 12.92], [11.9, 13.52], [16.0, 17.62], [17.2, 18.82]];
+      // Ricrea ogni tween sui tempi della traccia (inizio spostato, durata adattata).
+      // Non si cambiano startTime() e timeScale() dei tween esistenti: GSAP li
+      // disegnerebbe subito e i fromTo con immediateRender: false applicherebbero i
+      // valori di partenza fuori tempo. Alla fine la timeline va alla fine e torna
+      // all'inizio: così ogni .to() registra la partenza giusta una volta per tutte e
+      // l'anteprima o il render possono saltare in qualsiasi punto.
+      function riallinea(tl) {
+        const T = (t) => {
+          if (t <= SINCRONIA[0][0]) return t - SINCRONIA[0][0] + SINCRONIA[0][1];
+          for (let i = 1; i < SINCRONIA.length; i++) {
+            if (t <= SINCRONIA[i][0]) {
+              const [a0, b0] = SINCRONIA[i - 1];
+              const [a1, b1] = SINCRONIA[i];
+              return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0);
+            }
+          }
+          const [a, b] = SINCRONIA[SINCRONIA.length - 1];
+          return b + (t - a);
+        };
+        const figli = tl.getChildren(false, true, false).map((f) => ({
+          f,
+          inizio: f.startTime(),
+          durata: f.totalDuration(),
+          vars: f.vars,
+          bersagli: f.targets(),
+        }));
+        for (const { f } of figli) f.kill();
+        for (const { inizio, durata, vars, bersagli } of figli) {
+          const nuovoInizio = T(inizio);
+          const fattore = durata > 0 ? Math.max(0.01, T(inizio + durata) - nuovoInizio) / durata : 1;
+          const nuovi = { ...vars, immediateRender: false };
+          delete nuovi.parent;
+          delete nuovi.delay;
+          if (typeof vars.duration === "number") nuovi.duration = vars.duration * fattore;
+          if (typeof vars.stagger === "number") nuovi.stagger = vars.stagger * fattore;
+          if (typeof vars.repeatDelay === "number") nuovi.repeatDelay = vars.repeatDelay * fattore;
+          tl.to(bersagli, nuovi, nuovoInizio);
+        }
+        tl.progress(1).progress(0);
+      }
+      // SINCRONIA-FINE
+        // Tempi locali: voce 09 a +0,8 s.
+        const tl = gsap.timeline({ paused: true });
+        const parole = (sel, attacchi) => {
+          document.querySelectorAll(sel).forEach((parola, i) => {
+            tl.fromTo(parola, { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, attacchi[i] - 0.1);
+          });
+        };
+
+        tl.fromTo("#s9-chiaro", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power1.out" }, 0);
+
+        // «A report understood is one less question for the doctor.»
+        parole("#s9-frase-1 .s9-parola", [0.9, 1.08, 1.5, 2.28, 2.44, 2.76, 2.97, 3.45, 3.57, 3.65]);
+
+        // «And the last word always belongs to your doctor.»
+        tl.to("#s9-frase-1", { opacity: 0, y: -60, scale: 0.94, duration: 0.45, ease: "power2.in" }, 4.2);
+        tl.fromTo("#s9-medico", { opacity: 0, scale: 0.5, rotation: -10 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.8)" }, 4.45);
+        tl.to("#s9-medico", { boxShadow: "0 0 0 40px rgba(23, 107, 88, 0), 0 30px 80px rgba(16, 40, 34, 0.25)", duration: 1.2, ease: "power1.out" }, 5.0);
+        parole("#s9-frase-2 .s9-parola", [4.67, 4.78, 5.11, 5.54, 5.9, 6.37, 6.46, 6.56]);
+        tl.fromTo("#s9-urgenze", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 6.75);
+
+        // «Referto.»: il verde si allarga dal medico e arriva il marchio.
+        tl.to("#s9-medico-box", { opacity: 0, duration: 0.4, ease: "power2.in" }, 7.15);
+        tl.fromTo("#s9-cerchio", { scale: 0 }, { scale: 10.5, duration: 1.0, ease: "power3.inOut" }, 7.0);
+        tl.fromTo("#s9-r", { opacity: 0, scale: 0.4, rotation: -10 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.8)" }, 7.3);
+        tl.fromTo("#s9-nome", { opacity: 0, x: -120 }, { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }, 7.6);
+        // «Your medical report, finally made clear.»
+        parole("#s9-slogan .s9-parola", [8.41, 8.62, 9.05, 9.67, 10.21, 10.47]);
+
+        // Hackathon e crediti, poi dissolvenza in nero.
+        tl.fromTo("#s9-hackathon", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 11.2);
+        tl.fromTo("#s9-crediti", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 11.9);
+        tl.fromTo("#s9-nero", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power1.in" }, 16.0);
+
+        riallinea(tl);
+        window.__timelines["scena-09-finale"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
